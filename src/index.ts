@@ -1,11 +1,16 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from 'cors';
-import RoomRouter from "./router/router_room";
+import session from 'express-session';
+import MongoDBStore from 'connect-mongodb-session';
+
 import { connectToDatabase } from "./config/mongodb";
+import RoomRouter from "./router/router_room";
 import InstagramRouter from "./router/router_instagram";
 import ContactRouter from "./router/router_contact";
 import BookingRouter from "./router/router_booking";
+import AuthRouter from "./router/router_auth";
+import UserRouter from "./router/router_user";
 
 const app: express.Application = express();
 
@@ -28,16 +33,77 @@ app.use(express.json());
 app.use(express.urlencoded({extended:false}))
 
 
+ const MongoDBStoreKU = MongoDBStore(session);
+
+ const store = new MongoDBStoreKU({
+     uri: `${process.env.MongoDB_Local as string}/Database_TestAdhisthana(Main_Server)`, 
+     collection: 'sessions' 
+ });     
+
+ store.on('error', function(error) {
+    console.log(error);
+});
+
+app.set('trust proxy', 1)
+
+
+app.use(session({
+    secret: process.env.SESS_SECRET as string,
+    resave: false,
+    saveUninitialized: false,
+    store: store,
+    cookie: {
+        secure: false, // Pastikan 'secure' hanya true di production
+        // sameSite: 'lax', // 'none' diperlukan untuk cross-origin request
+        httpOnly: true, // Menghindari akses cookie dari JavaScript
+        maxAge: 1000 * 60 * 60 * 24, // 1 hari
+        // sameSite: 'none',
+    },
+}));
+
+
+declare module 'express-session' {
+    interface SessionData {
+      cart?: {
+        roomId: string;
+        quantity: number;
+        price: number;
+      }[],
+      deviceInfo? : {
+        userAgent?: string;
+        ipAddress?: string;
+      }
+    }
+  }
+
+//   app.use((req, res, next) => {
+//     console.log('Session ID:', req.sessionID);
+//     console.log('Session Data:', req.session);
+//     next();
+// });
+
+
+
 app.get('/', (req, res) => {
     res.send('Welcome to the Server Main Aras Service!');
 });
 
-// app.use("/v1/packet", packetRouter)
+
+app.use((req, res, next) => {
+    console.log('Cookies:', req.headers.cookie || 'No cookies received');
+    console.log('Session ID:', req.sessionID);
+    next();
+});
+
+
+
 
 app.use("/api/v1/room", RoomRouter)
 app.use("/api/v1/instagram", InstagramRouter)
 app.use("/api/v1/contact", ContactRouter)
 app.use("/api/v1/booking", BookingRouter)
+app.use("/api/v1/auth", AuthRouter)
+app.use("/api/v1/user", UserRouter)
 
 
 

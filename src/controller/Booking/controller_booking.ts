@@ -4,10 +4,11 @@ import mongoose from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
 import RoomModel from '../../models/Room/models_room';
 import { BookingModel } from '../../models/Booking/models_booking';
-import { formatISO, setHours, setMinutes, setSeconds } from "date-fns";
-import { nanoid } from 'nanoid';
+import { snap } from '../../config/midtransConfig'
+
 import { transactionService } from './transactionService';
 import { PENDING_PAYMENT } from '../../utils/constant';
+import { SessionModel } from '../../models/Booking/models_session';
 
 export class BookingController {
 
@@ -15,28 +16,9 @@ export class BookingController {
 
             const BookingReq = req.body;
 
+
             try {
                        
-                const { idRoom } = BookingReq;
-                const room = await RoomModel.findOne({ _id: idRoom });    
-
-                if (!room) {
-                    return res.status(404).json({ message: "Room not found" });
-                }
-                
-                if (room.available <= 0) {
-                    return res.status(400).json({ message: "Room not available" });
-                }
-                
-                // Kurangi quantity
-                room.available -= 1;
-
-                // Simpan perubahan
-                await room.save();
-
-                const transaction_id = `TRX-${nanoid(4)}-${nanoid(8)}`;
-
-
                 const roomDetails = await RoomModel.find({ _id: { $in: BookingReq.room.map((r: { roomId: any; }) => r.roomId) } });
 
                 // Validate room availability
@@ -58,24 +40,89 @@ export class BookingController {
                     }
                 }
 
-                    // Calculate gross_amount
+                // Calculate gross_amount
                 const grossAmount = roomDetails.reduce((acc, room) => {
                     const roomBooking = BookingReq.room.find((r : { roomId:any }) => r.roomId.toString() === room._id.toString());
                     return acc + room.price * roomBooking.quantity;
                 }, 0);
                 
 
-                const bookingId = `TRX-${nanoid(4)}-${nanoid(8)}`;
+                const bookingId = uuidv4()
+               
 
-
-                // Create transaction
+                
+                // Create transaction in Midtrans
+                const midtransPayload = {
+                    transaction_details: {
+                        order_id: `order-${bookingId}`,
+                        gross_amount: grossAmount,
+                    },  
+                    customer_details: {
+                        first_name: "Customer", // Replace with actual customer details if available
+                        email: "customer@example.com", // Replace with actual email if available
+                    },
+                    item_details: roomDetails.map(room => {
+                        const roomBooking = BookingReq.room.find((r: { roomId: any }) => r.roomId.toString() === room._id.toString());
+                        return {
+                            id: room._id,
+                            price: room.price,
+                            quantity: roomBooking.quantity,
+                            name: room.name,
+                        };
+                    }),
+                };
+                
+                const midtransResponse = await snap.createTransaction(midtransPayload);
+              
+                // Save transaction to your database
                 const transaction = await transactionService.createTransaction({
                     bookingId,
-                    status: status || PENDING_PAYMENT,
+                    status: PENDING_PAYMENT,
+                    checkIn: BookingReq.checkIn, // Tambahkan properti ini jika dibutuhkan
+                    checkOut: BookingReq.checkOut, // Tambahkan properti ini jika dibutuhkan
                     grossAmount,
-                    userId: BookingReq.idUser,
+                    userId: uuidv4(),
+                    snap_token: midtransResponse.token,
+                    paymentUrl: midtransResponse.redirect_url,
                 });
                 
+
+
+                // Save booking (transaction) to your database
+                const bookingData = {
+                    orderId: bookingId,
+                    checkIn: BookingReq.checkIn,
+                    checkOut: BookingReq.checkOut,
+                    adult: BookingReq.adult,
+                    children: BookingReq.children,
+                    amountTotal: grossAmount,
+                    amountBefDisc: BookingReq.amountBefDisc || grossAmount, // Assuming discount might apply
+                    couponId: BookingReq.couponId || null, // Optional coupon ID
+                    idUser: uuidv4(), // Replace with the actual user ID if available
+                    creatorId: uuidv4(), // Replace with actual creator ID if available
+                    rooms: roomDetails.map(room => {
+                        const roomBooking = BookingReq.room.find(
+                            (r: { roomId: any }) => r.roomId.toString() === room._id.toString()
+                        );
+                        return {
+                            roomId: room._id,
+                            quantity: roomBooking.quantity,
+                        };
+                    }),
+                };
+
+
+                const booking = await transactionService.createBooking(bookingData);
+
+
+                res.status(201).json({
+                    status: 'success',
+                    data: {
+                        transaction,
+                        paymentUrl: midtransResponse.redirect_url,
+                    }
+                });
+
                 // res.status(201).json(
                 //     {
                 //         requestId: uuidv4(), 
@@ -348,4 +395,271 @@ export class BookingController {
 
     // }
 
+
+        static async PostChartRoom(req: Request, res: Response) {
+            const { roomId, quantity } = req.body;
+        
+            // Validasi input
+            if (!roomId || quantity <= 0) {
+                return res.status(400).json({ error: 'Invalid input' });
+            }
+        
+            // Jika cart belum ada, inisialisasi
+            if (!req.session.cart) {
+                req.session.cart = [];
+            }
+        
+            try {
+                // Cari data kamar berdasarkan roomId
+                const room = await RoomModel.findById(roomId);
+        
+                if (!room) {
+                    return res.status(404).json({ error: 'Room not found' });
+                }
+        
+                const availableQty = room.available; // Ambil jumlah kamar yang tersedia
+                const price = room.price; // Ambil harga dari database
+        
+                // Cari apakah roomId sudah ada di cart
+                const existingItem = req.session.cart.find(item => item.roomId === roomId);
+        
+                if (existingItem) {
+                    // Hitung jumlah total jika quantity ditambahkan
+                    const newQuantity = existingItem.quantity + quantity;
+        
+                    if (newQuantity > availableQty) {
+                        return res.status(400).json({ 
+                            error: 'Requested quantity exceeds available rooms', 
+                            available: availableQty 
+                        });
+                    }
+        
+                    // Tambahkan quantity jika valid
+                    existingItem.quantity = newQuantity;
+                } else {
+                    // Periksa apakah jumlah yang diminta melebihi jumlah yang tersedia
+                    if (quantity > availableQty) {
+                        return res.status(400).json({ 
+                            error: 'Requested quantity exceeds available rooms', 
+                            available: availableQty 
+                        });
+                    }
+        
+                    // Tambahkan sebagai item baru
+                    req.session.cart.push({ roomId, quantity, price });
+                    req.session.deviceInfo = {
+                        userAgent: req.get('User-Agent'), // Menyimpan informasi tentang browser/perangkat
+                        ipAddress: req.ip, // Menyimpan alamat IP pengguna
+                      };
+                }
+        
+                // Hitung total harga
+                const totalPrice = req.session.cart.reduce((total, item) => {
+                    const itemPrice = Number(item.price);
+                    const itemQuantity = Number(item.quantity);
+                    return total + itemPrice * itemQuantity;
+                }, 0);
+        
+                // Simpan perubahan ke session
+                req.session.save(err => {
+
+                    if (err) {
+                        console.error('Error saving session:', err);
+                        return res.status(500).json({ error: 'Failed to save session' });
+                    }
+
+                    res.json({
+                        message: 'Item added to cart',
+                        cart: req.session.cart,
+                        totalPrice
+                    });
+                });
+        
+            } catch (error) {
+                console.error('Error fetching room data:', error);
+                res.status(500).json({ error: 'Internal server error' });
+            }
+        }
+    
+    
+
+        static async DelChartRoom(req: Request, res: Response) {
+            const { itemId } = req.body; // Ambil itemId dari request body
+        
+            // Pastikan cart ada dan itemId diberikan
+            if (!req.session.cart || !itemId) {
+                return res.status(400).json({ message: 'Cart is empty or itemId not provided' });
+            }
+        
+            // Temukan item yang ingin dihapus atau dikurangi quantity-nya
+            const item = req.session.cart.find(item => item.roomId === itemId);
+        
+            if (!item) {
+                return res.status(404).json({ message: 'Item not found in cart' });
+            }
+        
+            // Jika quantity lebih dari 1, kurangi quantity-nya
+            if (item.quantity > 1) {
+                item.quantity -= 1;
+            } else {
+                // Jika quantity 1, hapus item dari cart
+                req.session.cart = req.session.cart.filter(item => item.roomId !== itemId);
+            }
+        
+            return res.json({ message: 'Item updated in cart', cart: req.session.cart });
+        }
+        
+        
+
+        static async GetChartRoom (req : Request, res : Response) {
+
+
+         try {
+            
+            const sessionId = req.cookies["connect.sid"];
+
+            if (!sessionId) {
+                return res.status(400).json({ error: "Session ID not provided" });
+            }
+
+            const session = await SessionModel.findOne({ _id: sessionId });
+
+            return res.status(200).json(
+
+                { 
+                    data: session,
+                    message: 'Get Chart Sucsessfully'
+                }
+            );
+
+         } catch (error) {
+
+            console.error('Error in GetChart:', error);
+            return res.status(500).json({ error: 'Internal server error' });
+         }
+
+
+        };
+
+
+
+
+        static async GetTotalPrice(req: Request, res: Response) {
+            try {
+                // Debugging: Lihat session yang ada di setiap permintaan
+                console.log('Session:', req.session);
+        
+                // Cek apakah cart ada di session
+                if (!req.session.cart) {
+                    req.session.cart = [];
+                }
+      
+
+                // Ambil data cart dari session
+                const cart = req.session.cart;
+                console.log('Cart in server:', cart); // Debugging
+        
+                // Jika cart kosong, kirimkan respons error
+                if (cart.length === 0) {
+                    return res.status(404).json({ message: 'Cart is empty or not found in session' });
+                }
+        
+                // Hitung total harga: price * quantity untuk setiap item, lalu jumlahkan
+                const totalPrice = cart.reduce((total, item) => {
+                    const price = Number(item.price);
+                    const quantity = Number(item.quantity);
+                    return total + price * quantity;
+                }, 0);
+        
+                // Debugging totalPrice
+                console.log('Total Price:', totalPrice); // Debugging
+        
+                // Kirim respons dengan cart dan total harga
+                return res.status(200).json({
+                    requestId: uuidv4(),
+                    data: cart,
+                    totalPrice: totalPrice,
+                    message: 'Successfully calculated total price.',
+                    success: true,
+                });
+            } catch (error) {
+                console.error('Error in GetTotalPrice:', error);
+              
+                res.status(500).json({
+                    requestId: uuidv4(),
+                    data: null,
+                    message: (error as Error).message,
+                    success: false,
+                });
+            }
+        }
+        
+        
+        
+
+        static async CekSessions (req : Request, res : Response) {
+            console.log('Session data:', req.session);
+            res.json(req.session);
+        };
+          
+        static async Checkout  (req : Request, res : Response) {
+            
+            const cart = req.session.cart;
+          
+            // Pastikan cart tidak kosong
+            if (!cart || cart.length === 0) {
+              return res.status(400).json({ error: 'Cart is empty' });
+            }
+          
+            // Validasi ulang data di server (contoh: cek harga dan ketersediaan)
+            // const isValid = await validateCart(cart); // Implementasi validasi tergantung kebutuhan
+          
+            // if (!isValid) {
+            //   return res.status(400).json({ error: 'Invalid cart data' });
+            // }
+          
+            // Simpan transaksi ke database
+            // const transaction = await saveTransaction(cart);
+          
+            // Bersihkan session setelah checkout berhasil
+            req.session.cart = [];
+          
+            // res.json({ message: 'Checkout successful', transactionId: transaction.id });
+          
+        };
+
+        static async RemoveCart(req: Request, res: Response) {
+            try {
+                req.session.destroy((err) => {
+                    if (err) {
+                        console.error('Error destroying session:', err);
+                        return res.status(500).json({
+                            requestId: uuidv4(),
+                            data: null,
+                            message: 'Failed to delete session.',
+                            success: false,
+                        });
+                    }
+        
+                    // Hapus cookie session
+                    res.clearCookie('connect.sid'); // Ganti 'connect.sid' dengan nama cookie session Anda
+        
+                    res.status(200).json({
+                        requestId: uuidv4(),
+                        message: 'Session successfully deleted in server.',
+                        success: true,
+                    });
+                });
+            } catch (error) {
+                console.error('Error in RemoveCart:', error);
+                res.status(500).json({
+                    requestId: uuidv4(),
+                    data: null,
+                    message: (error as Error).message,
+                    success: false,
+                });
+            }
+        }
+        
+        
 }

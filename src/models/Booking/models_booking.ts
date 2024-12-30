@@ -10,6 +10,7 @@ interface Room {
 interface IBooking extends Document {
 
     _id: string;
+    title: string;
     oderId: string;
     checkIn: string;
     checkOut: string;
@@ -18,7 +19,7 @@ interface IBooking extends Document {
     children: number;
     amountTotal: number;
     amountBefDisc: number;
-    
+   
     couponId: string;
     idUser:string ;
     room : Room [];
@@ -37,15 +38,20 @@ const BookingSchema: Schema = new Schema(
             // required: [true, "oderId cannot be empty"],
             trim: true
         },
+        title: {
+            type: String,
+            // required: [true, "checkIn cannot be empty"],
+            trim: true
+        },
         checkIn: {
             type: String,
-            required: [true, "checkIn cannot be empty"],
+            // required: [true, "checkIn cannot be empty"],
             trim: true
         },
 
         checkOut: {
             type: String,
-            required: [true, "checkOut cannot be empty"],
+            // required: [true, "checkOut cannot be empty"],
             trim: true
         },
 

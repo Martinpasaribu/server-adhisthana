@@ -1,5 +1,6 @@
 import express, { Request, Response, NextFunction } from "express";
 import { BookingController } from "../controller/Booking/controller_booking";
+import activityLogger from "../middleware/logActivity";
 
 const BookingRouter: express.Router = express.Router();
 
@@ -8,13 +9,19 @@ const BookingRouter: express.Router = express.Router();
 
 // semantic meaning
 
-BookingRouter.post("/addBooking", BookingController.addBooking);
-
-
 BookingRouter.get("/getOffers", BookingController.getOffers);
-
-
 BookingRouter.get("/get", BookingController.getOffers);
+BookingRouter.get("/get-total-price", BookingController.GetTotalPrice);
+BookingRouter.get("/debug-session", BookingController.CekSessions);
+BookingRouter.get("/get-chart", BookingController.GetChartRoom);
+BookingRouter.put("/remove-cart",  BookingController.RemoveCart);
+BookingRouter.post("/addBooking", BookingController.addBooking);
+BookingRouter.post("/add-to-cart", BookingController.PostChartRoom);
+BookingRouter.post("/del-to-cart", BookingController.DelChartRoom);
+
+
+
+
 
 
 // BookingRouter.get("/getContact", BookingController.getContact)
