@@ -95,3 +95,6 @@ const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
 startServer.keepAliveTimeout = 60000; // 60 detik
 startServer.headersTimeout = 65000;
 startServer();
+
+
+exports.default = app;
