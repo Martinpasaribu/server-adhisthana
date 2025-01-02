@@ -11,6 +11,8 @@ import ContactRouter from "./router/router_contact";
 import BookingRouter from "./router/router_booking";
 import AuthRouter from "./router/router_auth";
 import UserRouter from "./router/router_user";
+import { connectToMongoDB } from "./config/mongoDbCloud";
+
 
 const app: express.Application = express();
 
@@ -110,7 +112,9 @@ app.use("/api/v1/user", UserRouter)
 const startServer = async () => {
     try {
         
-        await connectToDatabase();
+        // await connectToDatabase();
+
+        await connectToMongoDB()
         console.log('Server Read Database');
         
         app.listen(process.env.PORT, () => {
