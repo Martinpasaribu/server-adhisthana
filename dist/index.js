@@ -40,7 +40,7 @@ app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: false }));
 const MongoDBStoreKU = (0, connect_mongodb_session_1.default)(express_session_1.default);
 const store = new MongoDBStoreKU({
-    uri: `${process.env.MongoDB_Local}/Database_TestAdhisthana(Main_Server)`,
+    uri: `${process.env.MongoDB_cloud}`,
     collection: 'sessions'
 });
 store.on('error', function (error) {
