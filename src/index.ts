@@ -38,7 +38,7 @@ app.use(express.urlencoded({extended:false}))
  const MongoDBStoreKU = MongoDBStore(session);
 
  const store = new MongoDBStoreKU({
-     uri: `${process.env.MongoDB_Local as string}/Database_TestAdhisthana(Main_Server)`, 
+     uri: `${process.env.MongoDB_cloud as string}`, 
      collection: 'sessions' 
  });     
 
