@@ -56,7 +56,7 @@ app.use(session({
     store: store,
     cookie: {
         secure: true, // Pastikan 'secure' hanya true di production
-        // sameSite: 'lax', // 'none' diperlukan untuk cross-origin request
+        sameSite: 'none',
         httpOnly: true, // Menghindari akses cookie dari JavaScript
         maxAge: 1000 * 60 * 60 * 24, // 1 hari
         // sameSite: 'none',
