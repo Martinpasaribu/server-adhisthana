@@ -1,4 +1,4 @@
-import { UserModel } from "../models/User/models_user";
+import UserModel from "../models/User/models_user";
 
 
 export const verifyID = async (req:any, res:any, next:any) => {

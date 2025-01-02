@@ -118,8 +118,11 @@ export class BookingController {
                 res.status(201).json({
                     status: 'success',
                     data: {
+                        message:' successfully On Checkout',
+                        id:bookingId,
                         transaction,
                         paymentUrl: midtransResponse.redirect_url,
+                        snap_token : midtransResponse.token
                     }
                 });
 
