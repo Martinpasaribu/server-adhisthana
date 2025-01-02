@@ -4,7 +4,7 @@ import cors from 'cors';
 import session from 'express-session';
 import MongoDBStore from 'connect-mongodb-session';
 
-import { connectToDatabase } from "./config/mongodb";
+import { connectToDatabase } from "./config/mongodbLocal";
 import RoomRouter from "./router/router_room";
 import InstagramRouter from "./router/router_instagram";
 import ContactRouter from "./router/router_contact";
