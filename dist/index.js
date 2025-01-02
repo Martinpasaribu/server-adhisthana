@@ -53,9 +53,9 @@ app.use((0, express_session_1.default)({
     saveUninitialized: false,
     store: store,
     cookie: {
-        secure: false, // Pastikan 'secure' hanya true di production
-        // sameSite: 'lax', // 'none' diperlukan untuk cross-origin request
-        httpOnly: true, // Menghindari akses cookie dari JavaScript
+        secure: true, // Pastikan 'secure' hanya true di production
+        sameSite: 'none',
+        // httpOnly: true, // Menghindari akses cookie dari JavaScript
         maxAge: 1000 * 60 * 60 * 24, // 1 hari
         // sameSite: 'none',
     },
@@ -96,6 +96,3 @@ const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
 startServer.keepAliveTimeout = 60000; // 60 detik
 startServer.headersTimeout = 65000;
 startServer();
-
-
-exports.default = app;
