@@ -17,7 +17,7 @@ const app: express.Application = express();
 dotenv.config()
 
 app.use(cors({
-    origin: ["http://localhost:3000","http://localhost:3001"],
+    origin: ["http://localhost:3000","http://localhost:3001","https://adhistahan.vercel.app"],
     methods: ["POST", "GET", "PATCH", "DELETE", 'PUT', "OPTIONS"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
