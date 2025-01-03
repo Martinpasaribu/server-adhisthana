@@ -2,7 +2,14 @@
 export interface createTransaction {
     bookingId:string;
     status:string;
-    grossAmount:number
+    grossAmount:number;
+    
+    products: { 
+        roomId: string, 
+        quantity: number,
+        price: number,
+      }[];
+
     userId:string;
     paymentUrl: string;                    
     checkIn: string;

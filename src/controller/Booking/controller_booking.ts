@@ -9,6 +9,8 @@ import { snap } from '../../config/midtransConfig'
 import { transactionService } from './transactionService';
 import { PENDING_PAYMENT } from '../../utils/constant';
 import { SessionModel } from '../../models/Booking/models_session';
+import { TransactionModel } from '../../models/Booking/models_transaksi';
+import { updateStatusBaseOnMidtransResponse } from './Update_Status';
 
 export class BookingController {
 
@@ -82,6 +84,18 @@ export class BookingController {
                     checkOut: BookingReq.checkOut, // Tambahkan properti ini jika dibutuhkan
                     grossAmount,
                     userId: uuidv4(),
+                    products: roomDetails.map(room => {
+                        const roomBooking = BookingReq.room.find(
+                          (r: { roomId: any }) => r.roomId.toString() === room._id.toString()
+                        );
+                        
+                        return {
+                          roomId: room._id,
+                          quantity: roomBooking?.quantity, // Optional chaining jika roomBooking tidak ditemukan
+                          price: room.price, // Menambahkan price dari room
+                        };
+                      }),
+                      
                     snap_token: midtransResponse.token,
                     paymentUrl: midtransResponse.redirect_url,
                 });
@@ -151,6 +165,24 @@ export class BookingController {
             }
 
         }
+
+        static async getTransactionsById (req: Request, res: Response) {
+ 
+            const { transaction_id } = req.params;
+            const transaction = await TransactionModel.findOne({bookingId : transaction_id});
+        
+            if(!transaction) {
+                return res.status(404).json({
+                    status: 'error',
+                    message: 'Transaction not found'
+                })
+            }
+        
+            res.status(202).json({
+                status: 'success',
+                data: transaction
+            })
+        };
 
         static async getOffers(req: Request, res: Response) {
             const { checkin, checkout } = req.query;
@@ -597,6 +629,39 @@ export class BookingController {
             }
         }
         
+
+        static async TrxNotif(req: Request, res: Response) {
+            try {
+                const data = req.body;
+        
+                // Menunggu hasil findOne
+                const exitTransansaction = await TransactionModel.findOne({ bookingId: data.order_id });
+        
+                if (exitTransansaction) {
+                    // Properti bookingId sekarang tersedia
+                    const result = updateStatusBaseOnMidtransResponse(exitTransansaction.bookingId, data);
+                    console.log('result = ', result);
+
+                } else {
+                    console.log('Transaction not found');
+                }
+
+                res.status(200).json({
+
+                    status: 'success',
+                    message: "OK"
+    
+                })
+
+            } catch (error) {
+                console.error('Error handling transaction notification:', error);
+                
+                res.status(500).json({ 
+                    
+                    error: 'Internal Server Error' 
+                });
+            }
+        }
         
         
 

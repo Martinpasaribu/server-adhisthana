@@ -15,7 +15,7 @@ const models_transaksi_1 = require("../../models/Booking/models_transaksi");
 class TransactionService {
     // Fungsi untuk membuat Data Transaksi 
     createTransaction(_a) {
-        return __awaiter(this, arguments, void 0, function* ({ bookingId, status, grossAmount, userId, checkIn, checkOut }) {
+        return __awaiter(this, arguments, void 0, function* ({ bookingId, status, grossAmount, userId, checkIn, checkOut, products }) {
             const transaction = {
                 bookingId,
                 status,
@@ -23,6 +23,7 @@ class TransactionService {
                 userId,
                 checkIn,
                 checkOut,
+                products,
                 createdAt: new Date(),
             };
             // Save to database (example using MongoDB)

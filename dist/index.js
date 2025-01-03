@@ -55,7 +55,7 @@ app.use((0, express_session_1.default)({
     cookie: {
         secure: true, // Pastikan 'secure' hanya true di production
         sameSite: 'none',
-        // httpOnly: true, // Menghindari akses cookie dari JavaScript
+        httpOnly: true, // Menghindari akses cookie dari JavaScript
         maxAge: 1000 * 60 * 60 * 24, // 1 hari
         // sameSite: 'none',
     },

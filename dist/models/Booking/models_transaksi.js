@@ -38,7 +38,7 @@ const mongoose_1 = __importStar(require("mongoose"));
 const TransactionSchema = new mongoose_1.Schema({
     bookingId: {
         type: String,
-        required: [true, "bookingId cannot be empty"],
+        // required: [true, "bookingId cannot be empty"],
         trim: true
     },
     userId: {
@@ -47,6 +47,11 @@ const TransactionSchema = new mongoose_1.Schema({
         trim: true
     },
     status: {
+        type: String,
+        // required: [true, "status cannot be empty"],
+        trim: true
+    },
+    payment_methode: {
         type: String,
         // required: [true, "status cannot be empty"],
         trim: true
