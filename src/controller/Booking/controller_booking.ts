@@ -18,7 +18,6 @@ export class BookingController {
 
             const BookingReq = req.body;
 
-
             try {
                        
                 const roomDetails = await RoomModel.find({ _id: { $in: BookingReq.room.map((r: { roomId: any; }) => r.roomId) } });
@@ -139,18 +138,8 @@ export class BookingController {
                         snap_token : midtransResponse.token
                     }
                 });
-
-                // res.status(201).json(
-                //     {
-                //         requestId: uuidv4(), 
-                //         data: {
-                //             acknowledged: true,
-                //             insertedId: savedBooking._id 
-                //         },
-                //         message: "Successfully Add Booking ",
-                //         success: true
-                //     }
-                // );
+                
+                console.log("Successfully Add Booking ")
 
             } catch (error) {
 
@@ -162,6 +151,8 @@ export class BookingController {
                         success: false
                     }
                 );
+
+                console.log(" Error Booking ")
             }
 
         }
@@ -515,8 +506,7 @@ export class BookingController {
                 res.status(500).json({ error: 'Internal server error' });
             }
         }
-    
-    
+       
 
         static async DelChartRoom(req: Request, res: Response) {
             const { itemId } = req.body; // Ambil itemId dari request body
@@ -543,7 +533,6 @@ export class BookingController {
         
             return res.json({ message: 'Item updated in cart', cart: req.session.cart });
         }
-        
         
 
         static async GetChartRoom (req : Request, res : Response) {
@@ -575,8 +564,6 @@ export class BookingController {
 
 
         };
-
-
 
 
         static async GetTotalPrice(req: Request, res: Response) {
@@ -634,6 +621,8 @@ export class BookingController {
             try {
                 const data = req.body;
         
+                console.log(" data from midtrans : ", data);
+
                 // Menunggu hasil findOne
                 const exitTransansaction = await TransactionModel.findOne({ bookingId: data.order_id });
         
@@ -643,7 +632,8 @@ export class BookingController {
                     console.log('result = ', result);
 
                 } else {
-                    console.log('Transaction not found');
+
+                    console.log('Transaction not found in server');
                 }
 
                 res.status(200).json({
@@ -663,12 +653,12 @@ export class BookingController {
             }
         }
         
-        
 
         static async CekSessions (req : Request, res : Response) {
             console.log('Session data:', req.session);
             res.json(req.session);
         };
+
           
         static async Checkout  (req : Request, res : Response) {
             
@@ -695,6 +685,7 @@ export class BookingController {
             // res.json({ message: 'Checkout successful', transactionId: transaction.id });
           
         };
+
 
         static async RemoveCart(req: Request, res: Response) {
             try {
