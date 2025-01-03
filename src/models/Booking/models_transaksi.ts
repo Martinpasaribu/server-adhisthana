@@ -1,6 +1,12 @@
 
 import mongoose, { Document, Schema } from 'mongoose';
 
+interface Room {
+    roomId:string;
+    quantity:number;
+    price: number
+}
+
 
 interface ITran extends Document {
     _id: string;
@@ -9,6 +15,7 @@ interface ITran extends Document {
     payment_methode : string;
     grossAmount: number;
     userId: string;
+    products: Room[]
     
 }
 
