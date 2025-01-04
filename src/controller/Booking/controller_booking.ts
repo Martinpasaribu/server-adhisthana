@@ -3,7 +3,7 @@ import { Request, Response, NextFunction  } from 'express';
 import mongoose from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
 // Gunakan dynamic import
-
+import crypto from 'crypto';
 
 
 import RoomModel from '../../models/Room/models_room';
@@ -11,6 +11,8 @@ import { BookingModel } from '../../models/Booking/models_booking';
 import { snap } from '../../config/midtransConfig'
 
 import { transactionService } from './transactionService';
+import { generateBookingId } from './nanoid'
+
 import { PENDING_PAYMENT } from '../../utils/constant';
 import { SessionModel } from '../../models/Booking/models_session';
 import { TransactionModel } from '../../models/Booking/models_transaksi';
@@ -51,10 +53,13 @@ export class BookingController {
                     return acc + room.price * roomBooking.quantity;
                 }, 0);
                 
-                const { nanoid } = await import('nanoid');
+                // const { nanoid } = await import('nanoid');
+                // const bookingId = 'TRX' + nanoid(10);
+       
+                
 
-                // const bookingId = uuidv4()
-                const bookingId = 'TRX' + nanoid(10);
+
+                 const bookingId = 'TRX-' + crypto.randomBytes(5).toString('hex');
 
 
                 
@@ -96,12 +101,14 @@ export class BookingController {
                         
                         return {
                           roomId: room._id,
+                          name: room.name,
                           quantity: roomBooking?.quantity, // Optional chaining jika roomBooking tidak ditemukan
                           price: room.price, // Menambahkan price dari room
                         };
                       }),
                       
-                    snap_token: midtransResponse.token,
+                    // snap_token: midtransResponse.token,
+                    snap_token: '/',
                     paymentUrl: midtransResponse.redirect_url,
                 });
                 

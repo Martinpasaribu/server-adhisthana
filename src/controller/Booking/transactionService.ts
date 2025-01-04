@@ -10,7 +10,7 @@ import { TransactionModel } from '../../models/Booking/models_transaksi';
 class TransactionService {
 
     // Fungsi untuk membuat Data Transaksi 
-    async createTransaction({ bookingId, status, grossAmount, userId, checkIn, checkOut, products  } : createTransaction) {
+    async createTransaction({ bookingId, status, grossAmount, userId, checkIn, checkOut, products, snap_token, paymentUrl  } : createTransaction) {
         const transaction = {
             bookingId,
             status,
@@ -18,7 +18,14 @@ class TransactionService {
             userId,
             checkIn,
             checkOut,
-            products,
+            products:   products.map(products => ({
+                        roomId: products.roomId,
+                        price: products.price,
+                        quantity: products.quantity,
+                        name: products.name
+            })),
+            snap_token,
+            paymentUrl,
             createdAt: new Date(),
         };
         // Save to database (example using MongoDB)

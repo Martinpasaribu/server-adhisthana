@@ -32,67 +32,20 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TransactionModel = void 0;
-const mongoose_1 = __importStar(require("mongoose"));
-const TransactionSchema = new mongoose_1.Schema({
-    bookingId: {
-        type: String,
-        trim: true,
-    },
-    userId: {
-        type: String,
-        required: [true, "userId cannot be empty"],
-        trim: true,
-    },
-    status: {
-        type: String,
-        trim: true,
-    },
-    payment_methode: {
-        type: String,
-        trim: true,
-    },
-    grossAmount: {
-        type: Number, // Tidak perlu trim di tipe Number
-    },
-    checkIn: {
-        type: String,
-        trim: true,
-    },
-    checkOut: {
-        type: String,
-        trim: true,
-    },
-    products: [
-        {
-            roomId: { type: String, trim: true },
-            name: { type: String, trim: true },
-            price: { type: Number }, // Tidak perlu trim di tipe Number
-            quantity: { type: Number }, // Tidak perlu trim di tipe Number
-        },
-    ],
-    snap_token: {
-        type: String,
-        trim: true,
-    },
-    paymentUrl: {
-        type: String,
-        trim: true,
-    },
-    createAt: {
-        type: Number,
-        default: Date.now,
-    },
-    creatorId: {
-        type: String,
-        required: false,
-    },
-    isDeleted: {
-        type: Boolean,
-        default: false,
-    },
-}, {
-    timestamps: true,
+exports.generateBookingId = void 0;
+const generateBookingId = () => __awaiter(void 0, void 0, void 0, function* () {
+    const { nanoid } = yield Promise.resolve().then(() => __importStar(require('nanoid')));
+    return nanoid();
+    // return bookingId;
 });
-exports.TransactionModel = mongoose_1.default.model('Transaction', TransactionSchema, 'Transaction');
+exports.generateBookingId = generateBookingId;

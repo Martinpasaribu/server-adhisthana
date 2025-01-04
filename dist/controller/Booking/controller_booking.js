@@ -1,37 +1,4 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -49,6 +16,7 @@ exports.BookingController = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const uuid_1 = require("uuid");
 // Gunakan dynamic import
+const crypto_1 = __importDefault(require("crypto"));
 const models_room_1 = __importDefault(require("../../models/Room/models_room"));
 const models_booking_1 = require("../../models/Booking/models_booking");
 const midtransConfig_1 = require("../../config/midtransConfig");
@@ -85,9 +53,9 @@ class BookingController {
                     const roomBooking = BookingReq.room.find((r) => r.roomId.toString() === room._id.toString());
                     return acc + room.price * roomBooking.quantity;
                 }, 0);
-                const { nanoid } = yield Promise.resolve().then(() => __importStar(require('nanoid')));
-                // const bookingId = uuidv4()
-                const bookingId = 'TRX' + nanoid(10);
+                // const { nanoid } = await import('nanoid');
+                // const bookingId = 'TRX' + nanoid(10);
+                const bookingId = 'TRX-' + crypto_1.default.randomBytes(5).toString('hex');
                 // Create transaction in Midtrans
                 const midtransPayload = {
                     transaction_details: {
@@ -121,11 +89,13 @@ class BookingController {
                         const roomBooking = BookingReq.room.find((r) => r.roomId.toString() === room._id.toString());
                         return {
                             roomId: room._id,
+                            name: room.name,
                             quantity: roomBooking === null || roomBooking === void 0 ? void 0 : roomBooking.quantity, // Optional chaining jika roomBooking tidak ditemukan
                             price: room.price, // Menambahkan price dari room
                         };
                     }),
-                    snap_token: midtransResponse.token,
+                    // snap_token: midtransResponse.token,
+                    snap_token: '/',
                     paymentUrl: midtransResponse.redirect_url,
                 });
                 // Save booking (transaction) to your database

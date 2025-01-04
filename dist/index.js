@@ -57,9 +57,10 @@ app.use((0, express_session_1.default)({
         // sameSite: 'none',
         // httpOnly: true, // Menghindari akses cookie dari JavaScript
         // maxAge: 1000 * 60 * 60 * 24, // 1 hari
-        secure: false, // Pastikan 'secure' hanya true di production
-        httpOnly: true, // Menghindari akses cookie dari JavaScript
-        maxAge: 1000 * 60 * 60 * 24, // 1 hari
+        secure: true,
+        sameSite: 'none',
+        httpOnly: false,
+        maxAge: 1000 * 60 * 60 * 24,
     },
 }));
 //   app.use((req, res, next) => {

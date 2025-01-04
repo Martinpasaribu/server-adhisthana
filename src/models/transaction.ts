@@ -8,13 +8,14 @@ export interface createTransaction {
         roomId: string, 
         quantity: number,
         price: number,
+        name: string,
       }[];
 
     userId:string;
-    paymentUrl: string;                    
     checkIn: string;
     checkOut: string;
     snap_token: string;
+    paymentUrl: string;                    
 }
 
 export default interface createTransactionItem {
