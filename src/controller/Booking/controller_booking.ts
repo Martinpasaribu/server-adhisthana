@@ -2,7 +2,9 @@
 import { Request, Response, NextFunction  } from 'express';
 import mongoose from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
-import { nanoid } from 'nanoid';
+// Gunakan dynamic import
+
+
 
 import RoomModel from '../../models/Room/models_room';
 import { BookingModel } from '../../models/Booking/models_booking';
@@ -49,9 +51,11 @@ export class BookingController {
                     return acc + room.price * roomBooking.quantity;
                 }, 0);
                 
+                const { nanoid } = await import('nanoid');
 
                 // const bookingId = uuidv4()
-               const bookingId = nanoid(10);
+                const bookingId = 'TRX' + nanoid(10);
+
 
                 
                 // Create transaction in Midtrans
