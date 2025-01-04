@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.BookingController = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const uuid_1 = require("uuid");
+const nanoid_1 = require("nanoid");
 const models_room_1 = __importDefault(require("../../models/Room/models_room"));
 const models_booking_1 = require("../../models/Booking/models_booking");
 const midtransConfig_1 = require("../../config/midtransConfig");
@@ -51,7 +52,8 @@ class BookingController {
                     const roomBooking = BookingReq.room.find((r) => r.roomId.toString() === room._id.toString());
                     return acc + room.price * roomBooking.quantity;
                 }, 0);
-                const bookingId = (0, uuid_1.v4)();
+                // const bookingId = uuidv4()
+                const bookingId = (0, nanoid_1.nanoid)(10);
                 // Create transaction in Midtrans
                 const midtransPayload = {
                     transaction_details: {

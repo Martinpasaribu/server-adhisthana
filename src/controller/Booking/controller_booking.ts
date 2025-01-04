@@ -2,6 +2,8 @@
 import { Request, Response, NextFunction  } from 'express';
 import mongoose from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
+import { nanoid } from 'nanoid';
+
 import RoomModel from '../../models/Room/models_room';
 import { BookingModel } from '../../models/Booking/models_booking';
 import { snap } from '../../config/midtransConfig'
@@ -48,8 +50,8 @@ export class BookingController {
                 }, 0);
                 
 
-                const bookingId = uuidv4()
-               
+                // const bookingId = uuidv4()
+               const bookingId = nanoid(10);
 
                 
                 // Create transaction in Midtrans

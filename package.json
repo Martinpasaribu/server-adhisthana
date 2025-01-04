@@ -30,6 +30,7 @@
     "midtrans-client": "^1.4.2",
     "mongodb": "^6.11.0",
     "mongoose": "^8.8.3",
+    "nanoid": "^5.0.9",
     "nodemailer": "^6.9.16",
     "uuid": "^11.0.3"
   },

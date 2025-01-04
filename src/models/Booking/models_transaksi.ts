@@ -19,10 +19,7 @@ interface ITran extends Document {
 
 const TransactionSchema: Schema = new Schema(
     {
-        _id: {
-            type: String,
-            default: () => uuidv4(), 
-        },
+
         bookingId: {
             type: String,
             trim: true,

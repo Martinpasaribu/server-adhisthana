@@ -35,12 +35,7 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TransactionModel = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-const uuid_1 = require("uuid");
 const TransactionSchema = new mongoose_1.Schema({
-    _id: {
-        type: String,
-        default: () => (0, uuid_1.v4)(),
-    },
     bookingId: {
         type: String,
         trim: true,
