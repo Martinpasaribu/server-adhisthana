@@ -13,7 +13,10 @@ export  const updateStatusBaseOnMidtransResponse = async ( transaction_id : any 
         'data gross amount : ', data.gross_amount,
         'midtrans_key : ', MIDTRANS_SERVER_KEY
     )
-    const hash = crypto.createHash('sha512').update(`${transaction_id}${data.status_code}${data.gross_amount}${MIDTRANS_SERVER_KEY}`).digest('hex')
+    const hash = crypto
+        .createHash('sha512')
+        .update(`${transaction_id}${data.status_code}${data.gross_amount}${MIDTRANS_SERVER_KEY}`)
+        .digest('hex')
 
     if(data.signature_key !== hash) {
         return {
@@ -21,6 +24,8 @@ export  const updateStatusBaseOnMidtransResponse = async ( transaction_id : any 
             message:" invalid signature Key"
         }
     }
+
+    const formattedTransactionId = data.order_id.replace(/^order-/, "");
 
     let responseData = null;
     let transactionStatus = data.transaction_status;
@@ -30,25 +35,25 @@ export  const updateStatusBaseOnMidtransResponse = async ( transaction_id : any 
     if ( transactionStatus == 'capture') {
         if (fraudStatus == 'accept'){
 
-            const transaction = await TransactionModel.updateOne({transaction_id ,  status: PAID,  payment_methode : data.payment_type });
+            const transaction = await TransactionModel.updateOne({formattedTransactionId ,  status: PAID,  payment_methode : data.payment_type });
             responseData = transaction;
 
         }
     } else if ( transactionStatus == 'settlement'){
 
-        const transaction = await TransactionModel.updateOne({transaction_id ,  status: PAID,  payment_methode : data.payment_type });
+        const transaction = await TransactionModel.updateOne({formattedTransactionId ,  status: PAID,  payment_methode : data.payment_type });
         responseData = transaction;
 
 
     } else if ( transactionStatus == 'cancel' || transactionStatus == 'deny' || transactionStatus == 'expire'){
 
-        const transaction = await TransactionModel.updateOne({transaction_id ,  status: CANCELED });
+        const transaction = await TransactionModel.updateOne({formattedTransactionId ,  status: CANCELED });
         responseData = transaction;
 
         
     } else if ( transactionStatus == 'pending '){
 
-        const transaction = await TransactionModel.updateOne({transaction_id ,  status: PENDING_PAYMENT });
+        const transaction = await TransactionModel.updateOne({formattedTransactionId ,  status: PENDING_PAYMENT });
         responseData = transaction;
 
     }
