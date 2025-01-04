@@ -7,6 +7,12 @@ const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY
 
 export  const updateStatusBaseOnMidtransResponse = async ( transaction_id : any , data : any ) => {
 
+    console.log(
+        ' oder_id : ', transaction_id,
+        'data_status : ', data.status_code,
+        'data gross amount : ', data.gross_amount,
+        'midtrans_key : ', MIDTRANS_SERVER_KEY
+    )
     const hash = crypto.createHash('sha512').update(`${transaction_id}${data.status_code}${data.gross_amount}${MIDTRANS_SERVER_KEY}`).digest('hex')
 
     if(data.signature_key !== hash) {
