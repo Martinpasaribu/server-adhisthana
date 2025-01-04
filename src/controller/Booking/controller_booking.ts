@@ -624,7 +624,7 @@ export class BookingController {
                 console.log("Data from midtrans:", data);
         
                 // Menghilangkan prefiks "order-" dari transaction_id
-                const formattedTransactionId = data.transaction_id.replace(/^order-/, "");
+                const formattedTransactionId = data.order_id.replace(/^order-/, "");
         
                 console.log("Formatted Transaction ID:", formattedTransactionId);
         
