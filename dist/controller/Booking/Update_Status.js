@@ -18,42 +18,44 @@ const models_transaksi_1 = require("../../models/Booking/models_transaksi");
 const constant_1 = require("../../utils/constant");
 const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY;
 const updateStatusBaseOnMidtransResponse = (transaction_id, data) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log(' oder_id : ', transaction_id, 'data_status : ', data.status_code, 'data gross amount : ', data.gross_amount, 'midtrans_key : ', MIDTRANS_SERVER_KEY);
+    console.log('order_id:', transaction_id, 'data_status:', data.status_code, 'transaction_status:', data.transaction_status, 'data gross amount:', data.gross_amount, 'midtrans_key:', MIDTRANS_SERVER_KEY);
+    // Generate signature hash
     const hash = crypto_1.default
         .createHash('sha512')
         .update(`${transaction_id}${data.status_code}${data.gross_amount}${MIDTRANS_SERVER_KEY}`)
         .digest('hex');
     if (data.signature_key !== hash) {
         return {
-            status: "error",
-            message: " invalid signature Key"
+            status: 'error',
+            message: 'Invalid signature key',
         };
     }
-    const formattedTransactionId = data.order_id.replace(/^order-/, "");
+    const formattedTransactionId = data.order_id.replace(/^order-/, '');
     let responseData = null;
-    let transactionStatus = data.transaction_status;
-    let fraudStatus = data.fraud_status;
-    if (transactionStatus == 'capture') {
-        if (fraudStatus == 'accept') {
-            const transaction = yield models_transaksi_1.TransactionModel.updateOne({ formattedTransactionId, status: constant_1.PAID, payment_methode: data.payment_type });
-            responseData = transaction;
-        }
-    }
-    else if (transactionStatus == 'settlement') {
-        const transaction = yield models_transaksi_1.TransactionModel.updateOne({ formattedTransactionId, status: constant_1.PAID, payment_methode: data.payment_type });
-        responseData = transaction;
-    }
-    else if (transactionStatus == 'cancel' || transactionStatus == 'deny' || transactionStatus == 'expire') {
-        const transaction = yield models_transaksi_1.TransactionModel.updateOne({ formattedTransactionId, status: constant_1.CANCELED });
-        responseData = transaction;
-    }
-    else if (transactionStatus == 'pending ') {
-        const transaction = yield models_transaksi_1.TransactionModel.updateOne({ formattedTransactionId, status: constant_1.PENDING_PAYMENT });
-        responseData = transaction;
+    switch (data.transaction_status) {
+        case 'capture':
+            if (data.fraud_status === 'accept') {
+                responseData = yield models_transaksi_1.TransactionModel.updateOne({ _id: formattedTransactionId }, { status: constant_1.PAID, payment_method: data.payment_type });
+            }
+            break;
+        case 'settlement':
+            responseData = yield models_transaksi_1.TransactionModel.updateOne({ _id: formattedTransactionId }, { status: constant_1.PAID, payment_method: data.payment_type });
+            break;
+        case 'cancel':
+        case 'deny':
+        case 'expire':
+            responseData = yield models_transaksi_1.TransactionModel.updateOne({ _id: formattedTransactionId }, { status: constant_1.CANCELED });
+            break;
+        case 'pending':
+            responseData = yield models_transaksi_1.TransactionModel.updateOne({ _id: formattedTransactionId }, { status: constant_1.PENDING_PAYMENT });
+            break;
+        default:
+            console.warn('Unhandled transaction status:', data.transaction_status);
     }
     return {
         status: 'success',
-        data: responseData
+        data: responseData,
+        message: 'Transaction status has been updated!',
     };
 });
 exports.updateStatusBaseOnMidtransResponse = updateStatusBaseOnMidtransResponse;

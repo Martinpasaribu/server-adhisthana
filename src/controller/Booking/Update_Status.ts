@@ -1,65 +1,75 @@
+import crypto from 'crypto';
+import { TransactionModel } from '../../models/Booking/models_transaksi';
+import { CANCELED, PAID, PENDING_PAYMENT } from '../../utils/constant';
 
-import crypto from 'crypto'
-import { TransactionModel } from '../../models/Booking/models_transaksi'
-import { CANCELED, PAID, PENDING_PAYMENT } from '../../utils/constant'
+const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY;
 
-const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY
-
-export  const updateStatusBaseOnMidtransResponse = async ( transaction_id : any , data : any ) => {
-
+export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, data : any) => {
     console.log(
-        ' oder_id : ', transaction_id,
-        'data_status : ', data.status_code,
-        'data gross amount : ', data.gross_amount,
-        'midtrans_key : ', MIDTRANS_SERVER_KEY
-    )
+        'order_id:', transaction_id,
+        'data_status:', data.status_code,
+        'transaction_status:', data.transaction_status,
+        'data gross amount:', data.gross_amount,
+        'midtrans_key:', MIDTRANS_SERVER_KEY
+    );
+
+    // Generate signature hash
     const hash = crypto
         .createHash('sha512')
         .update(`${transaction_id}${data.status_code}${data.gross_amount}${MIDTRANS_SERVER_KEY}`)
-        .digest('hex')
+        .digest('hex');
 
-    if(data.signature_key !== hash) {
+    if (data.signature_key !== hash) {
         return {
-            status: "error",
-            message:" invalid signature Key"
-        }
+            status: 'error',
+            message: 'Invalid signature key',
+        };
     }
 
-    const formattedTransactionId = data.order_id.replace(/^order-/, "");
+    const formattedTransactionId = data.order_id.replace(/^order-/, '');
 
     let responseData = null;
-    let transactionStatus = data.transaction_status;
-    let fraudStatus = data.fraud_status;
 
+    switch (data.transaction_status) {
+        case 'capture':
+            if (data.fraud_status === 'accept') {
+                responseData = await TransactionModel.updateOne(
+                    { _id: formattedTransactionId },
+                    { status: PAID, payment_method: data.payment_type }
+                );
+            }
+            break;
 
-    if ( transactionStatus == 'capture') {
-        if (fraudStatus == 'accept'){
+        case 'settlement':
+            responseData = await TransactionModel.updateOne(
+                { _id: formattedTransactionId },
+                { status: PAID, payment_method: data.payment_type }
+            );
+            break;
 
-            const transaction = await TransactionModel.updateOne({formattedTransactionId ,  status: PAID,  payment_methode : data.payment_type });
-            responseData = transaction;
+        case 'cancel':
+        case 'deny':
+        case 'expire':
+            responseData = await TransactionModel.updateOne(
+                { _id: formattedTransactionId },
+                { status: CANCELED }
+            );
+            break;
 
-        }
-    } else if ( transactionStatus == 'settlement'){
+        case 'pending':
+            responseData = await TransactionModel.updateOne(
+                { _id: formattedTransactionId },
+                { status: PENDING_PAYMENT }
+            );
+            break;
 
-        const transaction = await TransactionModel.updateOne({formattedTransactionId ,  status: PAID,  payment_methode : data.payment_type });
-        responseData = transaction;
-
-
-    } else if ( transactionStatus == 'cancel' || transactionStatus == 'deny' || transactionStatus == 'expire'){
-
-        const transaction = await TransactionModel.updateOne({formattedTransactionId ,  status: CANCELED });
-        responseData = transaction;
-
-        
-    } else if ( transactionStatus == 'pending '){
-
-        const transaction = await TransactionModel.updateOne({formattedTransactionId ,  status: PENDING_PAYMENT });
-        responseData = transaction;
-
+        default:
+            console.warn('Unhandled transaction status:', data.transaction_status);
     }
 
     return {
-        status : 'success',
-        data : responseData
-    }
-}
+        status: 'success',
+        data: responseData,
+        message: 'Transaction status has been updated!',
+    };
+};
