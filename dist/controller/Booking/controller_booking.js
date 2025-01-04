@@ -123,17 +123,7 @@ class BookingController {
                         snap_token: midtransResponse.token
                     }
                 });
-                // res.status(201).json(
-                //     {
-                //         requestId: uuidv4(), 
-                //         data: {
-                //             acknowledged: true,
-                //             insertedId: savedBooking._id 
-                //         },
-                //         message: "Successfully Add Booking ",
-                //         success: true
-                //     }
-                // );
+                console.log("Successfully Add Booking ");
             }
             catch (error) {
                 res.status(400).json({
@@ -142,6 +132,7 @@ class BookingController {
                     message: error.message,
                     success: false
                 });
+                console.log(" Error Booking ");
             }
         });
     }
@@ -522,15 +513,19 @@ class BookingController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const data = req.body;
-                // Menunggu hasil findOne
-                const exitTransansaction = yield models_transaksi_1.TransactionModel.findOne({ bookingId: data.order_id });
-                if (exitTransansaction) {
+                console.log("Data from midtrans:", data);
+                // Menghilangkan prefiks "order-" dari transaction_id
+                const formattedTransactionId = data.transaction_id.replace(/^order-/, "");
+                console.log("Formatted Transaction ID:", formattedTransactionId);
+                // Menunggu hasil findOne dengan bookingId yang sudah diformat
+                const existingTransaction = yield models_transaksi_1.TransactionModel.findOne({ bookingId: formattedTransactionId });
+                if (existingTransaction) {
                     // Properti bookingId sekarang tersedia
-                    const result = (0, Update_Status_1.updateStatusBaseOnMidtransResponse)(exitTransansaction.bookingId, data);
+                    const result = (0, Update_Status_1.updateStatusBaseOnMidtransResponse)(existingTransaction.bookingId, data);
                     console.log('result = ', result);
                 }
                 else {
-                    console.log('Transaction not found');
+                    console.log('Transaction not found in server, Data =', data);
                 }
                 res.status(200).json({
                     status: 'success',
