@@ -521,7 +521,7 @@ class BookingController {
                 const existingTransaction = yield models_transaksi_1.TransactionModel.findOne({ bookingId: formattedTransactionId });
                 if (existingTransaction) {
                     // Properti bookingId sekarang tersedia
-                    const result = (0, Update_Status_1.updateStatusBaseOnMidtransResponse)(existingTransaction.bookingId, data);
+                    const result = (0, Update_Status_1.updateStatusBaseOnMidtransResponse)(data.order_id, data);
                     console.log('result = ', result);
                 }
                 else {

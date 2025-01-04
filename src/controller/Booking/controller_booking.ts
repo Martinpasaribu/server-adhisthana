@@ -634,7 +634,7 @@ export class BookingController {
 
                 if (existingTransaction) {
                     // Properti bookingId sekarang tersedia
-                    const result = updateStatusBaseOnMidtransResponse(existingTransaction.bookingId, data);
+                    const result = updateStatusBaseOnMidtransResponse(data.order_id, data);
                     console.log('result = ', result);
 
                 } else {
