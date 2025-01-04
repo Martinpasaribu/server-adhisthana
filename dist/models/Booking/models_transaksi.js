@@ -35,43 +35,44 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TransactionModel = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
+const uuid_1 = require("uuid");
 const TransactionSchema = new mongoose_1.Schema({
+    _id: {
+        type: String,
+        default: () => (0, uuid_1.v4)(), // Inisialisasi dengan UUID
+    },
     bookingId: {
         type: String,
-        // required: [true, "bookingId cannot be empty"],
-        trim: true
+        trim: true,
     },
     userId: {
         type: String,
         required: [true, "userId cannot be empty"],
-        trim: true
+        trim: true,
     },
     status: {
         type: String,
-        // required: [true, "status cannot be empty"],
-        trim: true
+        trim: true,
     },
     payment_methode: {
         type: String,
-        // required: [true, "status cannot be empty"],
-        trim: true
+        trim: true,
     },
     grossAmount: {
         type: Number,
-        // required: [true, "bookingId cannot be empty"],
-        trim: true
+        trim: true,
     },
     createAt: {
         type: Number,
-        default: Date.now
+        default: Date.now,
     },
     creatorId: {
         type: String,
-        required: false
+        required: false,
     },
     isDeleted: {
         type: Boolean,
-        default: false
+        default: false,
     },
 }, {
     timestamps: true,
