@@ -621,19 +621,25 @@ export class BookingController {
             try {
                 const data = req.body;
         
-                console.log(" data from midtrans : ", data);
-
-                // Menunggu hasil findOne
-                const exitTransansaction = await TransactionModel.findOne({ bookingId: data.order_id });
+                console.log("Data from midtrans:", data);
         
-                if (exitTransansaction) {
+                // Menghilangkan prefiks "order-" dari transaction_id
+                const formattedTransactionId = data.transaction_id.replace(/^order-/, "");
+        
+                console.log("Formatted Transaction ID:", formattedTransactionId);
+        
+                // Menunggu hasil findOne dengan bookingId yang sudah diformat
+                const existingTransaction = await TransactionModel.findOne({ bookingId: formattedTransactionId });
+
+
+                if (existingTransaction) {
                     // Properti bookingId sekarang tersedia
-                    const result = updateStatusBaseOnMidtransResponse(exitTransansaction.bookingId, data);
+                    const result = updateStatusBaseOnMidtransResponse(existingTransaction.bookingId, data);
                     console.log('result = ', result);
 
                 } else {
 
-                    console.log('Transaction not found in server');
+                    console.log('Transaction not found in server, Data =', data);
                 }
 
                 res.status(200).json({
