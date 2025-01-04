@@ -39,7 +39,7 @@ const uuid_1 = require("uuid");
 const TransactionSchema = new mongoose_1.Schema({
     _id: {
         type: String,
-        default: () => (0, uuid_1.v4)(), // Inisialisasi dengan UUID
+        default: () => (0, uuid_1.v4)(),
     },
     bookingId: {
         type: String,

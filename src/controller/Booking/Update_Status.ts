@@ -34,7 +34,7 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
         case 'capture':
             if (data.fraud_status === 'accept') {
                 responseData = await TransactionModel.updateOne(
-                    { _id: formattedTransactionId },
+                    { bookingId: formattedTransactionId },
                     { status: PAID, payment_method: data.payment_type }
                 );
             }
@@ -42,7 +42,7 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
 
         case 'settlement':
             responseData = await TransactionModel.updateOne(
-                { _id: formattedTransactionId },
+                { bookingId: formattedTransactionId },
                 { status: PAID, payment_method: data.payment_type }
             );
             break;
@@ -51,14 +51,14 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
         case 'deny':
         case 'expire':
             responseData = await TransactionModel.updateOne(
-                { _id: formattedTransactionId },
+                { bookingId: formattedTransactionId },
                 { status: CANCELED }
             );
             break;
 
         case 'pending':
             responseData = await TransactionModel.updateOne(
-                { _id: formattedTransactionId },
+                { bookingId: formattedTransactionId },
                 { status: PENDING_PAYMENT }
             );
             break;

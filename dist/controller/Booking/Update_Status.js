@@ -35,19 +35,19 @@ const updateStatusBaseOnMidtransResponse = (transaction_id, data) => __awaiter(v
     switch (data.transaction_status) {
         case 'capture':
             if (data.fraud_status === 'accept') {
-                responseData = yield models_transaksi_1.TransactionModel.updateOne({ _id: formattedTransactionId }, { status: constant_1.PAID, payment_method: data.payment_type });
+                responseData = yield models_transaksi_1.TransactionModel.updateOne({ bookingId: formattedTransactionId }, { status: constant_1.PAID, payment_method: data.payment_type });
             }
             break;
         case 'settlement':
-            responseData = yield models_transaksi_1.TransactionModel.updateOne({ _id: formattedTransactionId }, { status: constant_1.PAID, payment_method: data.payment_type });
+            responseData = yield models_transaksi_1.TransactionModel.updateOne({ bookingId: formattedTransactionId }, { status: constant_1.PAID, payment_method: data.payment_type });
             break;
         case 'cancel':
         case 'deny':
         case 'expire':
-            responseData = yield models_transaksi_1.TransactionModel.updateOne({ _id: formattedTransactionId }, { status: constant_1.CANCELED });
+            responseData = yield models_transaksi_1.TransactionModel.updateOne({ bookingId: formattedTransactionId }, { status: constant_1.CANCELED });
             break;
         case 'pending':
-            responseData = yield models_transaksi_1.TransactionModel.updateOne({ _id: formattedTransactionId }, { status: constant_1.PENDING_PAYMENT });
+            responseData = yield models_transaksi_1.TransactionModel.updateOne({ bookingId: formattedTransactionId }, { status: constant_1.PENDING_PAYMENT });
             break;
         default:
             console.warn('Unhandled transaction status:', data.transaction_status);
