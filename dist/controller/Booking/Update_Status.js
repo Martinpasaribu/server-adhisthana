@@ -19,32 +19,36 @@ const constant_1 = require("../../utils/constant");
 const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY;
 const updateStatusBaseOnMidtransResponse = (transaction_id, data) => __awaiter(void 0, void 0, void 0, function* () {
     console.log(' oder_id : ', transaction_id, 'data_status : ', data.status_code, 'data gross amount : ', data.gross_amount, 'midtrans_key : ', MIDTRANS_SERVER_KEY);
-    const hash = crypto_1.default.createHash('sha512').update(`${transaction_id}${data.status_code}${data.gross_amount}${MIDTRANS_SERVER_KEY}`).digest('hex');
+    const hash = crypto_1.default
+        .createHash('sha512')
+        .update(`${transaction_id}${data.status_code}${data.gross_amount}${MIDTRANS_SERVER_KEY}`)
+        .digest('hex');
     if (data.signature_key !== hash) {
         return {
             status: "error",
             message: " invalid signature Key"
         };
     }
+    const formattedTransactionId = data.order_id.replace(/^order-/, "");
     let responseData = null;
     let transactionStatus = data.transaction_status;
     let fraudStatus = data.fraud_status;
     if (transactionStatus == 'capture') {
         if (fraudStatus == 'accept') {
-            const transaction = yield models_transaksi_1.TransactionModel.updateOne({ transaction_id, status: constant_1.PAID, payment_methode: data.payment_type });
+            const transaction = yield models_transaksi_1.TransactionModel.updateOne({ formattedTransactionId, status: constant_1.PAID, payment_methode: data.payment_type });
             responseData = transaction;
         }
     }
     else if (transactionStatus == 'settlement') {
-        const transaction = yield models_transaksi_1.TransactionModel.updateOne({ transaction_id, status: constant_1.PAID, payment_methode: data.payment_type });
+        const transaction = yield models_transaksi_1.TransactionModel.updateOne({ formattedTransactionId, status: constant_1.PAID, payment_methode: data.payment_type });
         responseData = transaction;
     }
     else if (transactionStatus == 'cancel' || transactionStatus == 'deny' || transactionStatus == 'expire') {
-        const transaction = yield models_transaksi_1.TransactionModel.updateOne({ transaction_id, status: constant_1.CANCELED });
+        const transaction = yield models_transaksi_1.TransactionModel.updateOne({ formattedTransactionId, status: constant_1.CANCELED });
         responseData = transaction;
     }
     else if (transactionStatus == 'pending ') {
-        const transaction = yield models_transaksi_1.TransactionModel.updateOne({ transaction_id, status: constant_1.PENDING_PAYMENT });
+        const transaction = yield models_transaksi_1.TransactionModel.updateOne({ formattedTransactionId, status: constant_1.PENDING_PAYMENT });
         responseData = transaction;
     }
     return {
