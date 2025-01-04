@@ -621,12 +621,12 @@ export class BookingController {
             try {
                 const data = req.body;
         
-                console.log("Data from midtrans:", data);
+                // console.log("Data from midtrans:", data);
         
                 // Menghilangkan prefiks "order-" dari transaction_id
                 const formattedTransactionId = data.order_id.replace(/^order-/, "");
         
-                console.log("Formatted Transaction ID:", formattedTransactionId);
+                // console.log("Formatted Transaction ID:", formattedTransactionId);
         
                 // Menunggu hasil findOne dengan bookingId yang sudah diformat
                 const existingTransaction = await TransactionModel.findOne({ bookingId: formattedTransactionId });

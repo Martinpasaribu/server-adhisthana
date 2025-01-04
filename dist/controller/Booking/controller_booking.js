@@ -513,10 +513,10 @@ class BookingController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const data = req.body;
-                console.log("Data from midtrans:", data);
+                // console.log("Data from midtrans:", data);
                 // Menghilangkan prefiks "order-" dari transaction_id
                 const formattedTransactionId = data.order_id.replace(/^order-/, "");
-                console.log("Formatted Transaction ID:", formattedTransactionId);
+                // console.log("Formatted Transaction ID:", formattedTransactionId);
                 // Menunggu hasil findOne dengan bookingId yang sudah diformat
                 const existingTransaction = yield models_transaksi_1.TransactionModel.findOne({ bookingId: formattedTransactionId });
                 if (existingTransaction) {
