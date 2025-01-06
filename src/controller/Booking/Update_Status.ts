@@ -81,14 +81,36 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
         case 'expire':
             responseData = await TransactionModel.updateOne(
                 { bookingId: formattedTransactionId },
-                { status: CANCELED }
+                { 
+                    status: CANCELED,
+                    payment_type: data.payment_type,
+                    va_numbers: data.va_numbers
+                    ? data.va_numbers.map((va_number: { va_number: any; bank: any; }) => ({
+                          va_number: va_number.va_number,
+                          bank: va_number.bank,
+                      }))
+                    : [],
+                    bank: data.bank,
+                    card_type: data.card_type
+                 }
             );
             break;
 
         case 'pending':
             responseData = await TransactionModel.updateOne(
                 { bookingId: formattedTransactionId },
-                { status: PENDING_PAYMENT }
+                { 
+                    status: PENDING_PAYMENT,
+                                    payment_type: data.payment_type,
+                    va_numbers: data.va_numbers
+                    ? data.va_numbers.map((va_number: { va_number: any; bank: any; }) => ({
+                          va_number: va_number.va_number,
+                          bank: va_number.bank,
+                      }))
+                    : [],
+                    bank: data.bank,
+                    card_type: data.card_type
+                }
             );
             break;
 
