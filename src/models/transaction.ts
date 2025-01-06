@@ -11,9 +11,9 @@ export interface createTransaction {
         name: string,
       }[];
     
-    va_numbers: {
-        va_number : number;
-        bank : string;
+    va_numbers ?: {
+        va_number ?: number;
+        bank ?: string;
       }[],
     bank: string;
     card_type: string;

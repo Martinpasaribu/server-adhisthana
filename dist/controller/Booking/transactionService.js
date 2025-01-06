@@ -33,10 +33,12 @@ class TransactionService {
                 payment_type,
                 card_type,
                 paymentUrl,
-                va_numbers: va_numbers.map(va_numbers => ({
-                    va_number: va_numbers.va_number,
-                    bank: va_numbers.bank,
-                })),
+                va_numbers: va_numbers
+                    ? va_numbers.map(va_number => ({
+                        va_number: va_number.va_number,
+                        bank: va_number.bank,
+                    }))
+                    : [],
                 bank,
                 createdAt: new Date(),
             };
