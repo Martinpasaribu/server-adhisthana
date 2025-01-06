@@ -41,7 +41,18 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
             if (data.fraud_status === 'accept') {
                 responseData = await TransactionModel.updateOne(
                     { bookingId: formattedTransactionId },
-                    { status: PAID, payment_method: data.payment_type }
+                    { 
+                        status: PAID, 
+                        payment_type: data.payment_type,
+                        va_numbers: data.va_numbers
+                        ? data.va_numbers.map((va_number: { va_number: any; bank: any; }) => ({
+                              va_number: va_number.va_number,
+                              bank: va_number.bank,
+                          }))
+                        : [],
+                        bank: data.bank,
+                        card_type: data.card_type
+                    }
                 );
             }
             break;
@@ -49,7 +60,19 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
         case 'settlement':
             responseData = await TransactionModel.updateOne(
                 { bookingId: formattedTransactionId },
-                { status: PAID, payment_method: data.payment_type }
+                { 
+                    status: PAID, 
+                    payment_type: data.payment_type,
+                    va_numbers: data.va_numbers
+                    ? data.va_numbers.map((va_number: { va_number: any; bank: any; }) => ({
+                          va_number: va_number.va_number,
+                          bank: va_number.bank,
+                      }))
+                    : [],
+                    bank: data.bank,
+                    card_type: data.card_type
+                
+                }
             );
             break;
 

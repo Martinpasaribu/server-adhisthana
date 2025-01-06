@@ -25,7 +25,7 @@ class TransactionService {
                         name: products.name
             })),
             snap_token,
-            payment_type,
+            payment_type:'',
             card_type,
             paymentUrl,
             va_numbers: va_numbers
