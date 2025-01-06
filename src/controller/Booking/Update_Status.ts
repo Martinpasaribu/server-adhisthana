@@ -45,7 +45,7 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
                         status: PAID, 
                         payment_type: data.payment_type,
                         va_numbers: data.va_numbers
-                        ? data.va_numbers.map((va_number: { va_number: any; bank: any; }) => ({
+                        ? data.va_numbers.map((va_number: { va_number: string; bank: string; }) => ({
                               va_number: va_number.va_number,
                               bank: va_number.bank,
                           }))
@@ -64,7 +64,7 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
                     status: PAID, 
                     payment_type: data.payment_type,
                     va_numbers: data.va_numbers
-                    ? data.va_numbers.map((va_number: { va_number: any; bank: any; }) => ({
+                    ? data.va_numbers.map((va_number: { va_number: string; bank: string; }) => ({
                           va_number: va_number.va_number,
                           bank: va_number.bank,
                       }))
@@ -85,7 +85,7 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
                     status: CANCELED,
                     payment_type: data.payment_type,
                     va_numbers: data.va_numbers
-                    ? data.va_numbers.map((va_number: { va_number: any; bank: any; }) => ({
+                    ? data.va_numbers.map((va_number: { va_number: string; bank: string; }) => ({
                           va_number: va_number.va_number,
                           bank: va_number.bank,
                       }))
@@ -103,7 +103,7 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
                     status: PENDING_PAYMENT,
                                     payment_type: data.payment_type,
                     va_numbers: data.va_numbers
-                    ? data.va_numbers.map((va_number: { va_number: any; bank: any; }) => ({
+                    ? data.va_numbers.map((va_number: { va_number: string; bank: string; }) => ({
                           va_number: va_number.va_number,
                           bank: va_number.bank,
                       }))

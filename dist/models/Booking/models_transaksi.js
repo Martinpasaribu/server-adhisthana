@@ -54,7 +54,7 @@ const TransactionSchema = new mongoose_1.Schema({
         trim: true,
     },
     va_numbers: [{
-            va_number: { type: Number },
+            va_number: { type: String },
             bank: { type: String }
         }],
     bank: { type: String, trim: true },

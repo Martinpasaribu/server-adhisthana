@@ -8,7 +8,7 @@ interface Room {
 }
 
 interface VaNumber {
-    va_number : number;
+    va_number : string;
     bank : string;
 }
 
@@ -51,7 +51,7 @@ const TransactionSchema: Schema = new Schema(
         },
         va_numbers : [{
 
-            va_number :{ type : Number },
+            va_number :{ type : String },
             bank : { type: String }
 
         }],

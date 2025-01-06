@@ -12,7 +12,7 @@ export interface createTransaction {
       }[];
     
     va_numbers ?: {
-        va_number ?: number;
+        va_number ?: string;
         bank ?: string;
       }[],
     bank: string;
