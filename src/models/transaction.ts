@@ -10,12 +10,19 @@ export interface createTransaction {
         price: number,
         name: string,
       }[];
-
+    
+    va_numbers: {
+        va_number : number;
+        bank : string;
+      }
+    bank: string;
+    card_type: string;
     userId:string;
     checkIn: string;
     checkOut: string;
     snap_token: string;
-    paymentUrl: string;                    
+    paymentUrl: string;        
+    payment_type:string;            
 }
 
 export default interface createTransactionItem {

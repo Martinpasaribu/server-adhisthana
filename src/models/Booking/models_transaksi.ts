@@ -7,11 +7,16 @@ interface Room {
     name: string;
 }
 
+interface VaNumber {
+    va_number : number;
+    bank : string;
+}
+
 interface ITran extends Document {
     _id: string;
     bookingId: string;
     status: string;
-    payment_methode: string;
+    payment_type: string;
     grossAmount: number;
     userId: string;
     checkIn: string;
@@ -19,6 +24,10 @@ interface ITran extends Document {
     products: Room[];
     snap_token: string;
     paymentUrl: string;
+    va_numbers: VaNumber;
+    bank: string;
+    card_type: string;
+    
 }
 
 const TransactionSchema: Schema = new Schema(
@@ -36,10 +45,21 @@ const TransactionSchema: Schema = new Schema(
             type: String,
             trim: true,
         },
-        payment_methode: {
+        payment_type: {
             type: String,
             trim: true,
         },
+        va_numbers : [{
+
+            va_number :{ type : Number },
+            bank : { type: String }
+
+        }],
+
+        bank: { type : String , trim: true},
+        
+        card_type:{ type : String , trim: true},
+
         grossAmount: {
             type: Number, // Tidak perlu trim di tipe Number
         },

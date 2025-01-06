@@ -110,6 +110,10 @@ export class BookingController {
                     // snap_token: midtransResponse.token,
                     snap_token: '/',
                     paymentUrl: midtransResponse.redirect_url,
+                    payment_type: midtransResponse.payment_type,
+                    va_numbers: midtransResponse.va_numbers,
+                    bank:midtransResponse.bank,
+                    card_type: midtransResponse.card_type,
                 });
                 
 

@@ -57,18 +57,14 @@ app.use(session({
     cookie: {
 
         
-        // secure: true, // Pastikan 'secure' hanya true di production
-        // sameSite: 'none',
-        // httpOnly: true, // Menghindari akses cookie dari JavaScript
-        // maxAge: 1000 * 60 * 60 * 24, // 1 hari
-
+        secure: false,
+        httpOnly: true, 
+        maxAge: 1000 * 60 * 60 * 24, // 1 hari
         
-        secure: true,
-        sameSite: 'none',
-        httpOnly: false, 
-        maxAge: 1000 * 60 * 60 * 24, 
-
-
+        // secure: true,
+        // sameSite: 'none',
+        // httpOnly: false, 
+        // maxAge: 1000 * 60 * 60 * 24, 
     },
 }));
 

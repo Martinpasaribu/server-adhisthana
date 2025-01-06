@@ -5,12 +5,18 @@ import { CANCELED, PAID, PENDING_PAYMENT } from '../../utils/constant';
 const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY;
 
 export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, data : any) => {
+   
     console.log(
         'order_id:', transaction_id,
         'data_status:', data.status_code,
         'transaction_status:', data.transaction_status,
         'data gross amount:', data.gross_amount,
-        'midtrans_key:', MIDTRANS_SERVER_KEY
+        'midtrans_key:', MIDTRANS_SERVER_KEY,
+        'payment_type :', data.payment_type,
+        'va_numbers :', data.va_numbers,
+        'bank :', data.bank,
+        'card_type :', data.card_type,
+        
     );
 
     // Generate signature hash

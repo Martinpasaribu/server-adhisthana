@@ -49,10 +49,16 @@ const TransactionSchema = new mongoose_1.Schema({
         type: String,
         trim: true,
     },
-    payment_methode: {
+    payment_type: {
         type: String,
         trim: true,
     },
+    va_numbers: [{
+            va_number: { type: Number },
+            bank: { type: String }
+        }],
+    bank: { type: String, trim: true },
+    card_type: { type: String, trim: true },
     grossAmount: {
         type: Number, // Tidak perlu trim di tipe Number
     },

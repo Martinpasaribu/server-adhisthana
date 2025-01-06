@@ -57,7 +57,7 @@ export class ContactController {
                             acknowledged: true,
                             insertedId: savedContact._id 
                         },
-                        message: "Successfully Add Member.",
+                        message: "Successfully adding Member.",
                         success: true
                     }
                 );

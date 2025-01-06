@@ -18,7 +18,7 @@ const models_transaksi_1 = require("../../models/Booking/models_transaksi");
 const constant_1 = require("../../utils/constant");
 const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY;
 const updateStatusBaseOnMidtransResponse = (transaction_id, data) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log('order_id:', transaction_id, 'data_status:', data.status_code, 'transaction_status:', data.transaction_status, 'data gross amount:', data.gross_amount, 'midtrans_key:', MIDTRANS_SERVER_KEY);
+    console.log('order_id:', transaction_id, 'data_status:', data.status_code, 'transaction_status:', data.transaction_status, 'data gross amount:', data.gross_amount, 'midtrans_key:', MIDTRANS_SERVER_KEY, 'payment_type :', data.payment_type, 'va_numbers :', data.va_numbers, 'bank :', data.bank, 'card_type :', data.card_type);
     // Generate signature hash
     const hash = crypto_1.default
         .createHash('sha512')
