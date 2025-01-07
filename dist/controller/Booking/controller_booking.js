@@ -77,6 +77,25 @@ class BookingController {
                     }),
                 };
                 const midtransResponse = yield midtransConfig_1.snap.createTransaction(midtransPayload);
+                // await ShortAvailableController.addBookedRoomForAvailable({
+                //     transactionId: "formattedTransactionId",
+                //     userId: 'data.userId', // Ganti sesuai dengan data yang relevan
+                //     roomId : roomDetails.find((key: any) => key.roomId)?._id || 'defaultRoomId',
+                //     status: 'PAID',
+                //     checkIn: 'data.checkIn', // Pastikan data ini tersedia
+                //     checkOut: 'data.checkOut', // Pastikan data ini tersedia
+                //     products: roomDetails.map(room => {
+                //         const roomBooking = BookingReq.room.find(
+                //           (r: { roomId: any }) => r.roomId.toString() === room._id.toString()
+                //         );
+                //         return {
+                //           roomId: room._id,
+                //           name: room.name,
+                //           quantity: roomBooking?.quantity, // Optional chaining jika roomBooking tidak ditemukan
+                //           price: room.price, // Menambahkan price dari room
+                //         };
+                //       }),
+                // }, res);
                 // Save transaction to your database
                 const transaction = yield transactionService_1.transactionService.createTransaction({
                     bookingId,
@@ -148,18 +167,29 @@ class BookingController {
     }
     static getTransactionsById(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { transaction_id } = req.params;
-            const transaction = yield models_transaksi_1.TransactionModel.findOne({ bookingId: transaction_id });
-            if (!transaction) {
-                return res.status(404).json({
-                    status: 'error',
-                    message: 'Transaction not found'
+            try {
+                const { transaction_id } = req.params;
+                const transaction = yield models_transaksi_1.TransactionModel.findOne({ bookingId: transaction_id });
+                if (!transaction) {
+                    return res.status(404).json({
+                        status: 'error',
+                        message: 'Transaction not found'
+                    });
+                }
+                res.status(202).json({
+                    status: 'success',
+                    data: transaction
                 });
             }
-            res.status(202).json({
-                status: 'success',
-                data: transaction
-            });
+            catch (error) {
+                res.status(400).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: null,
+                    message: error.message,
+                    success: false
+                });
+                console.log(" Error get data by ID ");
+            }
         });
     }
     ;

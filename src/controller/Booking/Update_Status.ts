@@ -56,11 +56,12 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
                         card_type: data.card_type
                     }
                 );
+                
                 // if success payment save data room will pay
                 await ShortAvailableController.addBookedRoomForAvailable({
                     transactionId: formattedTransactionId,
                     userId: data.userId, // Ganti sesuai dengan data yang relevan
-                    roomId: data.products.find((key: any) => key.roomId)?.roomId,
+                    roomId : data.products.find((key: any) => key.roomId)?.roomId || 'defaultRoomId',
                     status: PAID,
                     checkIn: data.checkIn, // Pastikan data ini tersedia
                     checkOut: data.checkOut, // Pastikan data ini tersedia
@@ -95,7 +96,7 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
                 await ShortAvailableController.addBookedRoomForAvailable({
                     transactionId: formattedTransactionId,
                     userId: data.userId, // Ganti sesuai dengan data yang relevan
-                    roomId: data.products.find((key: any) => key.roomId)?.roomId,
+                    roomId : data.products.find((key: any) => key.roomId)?.roomId || 'defaultRoomId',
                     status: PAID,
                     checkIn: data.checkIn, // Pastikan data ini tersedia
                     checkOut: data.checkOut, // Pastikan data ini tersedia

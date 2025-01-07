@@ -53,7 +53,7 @@ const updateStatusBaseOnMidtransResponse = (transaction_id, data, res) => __awai
                 yield controller_short_1.ShortAvailableController.addBookedRoomForAvailable({
                     transactionId: formattedTransactionId,
                     userId: data.userId, // Ganti sesuai dengan data yang relevan
-                    roomId: (_a = data.products.find((key) => key.roomId)) === null || _a === void 0 ? void 0 : _a.roomId,
+                    roomId: ((_a = data.products.find((key) => key.roomId)) === null || _a === void 0 ? void 0 : _a.roomId) || 'defaultRoomId',
                     status: constant_1.PAID,
                     checkIn: data.checkIn, // Pastikan data ini tersedia
                     checkOut: data.checkOut, // Pastikan data ini tersedia
@@ -83,7 +83,7 @@ const updateStatusBaseOnMidtransResponse = (transaction_id, data, res) => __awai
             yield controller_short_1.ShortAvailableController.addBookedRoomForAvailable({
                 transactionId: formattedTransactionId,
                 userId: data.userId, // Ganti sesuai dengan data yang relevan
-                roomId: (_b = data.products.find((key) => key.roomId)) === null || _b === void 0 ? void 0 : _b.roomId,
+                roomId: ((_b = data.products.find((key) => key.roomId)) === null || _b === void 0 ? void 0 : _b.roomId) || 'defaultRoomId',
                 status: constant_1.PAID,
                 checkIn: data.checkIn, // Pastikan data ini tersedia
                 checkOut: data.checkOut, // Pastikan data ini tersedia

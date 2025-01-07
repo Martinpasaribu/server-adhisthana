@@ -17,6 +17,7 @@ import { PENDING_PAYMENT } from '../../utils/constant';
 import { SessionModel } from '../../models/Booking/models_session';
 import { TransactionModel } from '../../models/Transaction/models_transaksi';
 import { updateStatusBaseOnMidtransResponse } from './Update_Status';
+import { ShortAvailableController } from '../ShortAvailable/controller_short';
 
 export class BookingController {
 
@@ -86,7 +87,30 @@ export class BookingController {
                 
                 const midtransResponse = await snap.createTransaction(midtransPayload);
               
+                // await ShortAvailableController.addBookedRoomForAvailable({
+                //     transactionId: "formattedTransactionId",
+                //     userId: 'data.userId', // Ganti sesuai dengan data yang relevan
+                //     roomId : roomDetails.find((key: any) => key.roomId)?._id || 'defaultRoomId',
+                //     status: 'PAID',
+                //     checkIn: 'data.checkIn', // Pastikan data ini tersedia
+                //     checkOut: 'data.checkOut', // Pastikan data ini tersedia
+                //     products: roomDetails.map(room => {
+                //         const roomBooking = BookingReq.room.find(
+                //           (r: { roomId: any }) => r.roomId.toString() === room._id.toString()
+                //         );
+                        
+                //         return {
+                //           roomId: room._id,
+                //           name: room.name,
+                //           quantity: roomBooking?.quantity, // Optional chaining jika roomBooking tidak ditemukan
+                //           price: room.price, // Menambahkan price dari room
+                //         };
+                //       }),
+                
+                // }, res);
+                
                 // Save transaction to your database
+                
                 const transaction = await transactionService.createTransaction({
                     bookingId,
                     status: PENDING_PAYMENT,
@@ -176,20 +200,35 @@ export class BookingController {
 
         static async getTransactionsById (req: Request, res: Response) {
  
-            const { transaction_id } = req.params;
-            const transaction = await TransactionModel.findOne({bookingId : transaction_id});
-        
-            if(!transaction) {
-                return res.status(404).json({
-                    status: 'error',
-                    message: 'Transaction not found'
+            try {
+                const { transaction_id } = req.params;
+                const transaction = await TransactionModel.findOne({bookingId : transaction_id});
+            
+                if(!transaction) {
+                    return res.status(404).json({
+                        status: 'error',
+                        message: 'Transaction not found'
+                    })
+                }
+            
+                res.status(202).json({
+                    status: 'success',
+                    data: transaction
                 })
+                
+            } catch (error) {
+                
+                res.status(400).json(
+                    {
+                        requestId: uuidv4(), 
+                        data: null,
+                        message:  (error as Error).message,
+                        success: false
+                    }
+                );
+
+                console.log(" Error get data by ID ")
             }
-        
-            res.status(202).json({
-                status: 'success',
-                data: transaction
-            })
         };
 
         static async getOffers(req: Request, res: Response) {
