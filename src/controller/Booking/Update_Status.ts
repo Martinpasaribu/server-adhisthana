@@ -38,7 +38,7 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
     // Pemerikasaan room pada data transaksi
     const formattedTransactionId = data.order_id.replace(/^order-/, '');
 
-    const RoomFromTransactionModel = await TransactionModel.findOne({ bookingId: formattedTransactionId });
+    const RoomFromTransactionModel = await TransactionModel.findOne({ bookingId: data.order_id });
 
 
     if (!RoomFromTransactionModel) {
@@ -52,7 +52,7 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
         case 'capture':
             if (data.fraud_status === 'accept') {
                 responseData = await TransactionModel.updateOne(
-                    { bookingId: formattedTransactionId },
+                    { bookingId: data.order_id },
                     { 
                         status: PAID, 
                         payment_type: data.payment_type,
@@ -69,7 +69,7 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
                 
                 // if success payment save data room will pay
                 await ShortAvailableController.addBookedRoomForAvailable({
-                    transactionId: formattedTransactionId,
+                    transactionId: data.order_id,
                     userId: RoomFromTransactionModel.userId, 
                     status: PAID,
                     checkIn: RoomFromTransactionModel.checkIn,
@@ -86,7 +86,7 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
 
         case 'settlement':
             responseData = await TransactionModel.updateOne(
-                { bookingId: formattedTransactionId },
+                { bookingId: data.order_id },
                 { 
                     status: PAID, 
                     payment_type: data.payment_type,
@@ -108,7 +108,7 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
             // if success payment save data room will pay
                 // if success payment save data room will pay
                 await ShortAvailableController.addBookedRoomForAvailable({
-                    transactionId: formattedTransactionId,
+                    transactionId: data.order_id,
                     userId: RoomFromTransactionModel.userId, 
                     status: PAID,
                     checkIn: RoomFromTransactionModel.checkIn,
@@ -127,7 +127,7 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
         case 'deny':
         case 'expire':
             responseData = await TransactionModel.updateOne(
-                { bookingId: formattedTransactionId },
+                { bookingId: data.order_id },
                 { 
                     status: CANCELED,
                     payment_type: data.payment_type,
@@ -145,7 +145,7 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
 
         case 'pending':
             responseData = await TransactionModel.updateOne(
-                { bookingId: formattedTransactionId },
+                { bookingId: data.order_id },
                 { 
                     status: PENDING_PAYMENT,
                                     payment_type: data.payment_type,

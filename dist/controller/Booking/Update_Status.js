@@ -33,7 +33,7 @@ const updateStatusBaseOnMidtransResponse = (transaction_id, data, res) => __awai
     }
     // Pemerikasaan room pada data transaksi
     const formattedTransactionId = data.order_id.replace(/^order-/, '');
-    const RoomFromTransactionModel = yield models_transaksi_1.TransactionModel.findOne({ bookingId: formattedTransactionId });
+    const RoomFromTransactionModel = yield models_transaksi_1.TransactionModel.findOne({ bookingId: data.order_id });
     if (!RoomFromTransactionModel) {
         throw new Error('RoomFromTransactionModel not found.');
     }
@@ -41,7 +41,7 @@ const updateStatusBaseOnMidtransResponse = (transaction_id, data, res) => __awai
     switch (data.transaction_status) {
         case 'capture':
             if (data.fraud_status === 'accept') {
-                responseData = yield models_transaksi_1.TransactionModel.updateOne({ bookingId: formattedTransactionId }, {
+                responseData = yield models_transaksi_1.TransactionModel.updateOne({ bookingId: data.order_id }, {
                     status: constant_1.PAID,
                     payment_type: data.payment_type,
                     va_numbers: data.va_numbers
@@ -55,7 +55,7 @@ const updateStatusBaseOnMidtransResponse = (transaction_id, data, res) => __awai
                 });
                 // if success payment save data room will pay
                 yield controller_short_1.ShortAvailableController.addBookedRoomForAvailable({
-                    transactionId: formattedTransactionId,
+                    transactionId: data.order_id,
                     userId: RoomFromTransactionModel.userId,
                     status: constant_1.PAID,
                     checkIn: RoomFromTransactionModel.checkIn,
@@ -70,7 +70,7 @@ const updateStatusBaseOnMidtransResponse = (transaction_id, data, res) => __awai
             }
             break;
         case 'settlement':
-            responseData = yield models_transaksi_1.TransactionModel.updateOne({ bookingId: formattedTransactionId }, {
+            responseData = yield models_transaksi_1.TransactionModel.updateOne({ bookingId: data.order_id }, {
                 status: constant_1.PAID,
                 payment_type: data.payment_type,
                 va_numbers: data.va_numbers
@@ -86,7 +86,7 @@ const updateStatusBaseOnMidtransResponse = (transaction_id, data, res) => __awai
             // if success payment save data room will pay
             // if success payment save data room will pay
             yield controller_short_1.ShortAvailableController.addBookedRoomForAvailable({
-                transactionId: formattedTransactionId,
+                transactionId: data.order_id,
                 userId: RoomFromTransactionModel.userId,
                 status: constant_1.PAID,
                 checkIn: RoomFromTransactionModel.checkIn,
@@ -102,7 +102,7 @@ const updateStatusBaseOnMidtransResponse = (transaction_id, data, res) => __awai
         case 'cancel':
         case 'deny':
         case 'expire':
-            responseData = yield models_transaksi_1.TransactionModel.updateOne({ bookingId: formattedTransactionId }, {
+            responseData = yield models_transaksi_1.TransactionModel.updateOne({ bookingId: data.order_id }, {
                 status: constant_1.CANCELED,
                 payment_type: data.payment_type,
                 va_numbers: data.va_numbers
@@ -116,7 +116,7 @@ const updateStatusBaseOnMidtransResponse = (transaction_id, data, res) => __awai
             });
             break;
         case 'pending':
-            responseData = yield models_transaksi_1.TransactionModel.updateOne({ bookingId: formattedTransactionId }, {
+            responseData = yield models_transaksi_1.TransactionModel.updateOne({ bookingId: data.order_id }, {
                 status: constant_1.PENDING_PAYMENT,
                 payment_type: data.payment_type,
                 va_numbers: data.va_numbers

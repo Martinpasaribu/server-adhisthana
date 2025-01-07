@@ -67,7 +67,7 @@ export class BookingController {
                 // Create transaction in Midtrans
                 const midtransPayload = {
                     transaction_details: {
-                        order_id: `order-${bookingId}`,
+                        order_id: bookingId,
                         gross_amount: grossAmount,
                     },  
                     customer_details: {
