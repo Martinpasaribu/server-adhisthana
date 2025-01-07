@@ -62,7 +62,12 @@ class ShortAvailableController {
                     status: data.status,
                     checkIn: data.checkIn,
                     checkOut: data.checkOut,
-                    products: data.products,
+                    products: data.products.map((products) => ({
+                        roomId: products.roomId,
+                        price: products.price,
+                        quantity: products.quantity,
+                        name: products.name
+                    }))
                 });
                 // Menyimpan data ke database
                 const savedShort = yield newAvailable.save();

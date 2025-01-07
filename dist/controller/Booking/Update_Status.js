@@ -19,6 +19,7 @@ const constant_1 = require("../../utils/constant");
 const controller_short_1 = require("../ShortAvailable/controller_short");
 const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY;
 const updateStatusBaseOnMidtransResponse = (transaction_id, data, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
     console.log('order_id:', transaction_id, 'data_status:', data.status_code, 'transaction_status:', data.transaction_status, 'data gross amount:', data.gross_amount, 'midtrans_key:', MIDTRANS_SERVER_KEY, 'payment_type :', data.payment_type, 'va_numbers :', data.va_numbers, 'bank :', data.bank, 'card_type :', data.card_type);
     // Generate signature hash
     const hash = crypto_1.default
@@ -49,7 +50,20 @@ const updateStatusBaseOnMidtransResponse = (transaction_id, data, res) => __awai
                     card_type: data.card_type
                 });
                 // if success payment save data room will pay
-                yield controller_short_1.ShortAvailableController.addBookedRoomForAvailable(data, res);
+                yield controller_short_1.ShortAvailableController.addBookedRoomForAvailable({
+                    transactionId: formattedTransactionId,
+                    userId: data.userId, // Ganti sesuai dengan data yang relevan
+                    roomId: (_a = data.products.find((key) => key.roomId)) === null || _a === void 0 ? void 0 : _a.roomId,
+                    status: constant_1.PAID,
+                    checkIn: data.checkIn, // Pastikan data ini tersedia
+                    checkOut: data.checkOut, // Pastikan data ini tersedia
+                    products: data.products.map((products) => ({
+                        roomId: products.roomId,
+                        price: products.price,
+                        quantity: products.quantity,
+                        name: products.name
+                    })),
+                }, res);
             }
             break;
         case 'settlement':
@@ -66,7 +80,20 @@ const updateStatusBaseOnMidtransResponse = (transaction_id, data, res) => __awai
                 card_type: data.card_type
             });
             // if success payment save data room will pay
-            yield controller_short_1.ShortAvailableController.addBookedRoomForAvailable(data, res);
+            yield controller_short_1.ShortAvailableController.addBookedRoomForAvailable({
+                transactionId: formattedTransactionId,
+                userId: data.userId, // Ganti sesuai dengan data yang relevan
+                roomId: (_b = data.products.find((key) => key.roomId)) === null || _b === void 0 ? void 0 : _b.roomId,
+                status: constant_1.PAID,
+                checkIn: data.checkIn, // Pastikan data ini tersedia
+                checkOut: data.checkOut, // Pastikan data ini tersedia
+                products: data.products.map((products) => ({
+                    roomId: products.roomId,
+                    price: products.price,
+                    quantity: products.quantity,
+                    name: products.name
+                })),
+            }, res);
             break;
         case 'cancel':
         case 'deny':

@@ -57,7 +57,20 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
                     }
                 );
                 // if success payment save data room will pay
-                await ShortAvailableController.addBookedRoomForAvailable(data , res);
+                await ShortAvailableController.addBookedRoomForAvailable({
+                    transactionId: formattedTransactionId,
+                    userId: data.userId, // Ganti sesuai dengan data yang relevan
+                    roomId: data.products.find((key: any) => key.roomId)?.roomId,
+                    status: PAID,
+                    checkIn: data.checkIn, // Pastikan data ini tersedia
+                    checkOut: data.checkOut, // Pastikan data ini tersedia
+                    products: data.products.map((products : { roomId: string; price: number, quantity:number, name:string}) => ({
+                        roomId: products.roomId,
+                        price: products.price,
+                        quantity: products.quantity,
+                        name: products.name
+                })),
+                }, res);
             }
             break;
 
@@ -79,7 +92,20 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
                 }
             );
                 // if success payment save data room will pay
-                await ShortAvailableController.addBookedRoomForAvailable(data , res);
+                await ShortAvailableController.addBookedRoomForAvailable({
+                    transactionId: formattedTransactionId,
+                    userId: data.userId, // Ganti sesuai dengan data yang relevan
+                    roomId: data.products.find((key: any) => key.roomId)?.roomId,
+                    status: PAID,
+                    checkIn: data.checkIn, // Pastikan data ini tersedia
+                    checkOut: data.checkOut, // Pastikan data ini tersedia
+                    products: data.products.map((products : { roomId: string; price: number, quantity:number, name:string}) => ({
+                        roomId: products.roomId,
+                        price: products.price,
+                        quantity: products.quantity,
+                        name: products.name
+                })),
+                }, res);
             break;
 
         case 'cancel':

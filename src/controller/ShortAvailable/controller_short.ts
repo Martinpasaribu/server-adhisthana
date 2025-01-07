@@ -60,15 +60,19 @@ export class ShortAvailableController {
             try {
               // Membuat instance baru dengan data dari parameter
               const newAvailable = new ShortAvailableModel({
-                transactionId: data.transactionId,
-                userId: data.userId,
-                roomId: data.roomId,
-                status: data.status,
-                checkIn: data.checkIn,
-                checkOut: data.checkOut,
-                products: data.products,
-              });
-        
+                    transactionId: data.transactionId,
+                    userId: data.userId, 
+                    roomId: data.roomId,
+                    status: data.status,
+                    checkIn: data.checkIn, 
+                    checkOut: data.checkOut, 
+                    products: data.products.map((products : { roomId: string; price: number, quantity:number, name:string}) => ({
+                        roomId: products.roomId,
+                        price: products.price,
+                        quantity: products.quantity,
+                        name: products.name
+                  }))
+                })      
               // Menyimpan data ke database
               const savedShort = await newAvailable.save();
         
