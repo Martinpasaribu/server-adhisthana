@@ -11,7 +11,6 @@ interface IShort extends Document {
     _id: string;
     transactionId: string;
     userId: string;  
-    roomId:string;
     status: string;
     checkIn: string;
     checkOut: string;
@@ -35,11 +34,7 @@ const ShortAvailableSchema: Schema = new Schema(
             required: [true, "userId cannot be empty"],
             trim: true,
         },
-        roomId: {
-            type: String,
-            required: [true, "userId cannot be empty"],
-            trim: true,
-        },
+
         status: {
             type: String,
             trim: true,

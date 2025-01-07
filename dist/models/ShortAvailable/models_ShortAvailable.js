@@ -50,11 +50,6 @@ const ShortAvailableSchema = new mongoose_1.Schema({
         required: [true, "userId cannot be empty"],
         trim: true,
     },
-    roomId: {
-        type: String,
-        required: [true, "userId cannot be empty"],
-        trim: true,
-    },
     status: {
         type: String,
         trim: true,

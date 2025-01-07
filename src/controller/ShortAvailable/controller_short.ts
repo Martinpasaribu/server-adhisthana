@@ -62,7 +62,6 @@ export class ShortAvailableController {
               const newAvailable = new ShortAvailableModel({
                     transactionId: data.transactionId,
                     userId: data.userId, 
-                    roomId: data.roomId,
                     status: data.status,
                     checkIn: data.checkIn, 
                     checkOut: data.checkOut, 

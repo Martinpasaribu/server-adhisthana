@@ -35,7 +35,21 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
         };
     }
 
+    // Pemerikasaan room pada data transaksi
     const formattedTransactionId = data.order_id.replace(/^order-/, '');
+
+    const RoomFromTransactionModel = await TransactionModel.find({ bookingId: formattedTransactionId });
+
+    if (!RoomFromTransactionModel || RoomFromTransactionModel.length === 0) {
+        throw new Error('RoomFromTransactionModel is empty or not found.');
+    }
+    
+    const products = RoomFromTransactionModel.flatMap((transaction: any) => transaction.products || []);
+    
+    if (!products || products.length === 0) {
+        throw new Error('No products found in RoomFromTransactionModel');
+    }
+
 
     let responseData = null;
 
@@ -58,21 +72,19 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
                     }
                 );
                 
-                console.log(" Data yang akan dimasukan ke short : ", data)
                 // if success payment save data room will pay
                 await ShortAvailableController.addBookedRoomForAvailable({
                     transactionId: formattedTransactionId,
-                    userId: data.userId, // Ganti sesuai dengan data yang relevan
-                    roomId : data.products?.find((key: any) => key.roomId)?.roomId || 'defaultRoomId',
+                    userId: data.userId, 
                     status: PAID,
-                    checkIn: data.checkIn, // Pastikan data ini tersedia
-                    checkOut: data.checkOut, // Pastikan data ini tersedia
-                    products: data.products?.map((products : { roomId: string; price: number, quantity:number, name:string}) => ({
-                        roomId: products.roomId,
-                        price: products.price,
-                        quantity: products.quantity,
-                        name: products.name
-                })),
+                    checkIn: data.checkIn,
+                    checkOut: data.checkOut,
+                    products: products.map((product: { roomId: string; price: number; quantity: number; name: string }) => ({
+                        roomId: product.roomId,
+                        price: product.price,
+                        quantity: product.quantity,
+                        name: product.name,
+                    })),
                 }, res);
             }
             break;
@@ -94,21 +106,24 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
                 
                 }
             );
-                console.log(" Data yang akan dimasukan ke short : ", data)
+
+            
+            console.log(" Data yang akan dimasukan ke short : ", data)
+            
+            // if success payment save data room will pay
                 // if success payment save data room will pay
                 await ShortAvailableController.addBookedRoomForAvailable({
                     transactionId: formattedTransactionId,
-                    userId: data.userId, // Ganti sesuai dengan data yang relevan
-                    roomId : data.products?.find((key: any) => key.roomId)?.roomId || 'defaultRoomId',
+                    userId: data.userId, 
                     status: PAID,
-                    checkIn: data.checkIn, // Pastikan data ini tersedia
-                    checkOut: data.checkOut, // Pastikan data ini tersedia
-                    products: data.products?.map((products : { roomId: string; price: number, quantity:number, name:string}) => ({
-                        roomId: products.roomId,
-                        price: products.price,
-                        quantity: products.quantity,
-                        name: products.name
-                })),
+                    checkIn: data.checkIn,
+                    checkOut: data.checkOut,
+                    products: products.map((product: { roomId: string; price: number; quantity: number; name: string }) => ({
+                        roomId: product.roomId,
+                        price: product.price,
+                        quantity: product.quantity,
+                        name: product.name,
+                    })),
                 }, res);
 
             break;

@@ -19,7 +19,6 @@ const constant_1 = require("../../utils/constant");
 const controller_short_1 = require("../ShortAvailable/controller_short");
 const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY;
 const updateStatusBaseOnMidtransResponse = (transaction_id, data, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e, _f;
     console.log('order_id:', transaction_id, 'data_status:', data.status_code, 'transaction_status:', data.transaction_status, 'data gross amount:', data.gross_amount, 'midtrans_key:', MIDTRANS_SERVER_KEY, 'payment_type :', data.payment_type, 'va_numbers :', data.va_numbers, 'bank :', data.bank, 'card_type :', data.card_type, " Data yang akan dimasukan ke short : ", data);
     // Generate signature hash
     const hash = crypto_1.default
@@ -32,7 +31,16 @@ const updateStatusBaseOnMidtransResponse = (transaction_id, data, res) => __awai
             message: 'Invalid signature key',
         };
     }
+    // Pemerikasaan room pada data transaksi
     const formattedTransactionId = data.order_id.replace(/^order-/, '');
+    const RoomFromTransactionModel = yield models_transaksi_1.TransactionModel.find({ bookingId: formattedTransactionId });
+    if (!RoomFromTransactionModel || RoomFromTransactionModel.length === 0) {
+        throw new Error('RoomFromTransactionModel is empty or not found.');
+    }
+    const products = RoomFromTransactionModel.flatMap((transaction) => transaction.products || []);
+    if (!products || products.length === 0) {
+        throw new Error('No products found in RoomFromTransactionModel');
+    }
     let responseData = null;
     switch (data.transaction_status) {
         case 'capture':
@@ -49,20 +57,18 @@ const updateStatusBaseOnMidtransResponse = (transaction_id, data, res) => __awai
                     bank: data.bank,
                     card_type: data.card_type
                 });
-                console.log(" Data yang akan dimasukan ke short : ", data);
                 // if success payment save data room will pay
                 yield controller_short_1.ShortAvailableController.addBookedRoomForAvailable({
                     transactionId: formattedTransactionId,
-                    userId: data.userId, // Ganti sesuai dengan data yang relevan
-                    roomId: ((_b = (_a = data.products) === null || _a === void 0 ? void 0 : _a.find((key) => key.roomId)) === null || _b === void 0 ? void 0 : _b.roomId) || 'defaultRoomId',
+                    userId: data.userId,
                     status: constant_1.PAID,
-                    checkIn: data.checkIn, // Pastikan data ini tersedia
-                    checkOut: data.checkOut, // Pastikan data ini tersedia
-                    products: (_c = data.products) === null || _c === void 0 ? void 0 : _c.map((products) => ({
-                        roomId: products.roomId,
-                        price: products.price,
-                        quantity: products.quantity,
-                        name: products.name
+                    checkIn: data.checkIn,
+                    checkOut: data.checkOut,
+                    products: products.map((product) => ({
+                        roomId: product.roomId,
+                        price: product.price,
+                        quantity: product.quantity,
+                        name: product.name,
                     })),
                 }, res);
             }
@@ -82,18 +88,18 @@ const updateStatusBaseOnMidtransResponse = (transaction_id, data, res) => __awai
             });
             console.log(" Data yang akan dimasukan ke short : ", data);
             // if success payment save data room will pay
+            // if success payment save data room will pay
             yield controller_short_1.ShortAvailableController.addBookedRoomForAvailable({
                 transactionId: formattedTransactionId,
-                userId: data.userId, // Ganti sesuai dengan data yang relevan
-                roomId: ((_e = (_d = data.products) === null || _d === void 0 ? void 0 : _d.find((key) => key.roomId)) === null || _e === void 0 ? void 0 : _e.roomId) || 'defaultRoomId',
+                userId: data.userId,
                 status: constant_1.PAID,
-                checkIn: data.checkIn, // Pastikan data ini tersedia
-                checkOut: data.checkOut, // Pastikan data ini tersedia
-                products: (_f = data.products) === null || _f === void 0 ? void 0 : _f.map((products) => ({
-                    roomId: products.roomId,
-                    price: products.price,
-                    quantity: products.quantity,
-                    name: products.name
+                checkIn: data.checkIn,
+                checkOut: data.checkOut,
+                products: products.map((product) => ({
+                    roomId: product.roomId,
+                    price: product.price,
+                    quantity: product.quantity,
+                    name: product.name,
                 })),
             }, res);
             break;

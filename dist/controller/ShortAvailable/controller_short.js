@@ -58,7 +58,6 @@ class ShortAvailableController {
                 const newAvailable = new models_ShortAvailable_1.ShortAvailableModel({
                     transactionId: data.transactionId,
                     userId: data.userId,
-                    roomId: data.roomId,
                     status: data.status,
                     checkIn: data.checkIn,
                     checkOut: data.checkOut,
