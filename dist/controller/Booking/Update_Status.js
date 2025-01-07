@@ -19,8 +19,8 @@ const constant_1 = require("../../utils/constant");
 const controller_short_1 = require("../ShortAvailable/controller_short");
 const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY;
 const updateStatusBaseOnMidtransResponse = (transaction_id, data, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d;
-    console.log('order_id:', transaction_id, 'data_status:', data.status_code, 'transaction_status:', data.transaction_status, 'data gross amount:', data.gross_amount, 'midtrans_key:', MIDTRANS_SERVER_KEY, 'payment_type :', data.payment_type, 'va_numbers :', data.va_numbers, 'bank :', data.bank, 'card_type :', data.card_type);
+    var _a, _b, _c, _d, _e, _f;
+    console.log('order_id:', transaction_id, 'data_status:', data.status_code, 'transaction_status:', data.transaction_status, 'data gross amount:', data.gross_amount, 'midtrans_key:', MIDTRANS_SERVER_KEY, 'payment_type :', data.payment_type, 'va_numbers :', data.va_numbers, 'bank :', data.bank, 'card_type :', data.card_type, " Data yang akan dimasukan ke short : ", data);
     // Generate signature hash
     const hash = crypto_1.default
         .createHash('sha512')
@@ -58,7 +58,7 @@ const updateStatusBaseOnMidtransResponse = (transaction_id, data, res) => __awai
                     status: constant_1.PAID,
                     checkIn: data.checkIn, // Pastikan data ini tersedia
                     checkOut: data.checkOut, // Pastikan data ini tersedia
-                    products: data.products.map((products) => ({
+                    products: (_c = data.products) === null || _c === void 0 ? void 0 : _c.map((products) => ({
                         roomId: products.roomId,
                         price: products.price,
                         quantity: products.quantity,
@@ -80,15 +80,16 @@ const updateStatusBaseOnMidtransResponse = (transaction_id, data, res) => __awai
                 bank: data.bank,
                 card_type: data.card_type
             });
+            console.log(" Data yang akan dimasukan ke short : ", data);
             // if success payment save data room will pay
             yield controller_short_1.ShortAvailableController.addBookedRoomForAvailable({
                 transactionId: formattedTransactionId,
                 userId: data.userId, // Ganti sesuai dengan data yang relevan
-                roomId: ((_d = (_c = data.products) === null || _c === void 0 ? void 0 : _c.find((key) => key.roomId)) === null || _d === void 0 ? void 0 : _d.roomId) || 'defaultRoomId',
+                roomId: ((_e = (_d = data.products) === null || _d === void 0 ? void 0 : _d.find((key) => key.roomId)) === null || _e === void 0 ? void 0 : _e.roomId) || 'defaultRoomId',
                 status: constant_1.PAID,
                 checkIn: data.checkIn, // Pastikan data ini tersedia
                 checkOut: data.checkOut, // Pastikan data ini tersedia
-                products: data.products.map((products) => ({
+                products: (_f = data.products) === null || _f === void 0 ? void 0 : _f.map((products) => ({
                     roomId: products.roomId,
                     price: products.price,
                     quantity: products.quantity,

@@ -18,6 +18,7 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
         'va_numbers :', data.va_numbers,
         'bank :', data.bank,
         'card_type :', data.card_type,
+        " Data yang akan dimasukan ke short : ", data
         
     );
 
@@ -66,7 +67,7 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
                     status: PAID,
                     checkIn: data.checkIn, // Pastikan data ini tersedia
                     checkOut: data.checkOut, // Pastikan data ini tersedia
-                    products: data.products.map((products : { roomId: string; price: number, quantity:number, name:string}) => ({
+                    products: data.products?.map((products : { roomId: string; price: number, quantity:number, name:string}) => ({
                         roomId: products.roomId,
                         price: products.price,
                         quantity: products.quantity,
@@ -93,6 +94,7 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
                 
                 }
             );
+                console.log(" Data yang akan dimasukan ke short : ", data)
                 // if success payment save data room will pay
                 await ShortAvailableController.addBookedRoomForAvailable({
                     transactionId: formattedTransactionId,
@@ -101,7 +103,7 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
                     status: PAID,
                     checkIn: data.checkIn, // Pastikan data ini tersedia
                     checkOut: data.checkOut, // Pastikan data ini tersedia
-                    products: data.products.map((products : { roomId: string; price: number, quantity:number, name:string}) => ({
+                    products: data.products?.map((products : { roomId: string; price: number, quantity:number, name:string}) => ({
                         roomId: products.roomId,
                         price: products.price,
                         quantity: products.quantity,
