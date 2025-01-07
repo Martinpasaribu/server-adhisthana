@@ -19,7 +19,7 @@ const constant_1 = require("../../utils/constant");
 const controller_short_1 = require("../ShortAvailable/controller_short");
 const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY;
 const updateStatusBaseOnMidtransResponse = (transaction_id, data, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log('order_id:', transaction_id, 'data_status:', data.status_code, 'transaction_status:', data.transaction_status, 'data gross amount:', data.gross_amount, 'midtrans_key:', MIDTRANS_SERVER_KEY, 'payment_type :', data.payment_type, 'va_numbers :', data.va_numbers, 'bank :', data.bank, 'card_type :', data.card_type, " Data yang akan dimasukan ke short : ", data);
+    console.log('order_id:', transaction_id, 'data_status:', data.status_code, 'transaction_status:', data.transaction_status, 'data gross amount:', data.gross_amount, 'midtrans_key:', MIDTRANS_SERVER_KEY, 'payment_type :', data.payment_type, 'va_numbers :', data.va_numbers, 'bank :', data.bank, 'card_type :', data.card_type);
     // Generate signature hash
     const hash = crypto_1.default
         .createHash('sha512')
@@ -33,13 +33,9 @@ const updateStatusBaseOnMidtransResponse = (transaction_id, data, res) => __awai
     }
     // Pemerikasaan room pada data transaksi
     const formattedTransactionId = data.order_id.replace(/^order-/, '');
-    const RoomFromTransactionModel = yield models_transaksi_1.TransactionModel.find({ bookingId: formattedTransactionId });
-    if (!RoomFromTransactionModel || RoomFromTransactionModel.length === 0) {
-        throw new Error('RoomFromTransactionModel is empty or not found.');
-    }
-    const products = RoomFromTransactionModel.flatMap((transaction) => transaction.products || []);
-    if (!products || products.length === 0) {
-        throw new Error('No products found in RoomFromTransactionModel');
+    const RoomFromTransactionModel = yield models_transaksi_1.TransactionModel.findOne({ bookingId: formattedTransactionId });
+    if (!RoomFromTransactionModel) {
+        throw new Error('RoomFromTransactionModel not found.');
     }
     let responseData = null;
     switch (data.transaction_status) {
@@ -60,11 +56,11 @@ const updateStatusBaseOnMidtransResponse = (transaction_id, data, res) => __awai
                 // if success payment save data room will pay
                 yield controller_short_1.ShortAvailableController.addBookedRoomForAvailable({
                     transactionId: formattedTransactionId,
-                    userId: data.userId,
+                    userId: RoomFromTransactionModel.userId,
                     status: constant_1.PAID,
-                    checkIn: data.checkIn,
-                    checkOut: data.checkOut,
-                    products: products.map((product) => ({
+                    checkIn: RoomFromTransactionModel.checkIn,
+                    checkOut: RoomFromTransactionModel.checkOut,
+                    products: RoomFromTransactionModel.products.map((product) => ({
                         roomId: product.roomId,
                         price: product.price,
                         quantity: product.quantity,
@@ -86,16 +82,16 @@ const updateStatusBaseOnMidtransResponse = (transaction_id, data, res) => __awai
                 bank: data.bank,
                 card_type: data.card_type
             });
-            console.log(" Data yang akan dimasukan ke short : ", data);
+            console.log(" Data2 yang akan dimasukan ke short : ", data);
             // if success payment save data room will pay
             // if success payment save data room will pay
             yield controller_short_1.ShortAvailableController.addBookedRoomForAvailable({
                 transactionId: formattedTransactionId,
-                userId: data.userId,
+                userId: RoomFromTransactionModel.userId,
                 status: constant_1.PAID,
-                checkIn: data.checkIn,
-                checkOut: data.checkOut,
-                products: products.map((product) => ({
+                checkIn: RoomFromTransactionModel.checkIn,
+                checkOut: RoomFromTransactionModel.checkOut,
+                products: RoomFromTransactionModel.products.map((product) => ({
                     roomId: product.roomId,
                     price: product.price,
                     quantity: product.quantity,

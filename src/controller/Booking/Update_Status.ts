@@ -18,7 +18,7 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
         'va_numbers :', data.va_numbers,
         'bank :', data.bank,
         'card_type :', data.card_type,
-        " Data yang akan dimasukan ke short : ", data
+        // " Data1 yang akan dimasukan ke short : ", data
         
     );
 
@@ -38,18 +38,13 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
     // Pemerikasaan room pada data transaksi
     const formattedTransactionId = data.order_id.replace(/^order-/, '');
 
-    const RoomFromTransactionModel = await TransactionModel.find({ bookingId: formattedTransactionId });
+    const RoomFromTransactionModel = await TransactionModel.findOne({ bookingId: formattedTransactionId });
 
-    if (!RoomFromTransactionModel || RoomFromTransactionModel.length === 0) {
-        throw new Error('RoomFromTransactionModel is empty or not found.');
-    }
-    
-    const products = RoomFromTransactionModel.flatMap((transaction: any) => transaction.products || []);
-    
-    if (!products || products.length === 0) {
-        throw new Error('No products found in RoomFromTransactionModel');
-    }
 
+    if (!RoomFromTransactionModel) {
+        throw new Error('RoomFromTransactionModel not found.');
+    }
+ 
 
     let responseData = null;
 
@@ -75,11 +70,11 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
                 // if success payment save data room will pay
                 await ShortAvailableController.addBookedRoomForAvailable({
                     transactionId: formattedTransactionId,
-                    userId: data.userId, 
+                    userId: RoomFromTransactionModel.userId, 
                     status: PAID,
-                    checkIn: data.checkIn,
-                    checkOut: data.checkOut,
-                    products: products.map((product: { roomId: string; price: number; quantity: number; name: string }) => ({
+                    checkIn: RoomFromTransactionModel.checkIn,
+                    checkOut: RoomFromTransactionModel.checkOut,
+                    products: RoomFromTransactionModel.products.map((product: { roomId: string; price: number; quantity: number; name: string }) => ({
                         roomId: product.roomId,
                         price: product.price,
                         quantity: product.quantity,
@@ -108,17 +103,17 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
             );
 
             
-            console.log(" Data yang akan dimasukan ke short : ", data)
+            console.log(" Data2 yang akan dimasukan ke short : ", data)
             
             // if success payment save data room will pay
                 // if success payment save data room will pay
                 await ShortAvailableController.addBookedRoomForAvailable({
                     transactionId: formattedTransactionId,
-                    userId: data.userId, 
+                    userId: RoomFromTransactionModel.userId, 
                     status: PAID,
-                    checkIn: data.checkIn,
-                    checkOut: data.checkOut,
-                    products: products.map((product: { roomId: string; price: number; quantity: number; name: string }) => ({
+                    checkIn: RoomFromTransactionModel.checkIn,
+                    checkOut: RoomFromTransactionModel.checkOut,
+                    products: RoomFromTransactionModel.products.map((product: { roomId: string; price: number; quantity: number; name: string }) => ({
                         roomId: product.roomId,
                         price: product.price,
                         quantity: product.quantity,
