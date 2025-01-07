@@ -15,6 +15,7 @@ export interface createTransaction {
         va_number ?: string;
         bank ?: string;
       }[],
+      
     bank: string;
     card_type: string;
     userId:string;

@@ -14,10 +14,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateStatusBaseOnMidtransResponse = void 0;
 const crypto_1 = __importDefault(require("crypto"));
-const models_transaksi_1 = require("../../models/Booking/models_transaksi");
+const models_transaksi_1 = require("../../models/Transaction/models_transaksi");
 const constant_1 = require("../../utils/constant");
+const controller_short_1 = require("../ShortAvailable/controller_short");
 const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY;
-const updateStatusBaseOnMidtransResponse = (transaction_id, data) => __awaiter(void 0, void 0, void 0, function* () {
+const updateStatusBaseOnMidtransResponse = (transaction_id, data, res) => __awaiter(void 0, void 0, void 0, function* () {
     console.log('order_id:', transaction_id, 'data_status:', data.status_code, 'transaction_status:', data.transaction_status, 'data gross amount:', data.gross_amount, 'midtrans_key:', MIDTRANS_SERVER_KEY, 'payment_type :', data.payment_type, 'va_numbers :', data.va_numbers, 'bank :', data.bank, 'card_type :', data.card_type);
     // Generate signature hash
     const hash = crypto_1.default
@@ -47,6 +48,8 @@ const updateStatusBaseOnMidtransResponse = (transaction_id, data) => __awaiter(v
                     bank: data.bank,
                     card_type: data.card_type
                 });
+                // if success payment save data room will pay
+                yield controller_short_1.ShortAvailableController.addBookedRoomForAvailable(data, res);
             }
             break;
         case 'settlement':
@@ -62,6 +65,8 @@ const updateStatusBaseOnMidtransResponse = (transaction_id, data) => __awaiter(v
                 bank: data.bank,
                 card_type: data.card_type
             });
+            // if success payment save data room will pay
+            yield controller_short_1.ShortAvailableController.addBookedRoomForAvailable(data, res);
             break;
         case 'cancel':
         case 'deny':

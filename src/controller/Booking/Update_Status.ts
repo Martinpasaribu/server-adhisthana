@@ -1,10 +1,12 @@
 import crypto from 'crypto';
-import { TransactionModel } from '../../models/Booking/models_transaksi';
+import { TransactionModel } from '../../models/Transaction/models_transaksi';
 import { CANCELED, PAID, PENDING_PAYMENT } from '../../utils/constant';
+import { RoomController } from '../Room/controller_room';
+import { ShortAvailableController } from '../ShortAvailable/controller_short';
 
 const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY;
 
-export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, data : any) => {
+export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, data : any, res:any) => {
    
     console.log(
         'order_id:', transaction_id,
@@ -54,6 +56,8 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
                         card_type: data.card_type
                     }
                 );
+                // if success payment save data room will pay
+                await ShortAvailableController.addBookedRoomForAvailable(data , res);
             }
             break;
 
@@ -74,6 +78,8 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
                 
                 }
             );
+                // if success payment save data room will pay
+                await ShortAvailableController.addBookedRoomForAvailable(data , res);
             break;
 
         case 'cancel':

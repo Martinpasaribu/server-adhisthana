@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.transactionService = void 0;
 const models_booking_1 = require("../../models/Booking/models_booking");
-const models_transaksi_1 = require("../../models/Booking/models_transaksi");
+const models_transaksi_1 = require("../../models/Transaction/models_transaksi");
 class TransactionService {
     // Fungsi untuk membuat Data Transaksi 
     createTransaction(_a) {

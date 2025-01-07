@@ -15,7 +15,7 @@ import { generateBookingId } from './nanoid'
 
 import { PENDING_PAYMENT } from '../../utils/constant';
 import { SessionModel } from '../../models/Booking/models_session';
-import { TransactionModel } from '../../models/Booking/models_transaksi';
+import { TransactionModel } from '../../models/Transaction/models_transaksi';
 import { updateStatusBaseOnMidtransResponse } from './Update_Status';
 
 export class BookingController {
@@ -633,7 +633,8 @@ export class BookingController {
             }
         }
         
-
+  
+        // Will hit midtrans after payment
         static async TrxNotif(req: Request, res: Response) {
             try {
                 const data = req.body;
@@ -651,7 +652,7 @@ export class BookingController {
 
                 if (existingTransaction) {
                     // Properti bookingId sekarang tersedia
-                    const result = updateStatusBaseOnMidtransResponse(data.order_id, data);
+                    const result = updateStatusBaseOnMidtransResponse(data.order_id, data, res);
                     console.log('result = ', result);
 
                 } else {

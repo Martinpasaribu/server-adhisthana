@@ -1,10 +1,10 @@
 import { BookingModel } from "../../models/Booking/models_booking";
-import { createTransaction } from "../../models/transaction";
-import { createTransactionBooking } from "../../models/transaction";
-import createTransactionItem from "../../models/transaction";
-import updateTransactionStatus from "../../models/transaction";
+import { createTransaction } from "../../models/Transaction/transaction";
+import { createTransactionBooking } from "../../models/Transaction/transaction";
+import createTransactionItem from "../../models/Transaction/transaction";
+import updateTransactionStatus from "../../models/Transaction/transaction";
 
-import { TransactionModel } from '../../models/Booking/models_transaksi';
+import { TransactionModel } from '../../models/Transaction/models_transaksi';
 
 
 class TransactionService {

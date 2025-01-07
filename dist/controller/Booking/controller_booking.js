@@ -23,7 +23,7 @@ const midtransConfig_1 = require("../../config/midtransConfig");
 const transactionService_1 = require("./transactionService");
 const constant_1 = require("../../utils/constant");
 const models_session_1 = require("../../models/Booking/models_session");
-const models_transaksi_1 = require("../../models/Booking/models_transaksi");
+const models_transaksi_1 = require("../../models/Transaction/models_transaksi");
 const Update_Status_1 = require("./Update_Status");
 class BookingController {
     static addBooking(req, res) {
@@ -519,6 +519,7 @@ class BookingController {
             }
         });
     }
+    // Will hit midtrans after payment
     static TrxNotif(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -531,7 +532,7 @@ class BookingController {
                 const existingTransaction = yield models_transaksi_1.TransactionModel.findOne({ bookingId: formattedTransactionId });
                 if (existingTransaction) {
                     // Properti bookingId sekarang tersedia
-                    const result = (0, Update_Status_1.updateStatusBaseOnMidtransResponse)(data.order_id, data);
+                    const result = (0, Update_Status_1.updateStatusBaseOnMidtransResponse)(data.order_id, data, res);
                     console.log('result = ', result);
                 }
                 else {
