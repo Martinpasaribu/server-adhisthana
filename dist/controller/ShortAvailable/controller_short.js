@@ -70,25 +70,20 @@ class ShortAvailableController {
                 });
                 // Menyimpan data ke database
                 const savedShort = yield newAvailable.save();
-                // Mengirimkan respon sukses
-                res.status(201).json({
-                    requestId: (0, uuid_1.v4)(),
-                    data: {
-                        acknowledged: true,
-                        insertedId: savedShort._id,
-                    },
-                    message: "Successfully added room.",
-                    success: true,
-                });
+                // // Mengirimkan respon sukses
+                //   return {
+                //     success: true,
+                //     message: "Successfully added room.",
+                //     data: {
+                //         acknowledged: true,
+                //         insertedId: savedShort._id,
+                //     },
+                // };
             }
             catch (error) {
                 // Menangani kesalahan dan mengirimkan respon gagal
-                res.status(400).json({
-                    requestId: (0, uuid_1.v4)(),
-                    data: null,
-                    message: error.message,
-                    success: false,
-                });
+                // Lemparkan error untuk ditangani oleh fungsi pemanggil
+                throw new Error(error.message);
             }
         });
     }

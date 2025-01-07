@@ -75,24 +75,20 @@ export class ShortAvailableController {
               // Menyimpan data ke database
               const savedShort = await newAvailable.save();
         
-              // Mengirimkan respon sukses
-              res.status(201).json({
-                requestId: uuidv4(),
-                data: {
-                  acknowledged: true,
-                  insertedId: savedShort._id,
-                },
-                message: "Successfully added room.",
-                success: true,
-              });
+              // // Mengirimkan respon sukses
+            //   return {
+            //     success: true,
+            //     message: "Successfully added room.",
+            //     data: {
+            //         acknowledged: true,
+            //         insertedId: savedShort._id,
+            //     },
+            // };
+
             } catch (error) {
               // Menangani kesalahan dan mengirimkan respon gagal
-              res.status(400).json({
-                requestId: uuidv4(),
-                data: null,
-                message: (error as Error).message,
-                success: false,
-              });
+              // Lemparkan error untuk ditangani oleh fungsi pemanggil
+              throw new Error((error as Error).message);
             }
           }
 
