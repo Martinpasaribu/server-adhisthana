@@ -12,6 +12,7 @@ import BookingRouter from "./router/router_booking";
 import AuthRouter from "./router/router_auth";
 import UserRouter from "./router/router_user";
 import { connectToMongoDB } from "./config/mongoDbCloud";
+import ShortAvailableRouter from "./router/router_shortAvailable";
 
 
 const app: express.Application = express();
@@ -111,6 +112,7 @@ app.use("/api/v1/contact", ContactRouter)
 app.use("/api/v1/booking", BookingRouter)
 app.use("/api/v1/auth", AuthRouter)
 app.use("/api/v1/user", UserRouter)
+app.use("/api/v1/short", ShortAvailableRouter)
 
 
 
