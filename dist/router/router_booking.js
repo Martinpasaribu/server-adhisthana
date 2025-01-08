@@ -12,7 +12,7 @@ BookingRouter.get("/get", controller_booking_1.BookingController.getOffers);
 BookingRouter.get("/get-total-price", controller_booking_1.BookingController.GetTotalPrice);
 BookingRouter.get("/debug-session", controller_booking_1.BookingController.CekSessions);
 BookingRouter.get("/get-chart", controller_booking_1.BookingController.GetChartRoom);
-BookingRouter.put("/remove-cart", controller_booking_1.BookingController.RemoveCart);
+BookingRouter.post("/remove-cart", controller_booking_1.BookingController.RemoveCart);
 BookingRouter.post("/addBooking", controller_booking_1.BookingController.addBooking);
 BookingRouter.post("/add-to-cart", controller_booking_1.BookingController.PostChartRoom);
 BookingRouter.post("/del-to-cart", controller_booking_1.BookingController.DelChartRoom);
