@@ -57,11 +57,14 @@ app.use(session({
     store: store,
     cookie: {
 
-        
+        //  ==========  Development  ============
+
         // secure: false,
         // httpOnly: true, 
         // maxAge: 1000 * 60 * 60 * 24, // 1 hari
         
+        // ===========  Production  ==============
+
         secure: true,
         sameSite: 'none',
         httpOnly: false, 
