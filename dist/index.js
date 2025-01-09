@@ -24,6 +24,7 @@ const router_booking_1 = __importDefault(require("./router/router_booking"));
 const router_auth_1 = __importDefault(require("./router/router_auth"));
 const router_user_1 = __importDefault(require("./router/router_user"));
 const mongoDbCloud_1 = require("./config/mongoDbCloud");
+const router_shortAvailable_1 = __importDefault(require("./router/router_shortAvailable"));
 const app = (0, express_1.default)();
 dotenv_1.default.config();
 app.use((0, cors_1.default)({
@@ -81,6 +82,7 @@ app.use("/api/v1/contact", router_contact_1.default);
 app.use("/api/v1/booking", router_booking_1.default);
 app.use("/api/v1/auth", router_auth_1.default);
 app.use("/api/v1/user", router_user_1.default);
+app.use("/api/v1/short", router_shortAvailable_1.default);
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // await connectToDatabase();

@@ -9,6 +9,7 @@ const ShortAvailableRouter: express.Router = express.Router();
 // semantic meaning
 
 ShortAvailableRouter.get("/getShortVila", ShortAvailableController.getShortVila)
+ShortAvailableRouter.post("/get-short-available", ShortAvailableController.getAvailableRooms)
 ShortAvailableRouter.get("/get-short-available", ShortAvailableController.getAvailableRooms)
 
 

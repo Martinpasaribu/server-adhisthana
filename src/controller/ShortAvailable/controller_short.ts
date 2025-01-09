@@ -19,6 +19,7 @@ export class ShortAvailableController {
 
 
     static async getAvailableRooms(req: Request, res: Response) {
+
         try {
             const { checkIn, checkOut } = req.body;
     
@@ -38,13 +39,15 @@ export class ShortAvailableController {
             console.log("CheckIn UTC:", checkInDate.toISOString());
             console.log("CheckOut UTC:", checkOutDate.toISOString());
     
+            // Fiks Booking { checkIn dan CheckOut} : { 12 PM & 15 PM }
+
             // Query untuk mencari unavailable rooms
             const unavailableRooms = await ShortAvailableModel.find({
                 status: "PAID",
                 $or: [
                     {
-                        checkIn: { $lt: checkOutDate.toISOString() }, // Pastikan dalam UTC
-                        checkOut: { $gt: checkInDate.toISOString() }, // Pastikan dalam UTC
+                        checkIn: { $lt: checkOutDate.toISOString() }, 
+                        checkOut: { $gt: checkInDate.toISOString() }, 
                     },
                 ],
             });
@@ -54,6 +57,7 @@ export class ShortAvailableController {
     
             // Hitung jumlah room yang sudah dipesan
             const roomUsageCount: Record<string, number> = {};
+
             unavailableRooms.forEach((transaction) => {
                 transaction.products.forEach((product: { roomId: mongoose.Types.ObjectId | string; quantity: number }) => {
                     const roomId = product.roomId.toString();
@@ -62,17 +66,18 @@ export class ShortAvailableController {
             });
     
             // Debug: Log hasil roomUsageCount
-            console.log("Room Usage Count:", roomUsageCount);
+            // console.log("Room Usage Count:", roomUsageCount);
     
             // Ambil semua room dari database
             const allRooms = await RoomModel.find({ isDeleted: false });
     
             // Debug: Log semua room
-            console.log("All Rooms:", allRooms);
+            // console.log("All Rooms:", allRooms);
     
             // Filter room yang tersedia
             const availableRooms = allRooms
                 .map((room) => {
+                    
                     const usedCount = roomUsageCount[room._id.toString()] || 0;
                     const availableCount = room.available - usedCount;
     
