@@ -54,9 +54,11 @@ app.use((0, express_session_1.default)({
     saveUninitialized: false,
     store: store,
     cookie: {
+        //  ==========  Development  ============
         // secure: false,
         // httpOnly: true, 
         // maxAge: 1000 * 60 * 60 * 24, // 1 hari
+        // ===========  Production  ==============
         secure: true,
         sameSite: 'none',
         httpOnly: false,
