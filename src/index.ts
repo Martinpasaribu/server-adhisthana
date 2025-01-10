@@ -63,12 +63,22 @@ app.use(session({
         // httpOnly: true, 
         // maxAge: 1000 * 60 * 60 * 24, // 1 hari
         
-        // ===========  Production  ==============
+        // ===========  Chrome , edge , fireFox Production  ==============
 
-        secure: true,
-        sameSite: 'none',
-        httpOnly: false, 
-        maxAge: 1000 * 60 * 60 * 24, 
+        // secure: true,
+        // sameSite: 'none',
+        // httpOnly: false, 
+        // maxAge: 1000 * 60 * 60 * 24, 
+
+
+        // ===========  Safari Production ==============
+
+        
+        secure: true,           // Menggunakan HTTPS wajib
+        sameSite: 'none',       // Dibutuhkan untuk cookie lintas domain
+        httpOnly: true,         // Melindungi dari XSS
+        maxAge: 1000 * 60 * 60 * 24, // 1 hari
+          
     },
 }));
 
