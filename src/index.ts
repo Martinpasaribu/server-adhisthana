@@ -13,6 +13,8 @@ import AuthRouter from "./router/router_auth";
 import UserRouter from "./router/router_user";
 import { connectToMongoDB } from "./config/mongoDbCloud";
 import ShortAvailableRouter from "./router/router_shortAvailable";
+import TransactionRouter from "./router/router_transaction";
+import cookieParser from 'cookie-parser';
 
 
 const app: express.Application = express();
@@ -24,8 +26,9 @@ app.use(cors({
     methods: ["POST", "GET", "PATCH", "DELETE", 'PUT', "OPTIONS"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
- }));
+}));
 
+app.use(cookieParser());
 
 // Jika klien mengirim JSON, maka express.json() akan mem-parsingnya.
 app.use(express.json());
@@ -61,23 +64,24 @@ app.use(session({
 
         // secure: false,
         // httpOnly: true, 
+      
         // maxAge: 1000 * 60 * 60 * 24, // 1 hari
         
         // ===========  Chrome , edge , fireFox Production  ==============
 
-        // secure: true,
-        // sameSite: 'none',
-        // httpOnly: false, 
-        // maxAge: 1000 * 60 * 60 * 24, 
+        secure: true,
+        sameSite: 'none',
+        httpOnly: false, 
+        maxAge: 1000 * 60 * 60 * 24, 
 
 
         // ===========  Safari Production ==============
 
         
-        secure: true,           // Menggunakan HTTPS wajib
-        sameSite: 'none',       // Dibutuhkan untuk cookie lintas domain
-        httpOnly: true,         // Melindungi dari XSS
-        maxAge: 1000 * 60 * 60 * 24, // 1 hari
+        // secure: true,           // Menggunakan HTTPS wajib
+        // sameSite: 'none',       // Dibutuhkan untuk cookie lintas domain
+        // httpOnly: true,         // Melindungi dari XSS
+        // maxAge: 1000 * 60 * 60 * 24, // 1 hari
           
     },
 }));
@@ -93,7 +97,8 @@ declare module 'express-session' {
       deviceInfo? : {
         userAgent?: string;
         ipAddress?: string;
-      }
+      },
+      userId: string;
     }
   }
 
@@ -126,6 +131,7 @@ app.use("/api/v1/booking", BookingRouter)
 app.use("/api/v1/auth", AuthRouter)
 app.use("/api/v1/user", UserRouter)
 app.use("/api/v1/short", ShortAvailableRouter)
+app.use("/api/v1/transaction", TransactionRouter)
 
 
 

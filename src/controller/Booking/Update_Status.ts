@@ -51,7 +51,7 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
     switch (data.transaction_status) {
         case 'capture':
             if (data.fraud_status === 'accept') {
-                responseData = await TransactionModel.updateOne(
+                responseData = await TransactionModel.findOneAndUpdate(
                     { bookingId: data.order_id },
                     { 
                         status: PAID, 
@@ -85,7 +85,7 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
             break;
 
         case 'settlement':
-            responseData = await TransactionModel.updateOne(
+            responseData = await TransactionModel.findOneAndUpdate(
                 { bookingId: data.order_id },
                 { 
                     status: PAID, 
@@ -126,7 +126,7 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
         case 'cancel':
         case 'deny':
         case 'expire':
-            responseData = await TransactionModel.updateOne(
+            responseData = await TransactionModel.findOneAndUpdate(
                 { bookingId: data.order_id },
                 { 
                     status: CANCELED,
@@ -144,11 +144,11 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
             break;
 
         case 'pending':
-            responseData = await TransactionModel.updateOne(
+            responseData = await TransactionModel.findOneAndUpdate(
                 { bookingId: data.order_id },
                 { 
                     status: PENDING_PAYMENT,
-                                    payment_type: data.payment_type,
+                    payment_type: data.payment_type,
                     va_numbers: data.va_numbers
                     ? data.va_numbers.map((va_number: { va_number: string; bank: string; }) => ({
                           va_number: va_number.va_number,

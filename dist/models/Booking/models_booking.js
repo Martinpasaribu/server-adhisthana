@@ -41,7 +41,12 @@ const BookingSchema = new mongoose_1.Schema({
         // required: [true, "oderId cannot be empty"],
         trim: true
     },
-    title: {
+    name: {
+        type: String,
+        // required: [true, "checkIn cannot be empty"],
+        trim: true
+    },
+    email: {
         type: String,
         // required: [true, "checkIn cannot be empty"],
         trim: true
@@ -85,7 +90,7 @@ const BookingSchema = new mongoose_1.Schema({
         // required: [true, "couponId cannot be empty"],
         trim: true
     },
-    idUser: {
+    userId: {
         type: String,
         // required: [true, "idUser cannot be empty"],
         trim: true

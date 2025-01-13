@@ -1,5 +1,7 @@
 
 export interface createTransaction {
+    name:string;
+    email:string;
     bookingId:string;
     status:string;
     grossAmount:number;
@@ -46,7 +48,8 @@ export default interface updateTransactionStatus {
 
 
 export interface createTransactionBooking {
-
+    name: string,
+    email: string,
     orderId: string;
     checkIn: string;
     checkOut: string;
@@ -55,7 +58,7 @@ export interface createTransactionBooking {
     amountTotal: number;
     amountBefDisc: number;
     couponId: string;
-    idUser: string;
+    userId: string;
     creatorId: string;
     rooms: { roomId: string; quantity: number }[];
 

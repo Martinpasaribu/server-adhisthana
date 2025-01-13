@@ -41,7 +41,7 @@ const updateStatusBaseOnMidtransResponse = (transaction_id, data, res) => __awai
     switch (data.transaction_status) {
         case 'capture':
             if (data.fraud_status === 'accept') {
-                responseData = yield models_transaksi_1.TransactionModel.updateOne({ bookingId: data.order_id }, {
+                responseData = yield models_transaksi_1.TransactionModel.findOneAndUpdate({ bookingId: data.order_id }, {
                     status: constant_1.PAID,
                     payment_type: data.payment_type,
                     va_numbers: data.va_numbers
@@ -70,7 +70,7 @@ const updateStatusBaseOnMidtransResponse = (transaction_id, data, res) => __awai
             }
             break;
         case 'settlement':
-            responseData = yield models_transaksi_1.TransactionModel.updateOne({ bookingId: data.order_id }, {
+            responseData = yield models_transaksi_1.TransactionModel.findOneAndUpdate({ bookingId: data.order_id }, {
                 status: constant_1.PAID,
                 payment_type: data.payment_type,
                 va_numbers: data.va_numbers
@@ -102,7 +102,7 @@ const updateStatusBaseOnMidtransResponse = (transaction_id, data, res) => __awai
         case 'cancel':
         case 'deny':
         case 'expire':
-            responseData = yield models_transaksi_1.TransactionModel.updateOne({ bookingId: data.order_id }, {
+            responseData = yield models_transaksi_1.TransactionModel.findOneAndUpdate({ bookingId: data.order_id }, {
                 status: constant_1.CANCELED,
                 payment_type: data.payment_type,
                 va_numbers: data.va_numbers
@@ -116,7 +116,7 @@ const updateStatusBaseOnMidtransResponse = (transaction_id, data, res) => __awai
             });
             break;
         case 'pending':
-            responseData = yield models_transaksi_1.TransactionModel.updateOne({ bookingId: data.order_id }, {
+            responseData = yield models_transaksi_1.TransactionModel.findOneAndUpdate({ bookingId: data.order_id }, {
                 status: constant_1.PENDING_PAYMENT,
                 payment_type: data.payment_type,
                 va_numbers: data.va_numbers

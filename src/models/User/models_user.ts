@@ -4,6 +4,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 interface IUser extends Document {
     _id: string;
+    title : string;
     name : string;
     password: string;
     email : string;
@@ -26,6 +27,11 @@ interface IUser extends Document {
 const UserSchema: Schema = new Schema(
     {
 
+        title: {
+            type: String,
+            required: [true, "name cannot be empty"],
+            trim: true
+        },
         name: {
             type: String,
             // required: [true, "name cannot be empty"],

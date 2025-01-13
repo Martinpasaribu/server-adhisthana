@@ -25,34 +25,76 @@ export class UserController {
         }
     }
 
+    static async  cekUser (req : any, res:any) {
+
+        try {
+
+            const { email } = req.params;
+
+            const users = await UserModel.findOne({email: email});
+
+            if(users){
+                res.status(200).json(
+                    {
+                        requestId: uuidv4(), 
+                        message: "User Available.",
+                        success: true,
+                        data: users
+                    }
+                );
+            }else {
+                res.status(200).json(
+                    {
+                        requestId: uuidv4(), 
+                        message: "User Unavailable.",
+                        success: false,
+                        data: users
+                    }
+                );
+            }
+
+        } catch (error) {
+            res.status(400).json(
+                {
+                    requestId: uuidv4(), 
+                    data: null,
+                    message:  (error as Error).message,
+                    success: false
+                }
+            );
+        }
+    }
+
+
     static async  Register  (req : any , res:any)  {
-        const { name, email, password, confPassword, phoneNumber } = req.body;
+        const { title , name, email, password, phone } = req.body;
 
         // if (password !== confPassword) {
         //     return res.status(400).json({ msg: "Passwords are not the same" });
         // }
         let user
 
-        if( password && confPassword ){
+        if( password && password ){
 
             const salt = await bcrypt.genSalt();
             const hashPassword = await bcrypt.hash(password, salt);
     
             user = await UserModel.create({
             
+                title: title,
                 name: name,
                 email: email,
                 password: hashPassword,
-                phoneNumber: phoneNumber
+                phone: phone
         
             });
         } else {
 
             user = await UserModel.create({
-            
+                title: title,
                 name: name,
                 email: email,
-                phoneNumber: phoneNumber
+                phone: phone
         
             });
 
@@ -81,6 +123,7 @@ export class UserController {
         }
         
     }
+
 
     static async ConfirmReset(req: any, res: any) {
         
@@ -146,7 +189,6 @@ export class UserController {
             res.status(500).json({ message: "An error occurred.", error: (error as Error).message });
         }
     }
-
 
 
     static async ResetPassword(req: any, res: any) {

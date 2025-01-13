@@ -21,6 +21,7 @@ const refreshToken = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     try {
         console.log("hasil token coockies :", req.cookies);
         const refreshToken = req.cookies.refreshToken;
+        console.log("hasil refreshToken :", refreshToken);
         if (!refreshToken)
             return res.status(401).json({ message: 'Session cookies empty' });
         const user = yield models_user_1.default.findOne({ refresh_token: refreshToken });

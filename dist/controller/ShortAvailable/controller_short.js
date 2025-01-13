@@ -33,8 +33,8 @@ class ShortAvailableController {
                     return res.status(400).json({ message: "Tanggal check-out harus lebih besar dari tanggal check-in." });
                 }
                 // Debug: Log input tanggal dalam UTC
-                console.log("CheckIn UTC:", checkInDate.toISOString());
-                console.log("CheckOut UTC:", checkOutDate.toISOString());
+                // console.log("CheckIn UTC:", checkInDate.toISOString());
+                // console.log("CheckOut UTC:", checkOutDate.toISOString());
                 // Fiks Booking { checkIn dan CheckOut} : { 12 PM & 15 PM }
                 // Query untuk mencari unavailable rooms
                 const unavailableRooms = yield models_ShortAvailable_1.ShortAvailableModel.find({
@@ -47,7 +47,7 @@ class ShortAvailableController {
                     ],
                 });
                 // Debug: Log hasil query unavailableRooms
-                console.log("Unavailable Rooms:", unavailableRooms);
+                // console.log("Unavailable Rooms:", unavailableRooms);
                 // Hitung jumlah room yang sudah dipesan
                 const roomUsageCount = {};
                 unavailableRooms.forEach((transaction) => {
@@ -71,7 +71,7 @@ class ShortAvailableController {
                 })
                     .filter((room) => room.availableCount > 0);
                 // Debug: Log room yang tersedia
-                console.log("Available Rooms:", availableRooms);
+                // console.log("Available Rooms:", availableRooms);
                 res.status(200).json({
                     requestId: (0, uuid_1.v4)(),
                     data: availableRooms,

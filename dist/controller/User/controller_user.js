@@ -33,28 +33,62 @@ class UserController {
             }
         });
     }
+    static cekUser(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { email } = req.params;
+                const users = yield models_user_1.default.findOne({ email: email });
+                if (users) {
+                    res.status(200).json({
+                        requestId: (0, uuid_1.v4)(),
+                        message: "User Available.",
+                        success: true,
+                        data: users
+                    });
+                }
+                else {
+                    res.status(200).json({
+                        requestId: (0, uuid_1.v4)(),
+                        message: "User Unavailable.",
+                        success: false,
+                        data: users
+                    });
+                }
+            }
+            catch (error) {
+                res.status(400).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: null,
+                    message: error.message,
+                    success: false
+                });
+            }
+        });
+    }
     static Register(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { name, email, password, confPassword, phoneNumber } = req.body;
+            const { title, name, email, password, phone } = req.body;
             // if (password !== confPassword) {
             //     return res.status(400).json({ msg: "Passwords are not the same" });
             // }
             let user;
-            if (password && confPassword) {
+            if (password && password) {
                 const salt = yield bcrypt_1.default.genSalt();
                 const hashPassword = yield bcrypt_1.default.hash(password, salt);
                 user = yield models_user_1.default.create({
+                    title: title,
                     name: name,
                     email: email,
                     password: hashPassword,
-                    phoneNumber: phoneNumber
+                    phone: phone
                 });
             }
             else {
                 user = yield models_user_1.default.create({
+                    title: title,
                     name: name,
                     email: email,
-                    phoneNumber: phoneNumber
+                    phone: phone
                 });
             }
             try {

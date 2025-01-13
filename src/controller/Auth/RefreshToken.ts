@@ -10,6 +10,7 @@ export  const refreshToken = async (req : any, res : any) => {
     try {
         console.log("hasil token coockies :",req.cookies);
         const refreshToken = req.cookies.refreshToken;
+        console.log("hasil refreshToken :", refreshToken);
         if(!refreshToken) return res.status(401).json({ message: 'Session cookies empty' });
         const user = await UserModel.findOne( { refresh_token: refreshToken });
 
@@ -22,7 +23,7 @@ export  const refreshToken = async (req : any, res : any) => {
             if(err) return res.status(401).json({ message: 'refreshToken not verify' });
             const userId = user._id;
             const name = user.name;
-            const email = user.email;
+            const email = user.email; 
             const accessToken = jwt.sign({ userId, name, email}, process.env.ACCESS_TOKEN_SECRET as string,{
                 expiresIn : '25s'
             });

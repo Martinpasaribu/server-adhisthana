@@ -36,8 +36,8 @@ export class ShortAvailableController {
             }
     
             // Debug: Log input tanggal dalam UTC
-            console.log("CheckIn UTC:", checkInDate.toISOString());
-            console.log("CheckOut UTC:", checkOutDate.toISOString());
+            // console.log("CheckIn UTC:", checkInDate.toISOString());
+            // console.log("CheckOut UTC:", checkOutDate.toISOString());
     
             // Fiks Booking { checkIn dan CheckOut} : { 12 PM & 15 PM }
 
@@ -53,7 +53,7 @@ export class ShortAvailableController {
             });
     
             // Debug: Log hasil query unavailableRooms
-            console.log("Unavailable Rooms:", unavailableRooms);
+            // console.log("Unavailable Rooms:", unavailableRooms);
     
             // Hitung jumlah room yang sudah dipesan
             const roomUsageCount: Record<string, number> = {};
@@ -89,7 +89,7 @@ export class ShortAvailableController {
                 .filter((room) => room.availableCount > 0);
     
             // Debug: Log room yang tersedia
-            console.log("Available Rooms:", availableRooms);
+            // console.log("Available Rooms:", availableRooms);
     
             res.status(200).json({
                 requestId: uuidv4(),

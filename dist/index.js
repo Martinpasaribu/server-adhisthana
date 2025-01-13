@@ -25,6 +25,8 @@ const router_auth_1 = __importDefault(require("./router/router_auth"));
 const router_user_1 = __importDefault(require("./router/router_user"));
 const mongoDbCloud_1 = require("./config/mongoDbCloud");
 const router_shortAvailable_1 = __importDefault(require("./router/router_shortAvailable"));
+const router_transaction_1 = __importDefault(require("./router/router_transaction"));
+const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const app = (0, express_1.default)();
 dotenv_1.default.config();
 app.use((0, cors_1.default)({
@@ -33,6 +35,7 @@ app.use((0, cors_1.default)({
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
 }));
+app.use((0, cookie_parser_1.default)());
 // Jika klien mengirim JSON, maka express.json() akan mem-parsingnya.
 app.use(express_1.default.json());
 // Jika klien mengirim URL-encoded data (misalnya form submission dari aplikasi web), maka express.urlencoded() akan mem-parsingnya.
@@ -59,15 +62,15 @@ app.use((0, express_session_1.default)({
         // httpOnly: true, 
         // maxAge: 1000 * 60 * 60 * 24, // 1 hari
         // ===========  Chrome , edge , fireFox Production  ==============
-        // secure: true,
-        // sameSite: 'none',
-        // httpOnly: false, 
-        // maxAge: 1000 * 60 * 60 * 24, 
+        secure: true,
+        sameSite: 'none',
+        httpOnly: false,
+        maxAge: 1000 * 60 * 60 * 24,
         // ===========  Safari Production ==============
-        secure: true, // Menggunakan HTTPS wajib
-        sameSite: 'none', // Dibutuhkan untuk cookie lintas domain
-        httpOnly: true, // Melindungi dari XSS
-        maxAge: 1000 * 60 * 60 * 24, // 1 hari
+        // secure: true,           // Menggunakan HTTPS wajib
+        // sameSite: 'none',       // Dibutuhkan untuk cookie lintas domain
+        // httpOnly: true,         // Melindungi dari XSS
+        // maxAge: 1000 * 60 * 60 * 24, // 1 hari
     },
 }));
 //   app.use((req, res, next) => {
@@ -90,6 +93,7 @@ app.use("/api/v1/booking", router_booking_1.default);
 app.use("/api/v1/auth", router_auth_1.default);
 app.use("/api/v1/user", router_user_1.default);
 app.use("/api/v1/short", router_shortAvailable_1.default);
+app.use("/api/v1/transaction", router_transaction_1.default);
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // await connectToDatabase();

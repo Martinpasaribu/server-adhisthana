@@ -14,6 +14,8 @@ interface VaNumber {
 
 interface ITran extends Document {
     _id: string;
+    name: string;
+    email: string;
     bookingId: string;
     status: string;
     payment_type: string;
@@ -38,7 +40,17 @@ const TransactionSchema: Schema = new Schema(
         },
         userId: {
             type: String,
-            required: [true, "userId cannot be empty"],
+            // required: [true, "userId cannot be empty"],
+            trim: true,
+        },
+        name: {
+            type: String,
+            // required: [true, "userId cannot be empty"],
+            trim: true,
+        },
+        email: {
+            type: String,
+            // required: [true, "userId cannot be empty"],
             trim: true,
         },
         status: {

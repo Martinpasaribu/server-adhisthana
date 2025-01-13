@@ -53,11 +53,6 @@ export class BookingController {
                     const roomBooking = BookingReq.room.find((r : { roomId:any }) => r.roomId.toString() === room._id.toString());
                     return acc + room.price * roomBooking.quantity;
                 }, 0);
-                
-                // const { nanoid } = await import('nanoid');
-                // const bookingId = 'TRX' + nanoid(10);
-       
-                
 
 
                  const bookingId = 'TRX-' + crypto.randomBytes(5).toString('hex');
@@ -71,8 +66,8 @@ export class BookingController {
                         gross_amount: grossAmount,
                     },  
                     customer_details: {
-                        first_name: "Customer", // Replace with actual customer details if available
-                        email: "customer@example.com", // Replace with actual email if available
+                        first_name: BookingReq.name, 
+                        email: BookingReq.email, 
                     },
                     item_details: roomDetails.map(room => {
                         const roomBooking = BookingReq.room.find((r: { roomId: any }) => r.roomId.toString() === room._id.toString());
@@ -87,32 +82,12 @@ export class BookingController {
                 
                 const midtransResponse = await snap.createTransaction(midtransPayload);
               
-                // await ShortAvailableController.addBookedRoomForAvailable({
-                //     transactionId: "formattedTransactionId",
-                //     userId: 'data.userId', // Ganti sesuai dengan data yang relevan
-                //     roomId : roomDetails.find((key: any) => key.roomId)?._id || 'defaultRoomId',
-                //     status: 'PAID',
-                //     checkIn: 'data.checkIn', // Pastikan data ini tersedia
-                //     checkOut: 'data.checkOut', // Pastikan data ini tersedia
-                //     products: roomDetails.map(room => {
-                //         const roomBooking = BookingReq.room.find(
-                //           (r: { roomId: any }) => r.roomId.toString() === room._id.toString()
-                //         );
-                        
-                //         return {
-                //           roomId: room._id,
-                //           name: room.name,
-                //           quantity: roomBooking?.quantity, // Optional chaining jika roomBooking tidak ditemukan
-                //           price: room.price, // Menambahkan price dari room
-                //         };
-                //       }),
-                
-                // }, res);
-                
-                // Save transaction to your database
+            
                 
                 const transaction = await transactionService.createTransaction({
                     bookingId,
+                    name : BookingReq.name,
+                    email : BookingReq.email,
                     status: PENDING_PAYMENT,
                     checkIn: BookingReq.checkIn, // Tambahkan properti ini jika dibutuhkan
                     checkOut: BookingReq.checkOut, // Tambahkan properti ini jika dibutuhkan
@@ -144,6 +119,8 @@ export class BookingController {
 
                 // Save booking (transaction) to your database
                 const bookingData = {
+                    name : BookingReq.name,
+                    email : BookingReq.email,
                     orderId: bookingId,
                     checkIn: BookingReq.checkIn,
                     checkOut: BookingReq.checkOut,
@@ -152,7 +129,7 @@ export class BookingController {
                     amountTotal: grossAmount,
                     amountBefDisc: BookingReq.amountBefDisc || grossAmount, // Assuming discount might apply
                     couponId: BookingReq.couponId || null, // Optional coupon ID
-                    idUser: uuidv4(), // Replace with the actual user ID if available
+                    userId: uuidv4(), // Replace with the actual user ID if available
                     creatorId: uuidv4(), // Replace with actual creator ID if available
                     rooms: roomDetails.map(room => {
                         const roomBooking = BookingReq.room.find(
@@ -197,40 +174,7 @@ export class BookingController {
             }
 
         }
-
-        static async getTransactionsById (req: Request, res: Response) {
- 
-            try {
-                const { transaction_id } = req.params;
-                const transaction = await TransactionModel.findOne({bookingId : transaction_id});
-            
-                if(!transaction) {
-                    return res.status(404).json({
-                        status: 'error',
-                        message: 'Transaction not found'
-                    })
-                }
-            
-                res.status(202).json({
-                    status: 'success',
-                    data: transaction
-                })
-                
-            } catch (error) {
-                
-                res.status(400).json(
-                    {
-                        requestId: uuidv4(), 
-                        data: null,
-                        message:  (error as Error).message,
-                        success: false
-                    }
-                );
-
-                console.log(" Error get data by ID ")
-            }
-        };
-
+        
         static async getOffers(req: Request, res: Response) {
             const { checkin, checkout } = req.query;
         
@@ -511,7 +455,7 @@ export class BookingController {
         
                     if (newQuantity > availableQty) {
                         return res.status(400).json({ 
-                            error: 'Requested quantity exceeds available rooms', 
+                            message: 'Quantity exceeds available rooms', 
                             available: availableQty 
                         });
                     }
@@ -522,7 +466,7 @@ export class BookingController {
                     // Periksa apakah jumlah yang diminta melebihi jumlah yang tersedia
                     if (quantity > availableQty) {
                         return res.status(400).json({ 
-                            error: 'Requested quantity exceeds available rooms', 
+                            message: 'Quantity exceeds available rooms', 
                             available: availableQty 
                         });
                     }

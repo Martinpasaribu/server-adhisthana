@@ -42,7 +42,17 @@ const TransactionSchema = new mongoose_1.Schema({
     },
     userId: {
         type: String,
-        required: [true, "userId cannot be empty"],
+        // required: [true, "userId cannot be empty"],
+        trim: true,
+    },
+    name: {
+        type: String,
+        // required: [true, "userId cannot be empty"],
+        trim: true,
+    },
+    email: {
+        type: String,
+        // required: [true, "userId cannot be empty"],
         trim: true,
     },
     status: {

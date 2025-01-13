@@ -16,7 +16,7 @@ exports.verifyID = void 0;
 const models_user_1 = __importDefault(require("../models/User/models_user"));
 const verifyID = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     // kalo server direset sessionn akan hilang
-    console.log("hasil Session coockies :", req.session);
+    console.log("hasil Session from db :", req.session.userId);
     if (!req.session.userId) {
         return res.status(401).json({ message: "Session empty, Login again " });
     }

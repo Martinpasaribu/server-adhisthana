@@ -15,8 +15,10 @@ const models_transaksi_1 = require("../../models/Transaction/models_transaksi");
 class TransactionService {
     // Fungsi untuk membuat Data Transaksi 
     createTransaction(_a) {
-        return __awaiter(this, arguments, void 0, function* ({ bookingId, status, grossAmount, userId, checkIn, checkOut, products, snap_token, paymentUrl, payment_type, bank, card_type, va_numbers }) {
+        return __awaiter(this, arguments, void 0, function* ({ bookingId, name, email, status, grossAmount, userId, checkIn, checkOut, products, snap_token, paymentUrl, payment_type, bank, card_type, va_numbers, }) {
             const transaction = {
+                name,
+                email,
                 bookingId,
                 status,
                 grossAmount,
@@ -48,10 +50,12 @@ class TransactionService {
     }
     // Fungsi untuk membuat data booking
     createBooking(_a) {
-        return __awaiter(this, arguments, void 0, function* ({ orderId, checkIn, checkOut, adult, children, amountTotal, amountBefDisc, couponId, idUser, creatorId, rooms, }) {
+        return __awaiter(this, arguments, void 0, function* ({ orderId, name, email, checkIn, checkOut, adult, children, amountTotal, amountBefDisc, couponId, userId, creatorId, rooms, }) {
             try {
                 // Format data sesuai dengan IBooking
                 const bookingData = {
+                    name,
+                    email,
                     oderId: orderId,
                     checkIn,
                     checkOut,
@@ -60,7 +64,7 @@ class TransactionService {
                     amountTotal,
                     amountBefDisc,
                     couponId,
-                    idUser,
+                    userId,
                     room: rooms.map(room => ({
                         roomId: room.roomId,
                         quantity: room.quantity,

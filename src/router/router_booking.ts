@@ -20,7 +20,7 @@ BookingRouter.post("/addBooking", BookingController.addBooking);
 BookingRouter.post("/add-to-cart", BookingController.PostChartRoom);
 BookingRouter.post("/del-to-cart", BookingController.DelChartRoom);
 BookingRouter.post("/notification", BookingController.TrxNotif);
-BookingRouter.get("/get-transaction/:transaction_id", BookingController.getTransactionsById);
+// BookingRouter.get("/get-transaction/:transaction_id", BookingController.getTransactionsById);
 
 
 
