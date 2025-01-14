@@ -62,6 +62,7 @@ class BookingController {
                 const tax = grossPrice * 0.12;
                 // Hitung total amount
                 const grossAmount = grossPrice + tax;
+                console.log(' HASIL UANG TOTAL SAYA OI :', grossAmount);
                 const bookingId = 'TRX-' + crypto_1.default.randomBytes(5).toString('hex');
                 // Create transaction in Midtrans
                 const midtransPayload = {

@@ -65,6 +65,8 @@ export class BookingController {
                 // Hitung total amount
                 const grossAmount = grossPrice + tax;
 
+                console.log(' HASIL UANG TOTAL SAYA OI :', grossAmount)
+
                 const bookingId = 'TRX-' + crypto.randomBytes(5).toString('hex');
 
 
