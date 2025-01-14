@@ -49,13 +49,14 @@ class BookingController {
                     }
                 }
                 // Calculate gross_amount
-                const night = req.session.night ? Number(req.session.night) : 0;
+                const night = req.session.night;
+                const malam = Number(night);
                 // Hitung grossPrice
                 const grossPrice = roomDetails.reduce((acc, room) => {
                     const roomBooking = BookingReq.room.find((r) => r.roomId.toString() === room._id.toString());
                     if (!roomBooking)
                         return acc; // Tangani kemungkinan roomBooking undefined
-                    return acc + room.price * roomBooking.quantity * night;
+                    return acc + room.price * roomBooking.quantity * malam;
                 }, 0);
                 // Hitung pajak
                 const tax = grossPrice * 0.12;
