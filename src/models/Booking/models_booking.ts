@@ -17,6 +17,7 @@ interface IBooking extends Document {
     checkOut: string;
 
     adult: number;
+    night: number;
     children: number;
     amountTotal: number;
     amountBefDisc: number;
@@ -67,6 +68,13 @@ const BookingSchema: Schema = new Schema(
             // min: [1, 'adult must more then 0'],
             trim: true
         },
+
+        night: {
+            type: Number,
+            required: false,
+            // min: [1, 'adult must more then 0'],
+        },
+
         children: {
             type: Number,
             required: false,

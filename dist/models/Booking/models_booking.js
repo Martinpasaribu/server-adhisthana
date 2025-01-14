@@ -67,6 +67,11 @@ const BookingSchema = new mongoose_1.Schema({
         // min: [1, 'adult must more then 0'],
         trim: true
     },
+    night: {
+        type: Number,
+        required: false,
+        // min: [1, 'adult must more then 0'],
+    },
     children: {
         type: Number,
         required: false,

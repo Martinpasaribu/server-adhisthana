@@ -23,6 +23,7 @@ export class BookingController {
 
         static async addBooking(req: Request, res: Response) {
 
+
             const BookingReq = req.body;
 
             try {
@@ -48,29 +49,26 @@ export class BookingController {
                     }
                 }
 
-                // Calculate gross_amount
-                const night = req.session.night;
-                const malam = Number(night);
+                const night = Number(BookingReq.night)
+                // // Hitung grossPrice
+                // const grossAmount02 = roomDetails.reduce((acc, room) => {
+                //     const roomBooking = BookingReq.room.find((r: { roomId: any }) => r.roomId.toString() === room._id.toString());
+                //     if (!roomBooking) return acc; // Tangani kemungkinan roomBooking undefined
+                //     return acc + room.price * roomBooking.quantity * night;
+                // }, 0);
 
-                // Hitung grossPrice
-                const grossPrice = roomDetails.reduce((acc, room) => {
-                    const roomBooking = BookingReq.room.find((r: { roomId: any }) => r.roomId.toString() === room._id.toString());
-                    if (!roomBooking) return acc; // Tangani kemungkinan roomBooking undefined
-                    return acc + room.price * roomBooking.quantity * malam;
-                }, 0);
+                // const grossAmount03 = roomDetails.map(room => {
+                //     const roomBooking = BookingReq.room.find((r: { roomId: any }) => r.roomId.toString() === room._id.toString());
+                //     return {
+                //         id: room._id,
+                //         price: room.price + room.price * 0.12,
+                //         quantity: roomBooking.quantity * night,
+                //         name: room.name,
+                //     };
+                //  })
 
-                // Hitung pajak
-                const tax = grossPrice * 0.12;
-                const pajak = Number(tax);
-
-                // Hitung total amount
-                const grossAmount = grossPrice + pajak;
-
-                console.log(' HASIL Night  TOTAL SAYA OI :', night)
-                console.log(' HASIL Night2  TOTAL SAYA OI :', malam)
-                console.log(' HASIL UANG TOTAL SAYA OI :', grossAmount)
-                console.log(' HASIL PAJAK TOTAL SAYA OI :', pajak)
-                console.log(' HASIL GrossPrice TOTAL SAYA OI :', grossPrice)
+                const grossAmount = Number(BookingReq.grossAmount)
+                // const tax = Number(grossAmount02 * 0.12)
 
                 const bookingId = 'TRX-' + crypto.randomBytes(5).toString('hex');
 
@@ -86,17 +84,22 @@ export class BookingController {
                         first_name: BookingReq.name, 
                         email: BookingReq.email, 
                     },
+
                     item_details: roomDetails.map(room => {
                         const roomBooking = BookingReq.room.find((r: { roomId: any }) => r.roomId.toString() === room._id.toString());
                         return {
                             id: room._id,
-                            price: room.price,
-                            quantity: roomBooking.quantity,
+                            price: room.price + room.price * 0.12,
+                            quantity: roomBooking.quantity * night,
                             name: room.name,
                         };
-                    }),
+                     })
                 };
                 
+                // console.log('hasil client : ', grossAmount)
+                // console.log('hasil server : ', grossAmount02 + tax)
+                // console.log('hasil server2 : ', grossAmount03)
+
                 const midtransResponse = await snap.createTransaction(midtransPayload);
               
             
@@ -644,6 +647,7 @@ export class BookingController {
                 if (cart.length === 0) {
                     return res.status(404).json({ message: 'There are problems in sessions charts' });
                 }
+
                 if (!night) {
                     return res.status(404).json({ message: 'There are problems in sessions night set' });
                 }
