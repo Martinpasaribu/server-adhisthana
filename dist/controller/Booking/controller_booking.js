@@ -63,7 +63,8 @@ class BookingController {
                 const pajak = Number(tax);
                 // Hitung total amount
                 const grossAmount = grossPrice + pajak;
-                console.log(' HASIL Night  TOTAL SAYA OI :', malam);
+                console.log(' HASIL Night  TOTAL SAYA OI :', night);
+                console.log(' HASIL Night2  TOTAL SAYA OI :', malam);
                 console.log(' HASIL UANG TOTAL SAYA OI :', grossAmount);
                 console.log(' HASIL PAJAK TOTAL SAYA OI :', pajak);
                 console.log(' HASIL GrossPrice TOTAL SAYA OI :', grossPrice);
