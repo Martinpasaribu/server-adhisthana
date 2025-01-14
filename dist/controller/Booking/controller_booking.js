@@ -49,10 +49,18 @@ class BookingController {
                     }
                 }
                 // Calculate gross_amount
-                const grossAmount = roomDetails.reduce((acc, room) => {
+                const night = req.session.night ? Number(req.session.night) : 0;
+                // Hitung grossPrice
+                const grossPrice = roomDetails.reduce((acc, room) => {
                     const roomBooking = BookingReq.room.find((r) => r.roomId.toString() === room._id.toString());
-                    return acc + room.price * roomBooking.quantity;
+                    if (!roomBooking)
+                        return acc; // Tangani kemungkinan roomBooking undefined
+                    return acc + room.price * roomBooking.quantity * night;
                 }, 0);
+                // Hitung pajak
+                const tax = grossPrice * 0.12;
+                // Hitung total amount
+                const grossAmount = grossPrice + tax;
                 const bookingId = 'TRX-' + crypto_1.default.randomBytes(5).toString('hex');
                 // Create transaction in Midtrans
                 const midtransPayload = {
