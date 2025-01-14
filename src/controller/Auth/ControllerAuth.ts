@@ -161,7 +161,7 @@ export class AuthController {
         try {
 
             if(!req.session.userId){
-                return res.status(401).json({message: "Please Login, session empty"});
+                return res.status(401).json({ message: "Your session-Id no exists", success: false });
             }
 
             const user = await UserModel.findOne(
@@ -176,12 +176,14 @@ export class AuthController {
         
             );
 
-            if(!user) return res.status(404).json({message: "User not found!"});
+            if(!user) return res.status(404).json({ message: "Your session-Id no register", success: false });
+
+            
         
             res.status(200).json({
                 requestId: uuidv4(),
                 data: user,
-                message: "Successfully cek Me",
+                message: "Your session-Id exists",
                 success: true
             });
             
@@ -190,10 +192,10 @@ export class AuthController {
             const axiosError = error as AxiosError;
             const errorResponseData = axiosError.response ? axiosError.response.status : null;
 
-            console.error('Error during Check Me:', error); 
+            console.error('Error during Session-Id:', error); 
 
             res.status(500).json({
-                message: "An error occurred during Check Me:",
+                message: "An error occurred during Session-Id:",
                 error: axiosError.message,
                 error2: errorResponseData,
                 stack: axiosError.stack,

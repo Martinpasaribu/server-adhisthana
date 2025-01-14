@@ -59,7 +59,7 @@ app.use((0, express_session_1.default)({
     cookie: {
         //  ==========  Development  ============
         // secure: false,
-        // httpOnly: true, 
+        // httpOnly: true,      
         // maxAge: 1000 * 60 * 60 * 24, // 1 hari
         // ===========  Chrome , edge , fireFox Production  ==============
         secure: true,

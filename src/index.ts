@@ -63,8 +63,7 @@ app.use(session({
         //  ==========  Development  ============
 
         // secure: false,
-        // httpOnly: true, 
-      
+        // httpOnly: true,      
         // maxAge: 1000 * 60 * 60 * 24, // 1 hari
         
         // ===========  Chrome , edge , fireFox Production  ==============

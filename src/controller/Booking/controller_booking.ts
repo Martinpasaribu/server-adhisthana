@@ -583,7 +583,7 @@ export class BookingController {
         
                 // Jika cart kosong, kirimkan respons error
                 if (cart.length === 0) {
-                    return res.status(404).json({ message: 'Cart is empty or not found in session' });
+                    return res.status(404).json({ message: 'There are problems in sessions charts' });
                 }
         
                 // Hitung total harga: price * quantity untuk setiap item, lalu jumlahkan
@@ -610,7 +610,8 @@ export class BookingController {
                 res.status(500).json({
                     requestId: uuidv4(),
                     data: null,
-                    message: (error as Error).message,
+                    // message: (error as Error).message,
+                    message: 'Error to acumulation price'+ (error as Error).message, 
                     success: false,
                 });
             }
