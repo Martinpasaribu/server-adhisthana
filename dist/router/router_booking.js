@@ -16,6 +16,7 @@ BookingRouter.post("/remove-cart", controller_booking_1.BookingController.Remove
 BookingRouter.post("/addBooking", controller_booking_1.BookingController.addBooking);
 BookingRouter.post("/add-to-cart", controller_booking_1.BookingController.PostChartRoom);
 BookingRouter.post("/del-to-cart", controller_booking_1.BookingController.DelChartRoom);
+BookingRouter.post("/add-to-night", controller_booking_1.BookingController.SetNight);
 BookingRouter.post("/notification", controller_booking_1.BookingController.TrxNotif);
 // BookingRouter.get("/get-transaction/:transaction_id", BookingController.getTransactionsById);
 // BookingRouter.get("/getContact", BookingController.getContact)

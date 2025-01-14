@@ -98,6 +98,7 @@ declare module 'express-session' {
         ipAddress?: string;
       },
       userId: string;
+      night: string;
     }
   }
 

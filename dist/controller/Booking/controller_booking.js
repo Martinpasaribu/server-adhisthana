@@ -343,6 +343,35 @@ class BookingController {
     //         );
     //     }
     // }
+    static SetNight(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { night } = req.body;
+            // Validasi input
+            if (!night || night <= 0) {
+                return res.status(400).json({ message: 'UnSet Night' });
+            }
+            // Jika cart belum ada, inisialisasi
+            if (!req.session.cart) {
+                req.session.cart = [];
+            }
+            try {
+                req.session.night = night;
+                req.session.save(err => {
+                    if (err) {
+                        console.error('Error saving session:', err);
+                        return res.status(500).json({ error: 'Failed to save session' });
+                    }
+                    res.json({
+                        message: night + ' Night adding ',
+                    });
+                });
+            }
+            catch (error) {
+                console.error('Error add Night', error);
+                res.status(500).json({ message: error.message, });
+            }
+        });
+    }
     static PostChartRoom(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const { roomId, quantity } = req.body;
@@ -470,24 +499,31 @@ class BookingController {
                 }
                 // Ambil data cart dari session
                 const cart = req.session.cart;
+                const night = req.session.night;
                 console.log('Cart in server:', cart); // Debugging
                 // Jika cart kosong, kirimkan respons error
                 if (cart.length === 0) {
                     return res.status(404).json({ message: 'There are problems in sessions charts' });
                 }
+                if (!night) {
+                    return res.status(404).json({ message: 'There are problems in sessions night set' });
+                }
                 // Hitung total harga: price * quantity untuk setiap item, lalu jumlahkan
                 const totalPrice = cart.reduce((total, item) => {
                     const price = Number(item.price);
+                    const malam = Number(night);
                     const quantity = Number(item.quantity);
-                    return total + price * quantity;
+                    return total + price * quantity * malam;
                 }, 0);
+                const tax = totalPrice * 0.12;
                 // Debugging totalPrice
                 console.log('Total Price:', totalPrice); // Debugging
                 // Kirim respons dengan cart dan total harga
                 return res.status(200).json({
                     requestId: (0, uuid_1.v4)(),
                     data: cart,
-                    totalPrice: totalPrice,
+                    totalPrice: totalPrice + tax,
+                    amountNight: night,
                     message: 'Successfully calculated total price.',
                     success: true,
                 });
