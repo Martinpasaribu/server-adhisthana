@@ -60,9 +60,13 @@ class BookingController {
                 }, 0);
                 // Hitung pajak
                 const tax = grossPrice * 0.12;
+                const pajak = Number(tax);
                 // Hitung total amount
-                const grossAmount = grossPrice + tax;
+                const grossAmount = grossPrice + pajak;
+                console.log(' HASIL Night  TOTAL SAYA OI :', malam);
                 console.log(' HASIL UANG TOTAL SAYA OI :', grossAmount);
+                console.log(' HASIL PAJAK TOTAL SAYA OI :', pajak);
+                console.log(' HASIL GrossPrice TOTAL SAYA OI :', grossPrice);
                 const bookingId = 'TRX-' + crypto_1.default.randomBytes(5).toString('hex');
                 // Create transaction in Midtrans
                 const midtransPayload = {
