@@ -123,37 +123,70 @@ export class AuthController {
         }
     };
 
-    static async Logout (req : any , res : any) { 
-        const refreshToken = req.cookies.refreshToken;
-        if (!refreshToken) return res.sendStatus(204);
-        
-        const user = await UserModel.findOne({ refresh_token: refreshToken });
-
-        if (!user) return res.sendStatus(204);
-
-        const userId = user._id;
-
-        await UserModel.findOneAndUpdate({ refresh_token: null }, { uuid: userId } );
-
-        res.clearCookie('refreshToken');
-
-        req.session.destroy((err :any )=> {
+    static async Logout(req: any, res: any) {
+        try {
+          const refreshToken = req.cookies.refreshToken;
+      
+          // Jika tidak ada refresh token di cookie, langsung kirim status 204 (No Content)
+          if (!refreshToken) {
+            return res.status(404).json({
+                message: "RefreshToken not found",
+                success: false,
+              });
+          }
+      
+          // Cari user berdasarkan refresh token
+          const user = await UserModel.findOne({ refresh_token: refreshToken });
+      
+          if (!user) {
+          
+            return res.status(404).json({
+                message: "User not found",
+                success: false,
+              });
+          }
+      
+          const userId = user._id;
+      
+          // Update refresh token menjadi null untuk user tersebut
+          await UserModel.findOneAndUpdate(
+            { _id: userId },
+            { refresh_token: null }
+          );
+      
+          // Hapus cookie refreshToken
+          res.clearCookie('refreshToken');
+      
+          // Hancurkan sesi
+          req.session.destroy((err: any) => {
             if (err) {
-                return res.status(500).json({
-                    message: "Could not log out",
-                    success: false
-                });
+              // Jika terjadi error saat menghancurkan sesi
+              return res.status(500).json({
+                message: "Could not log out",
+                success: false,
+              });
             }
-            // Hanya kirim respons ini
+      
+            // Kirim respons logout berhasil
             res.status(200).json({
-                message: "Anda berhasil Logout",
-                data:{
-                    pesan: " haloo"
-                },
-                success: true
+              message: "Success logout",
+              data: {
+                pesan: "Logout berhasil",
+              },
+              success: true,
             });
-        });
-    };
+          });
+
+        } catch (error : any) {
+          // Tangani error lainnya
+          res.status(500).json({
+            message: "An error occurred during logout",
+            success: false,
+            error: error.message,
+          });
+        }
+      }
+      
 
     
     static async Me  (req : any, res : any) {

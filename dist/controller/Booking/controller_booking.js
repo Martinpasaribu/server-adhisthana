@@ -364,7 +364,7 @@ class BookingController {
             const { night } = req.body;
             // Validasi input
             if (!night || night <= 0) {
-                return res.status(400).json({ message: 'UnSet Night' });
+                return res.status(400).json({ message: 'Wrong in set night' });
             }
             // Jika cart belum ada, inisialisasi
             if (!req.session.cart) {
