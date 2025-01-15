@@ -78,18 +78,18 @@ export class AuthController {
             );
             
 
-            res.cookie('refreshToken', refreshToken, {
-                httpOnly: true,
-                secure: true,
-                maxAge: 24 * 60 * 60 * 1000, 
-            });
-
-            // res.cookie('refreshToken', refreshToken, { 
-            //     httpOnly: true, 
-            //     secure: true, 
-            //     sameSite: 'None', 
-            //     maxAge: 24 * 60 * 60 * 1000 
+            // res.cookie('refreshToken', refreshToken, {
+            //     httpOnly: true,
+            //     secure: true,
+            //     maxAge: 24 * 60 * 60 * 1000, 
             // });
+
+            res.cookie('refreshToken', refreshToken, { 
+            secure: true,
+            sameSite: 'none',
+            httpOnly: false, 
+                maxAge: 24 * 60 * 60 * 1000 
+            });
 
             const decodedRefreshToken = jwtDecode(refreshToken);
             const expiresIn = decodedRefreshToken.exp;

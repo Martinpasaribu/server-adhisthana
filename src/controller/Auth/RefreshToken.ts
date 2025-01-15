@@ -14,7 +14,7 @@ export  const refreshToken = async (req : any, res : any) => {
         if(!refreshToken) return res.status(401).json({ message: 'Session cookies empty' });
         const user = await UserModel.findOne( { refresh_token: refreshToken });
 
-        if(!user) return res.status(401).json({ message: 'User  empty' });
+        if(!user) return res.status(404).json({ message: 'User empty' });
 
         // Casting process.env
 

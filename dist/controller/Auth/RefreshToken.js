@@ -26,7 +26,7 @@ const refreshToken = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             return res.status(401).json({ message: 'Session cookies empty' });
         const user = yield models_user_1.default.findOne({ refresh_token: refreshToken });
         if (!user)
-            return res.status(401).json({ message: 'User  empty' });
+            return res.status(404).json({ message: 'User empty' });
         // Casting process.env
         jsonwebtoken_1.default.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err) => {
             if (err)

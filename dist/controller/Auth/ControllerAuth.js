@@ -66,17 +66,17 @@ class AuthController {
                 { refresh_token: refreshToken }, // Update refresh_token
                 { new: true, runValidators: true } // Opsional: agar dokumen yang diperbarui dikembalikan
                 );
-                res.cookie('refreshToken', refreshToken, {
-                    httpOnly: true,
-                    secure: true,
-                    maxAge: 24 * 60 * 60 * 1000,
-                });
-                // res.cookie('refreshToken', refreshToken, { 
-                //     httpOnly: true, 
-                //     secure: true, 
-                //     sameSite: 'None', 
-                //     maxAge: 24 * 60 * 60 * 1000 
+                // res.cookie('refreshToken', refreshToken, {
+                //     httpOnly: true,
+                //     secure: true,
+                //     maxAge: 24 * 60 * 60 * 1000, 
                 // });
+                res.cookie('refreshToken', refreshToken, {
+                    secure: true,
+                    sameSite: 'none',
+                    httpOnly: false,
+                    maxAge: 24 * 60 * 60 * 1000
+                });
                 const decodedRefreshToken = (0, jwt_decode_1.jwtDecode)(refreshToken);
                 const expiresIn = decodedRefreshToken.exp;
                 console.log(decodedRefreshToken);
