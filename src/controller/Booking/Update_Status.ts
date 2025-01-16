@@ -128,11 +128,14 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
 
             break;
 
-        case 'expire':
+
+        case 'cancel': 
+        case 'deny': 
+        case 'expire': 
             responseData = await TransactionModel.findOneAndUpdate(
                 { bookingId: data.order_id },
                 { 
-                    status: 'CANCELED',
+                    status: CANCELED,
                     payment_type: data.payment_type,
                     va_numbers: data.va_numbers
                     ? data.va_numbers.map((va_number: { va_number: string; bank: string; }) => ({
@@ -145,7 +148,7 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
                  }
             );
             console.log('findOneAndUpdate result:', responseData);
-            
+
             if (!responseData) {
                 console.error('No document found with bookingId:', data.order_id);
             }

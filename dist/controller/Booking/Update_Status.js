@@ -100,9 +100,11 @@ const updateStatusBaseOnMidtransResponse = (transaction_id, data, res) => __awai
                 })),
             }, res);
             break;
+        case 'cancel':
+        case 'deny':
         case 'expire':
             responseData = yield models_transaksi_1.TransactionModel.findOneAndUpdate({ bookingId: data.order_id }, {
-                status: 'CANCELED',
+                status: constant_1.CANCELED,
                 payment_type: data.payment_type,
                 va_numbers: data.va_numbers
                     ? data.va_numbers.map((va_number) => ({
