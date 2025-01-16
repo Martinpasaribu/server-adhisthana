@@ -570,7 +570,7 @@ class BookingController {
                 let resultUpdate;
                 if (existingTransaction) {
                     // Properti bookingId sekarang tersedia
-                    const result = (0, Update_Status_1.updateStatusBaseOnMidtransResponse)(data.order_id, data, res);
+                    const result = yield (0, Update_Status_1.updateStatusBaseOnMidtransResponse)(data.order_id, data, res);
                     console.log('result = ', result);
                     resultUpdate = result;
                 }
