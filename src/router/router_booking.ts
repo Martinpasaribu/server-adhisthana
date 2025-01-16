@@ -16,6 +16,7 @@ BookingRouter.get("/debug-session", BookingController.CekSessions);
 BookingRouter.get("/get-chart", BookingController.GetChartRoom);
 
 BookingRouter.post("/remove-cart",  BookingController.RemoveCart);
+BookingRouter.post("/remove-cart-in-session",  BookingController.DelChartInSession);
 BookingRouter.post("/addBooking", BookingController.addBooking);
 BookingRouter.post("/add-to-cart", BookingController.PostChartRoom);
 BookingRouter.post("/del-to-cart", BookingController.DelChartRoom);

@@ -801,5 +801,25 @@ export class BookingController {
             }
         }
         
+
+        static async DelChartInSession(req: Request, res: Response) {
+
+        
+            // Pastikan cart ada dan itemId diberikan
+            if (!req.session.cart ) {
+                return res.status(400).json({ message: 'Cart is empty ' });
+            }
+
+            req.session.cart = []
+
+            return res.status(200).json( 
+                
+                    { 
+                        message: 'Field Chart has Deleted', 
+                        cart: req.session.cart 
+                    }
+            );
+        }
+        
         
 }
