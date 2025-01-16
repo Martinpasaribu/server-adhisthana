@@ -27,8 +27,6 @@ class AuthController {
     static Login(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                // console.log('Login attempt:', req.body); 
-                // // 1. Verifikasi reCAPTCHA
                 const recaptchaSecret = process.env.RECAPTCHA_SECRET_KEY;
                 const recaptchaResponse = yield axios_1.default.get(`https://www.google.com/recaptcha/api/siteverify`, {
                     params: {
@@ -44,6 +42,9 @@ class AuthController {
                 const user = yield models_user_1.default.findOne({ email: req.body.email });
                 if (!user) {
                     return res.status(404).json({ message: "User not found" });
+                }
+                if (!user.password) {
+                    return res.status(500).json({ message: "Set Password New", status: false });
                 }
                 const match = yield bcrypt_1.default.compare(req.body.password, user.password);
                 if (!match) {

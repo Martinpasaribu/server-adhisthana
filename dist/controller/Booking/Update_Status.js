@@ -114,6 +114,10 @@ const updateStatusBaseOnMidtransResponse = (transaction_id, data, res) => __awai
                 bank: data.bank,
                 card_type: data.card_type
             });
+            console.log('findOneAndUpdate result:', responseData);
+            if (!responseData) {
+                console.error('No document found with bookingId:', data.order_id);
+            }
             break;
         case 'pending':
             responseData = yield models_transaksi_1.TransactionModel.findOneAndUpdate({ bookingId: data.order_id }, {

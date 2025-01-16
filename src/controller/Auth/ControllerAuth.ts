@@ -17,11 +17,9 @@ export class AuthController {
 
 
     static async Login (req : any, res :any)  {
+
         try {
 
-            // console.log('Login attempt:', req.body); 
-
-            // // 1. Verifikasi reCAPTCHA
             const recaptchaSecret = process.env.RECAPTCHA_SECRET_KEY;
             
             const recaptchaResponse = await axios.get(
@@ -42,10 +40,15 @@ export class AuthController {
                 return res.status(400).json({ message: "reCAPTCHA verification failed. Please try again." });
             }
 
+
             const user = await UserModel.findOne({ email: req.body.email });
 
             if (!user) {
                 return res.status(404).json({ message: "User not found" });
+            }
+
+            if (!user.password) {
+                return res.status(500).json({ message: "Set Password New", status:false });
             }
 
             const match = await bcrypt.compare(req.body.password, user.password);
@@ -53,6 +56,7 @@ export class AuthController {
             if (!match) {
                 return res.status(400).json({ message: "Wrong password" });
             }
+
 
             if (req.body.password !== req.body.password) {
                 return res.status(400).json({ message: "Passwords are not the same" });

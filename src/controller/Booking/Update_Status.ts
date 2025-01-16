@@ -112,7 +112,7 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
                     userId: RoomFromTransactionModel.userId, 
                     status: PAID,
                     checkIn: RoomFromTransactionModel.checkIn,
-                    checkOut: RoomFromTransactionModel.checkOut,
+                    checkOut: RoomFromTransactionModel.checkOut,  
                     products: RoomFromTransactionModel.products.map((product: { roomId: string; price: number; quantity: number; name: string }) => ({
                         roomId: product.roomId,
                         price: product.price,
@@ -141,6 +141,11 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
                     card_type: data.card_type
                  }
             );
+            console.log('findOneAndUpdate result:', responseData);
+            if (!responseData) {
+                console.error('No document found with bookingId:', data.order_id);
+            }
+
             break;
 
         case 'pending':
