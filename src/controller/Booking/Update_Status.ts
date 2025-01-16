@@ -10,6 +10,7 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
    
     console.log(
         'order_id:', transaction_id,
+        'order_id2:', data.order_id,
         'data_status:', data.status_code,
         'transaction_status:', data.transaction_status,
         'data gross amount:', data.gross_amount,
@@ -123,8 +124,6 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
 
             break;
 
-        case 'cancel':
-        case 'deny':
         case 'expire':
             responseData = await TransactionModel.findOneAndUpdate(
                 { bookingId: data.order_id },
