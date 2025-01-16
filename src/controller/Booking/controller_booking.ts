@@ -703,11 +703,13 @@ export class BookingController {
                 // Menunggu hasil findOne dengan bookingId yang sudah diformat
                 const existingTransaction = await TransactionModel.findOne({ bookingId: formattedTransactionId });
 
+                let resultUpdate : any 
 
                 if (existingTransaction) {
                     // Properti bookingId sekarang tersedia
                     const result = updateStatusBaseOnMidtransResponse(data.order_id, data, res);
                     console.log('result = ', result);
+                    resultUpdate = result
 
                 } else {
 
@@ -717,7 +719,8 @@ export class BookingController {
                 res.status(200).json({
 
                     status: 'success',
-                    message: "OK"
+                    message: "OK",
+                    data: resultUpdate
     
                 })
 

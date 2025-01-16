@@ -19,6 +19,7 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
         'va_numbers :', data.va_numbers,
         'bank :', data.bank,
         'card_type :', data.card_type,
+        'signature_key :', data.signature_key,
         // " Data1 yang akan dimasukan ke short : ", data
         
     );
@@ -30,6 +31,9 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
         .digest('hex');
 
     if (data.signature_key !== hash) {
+        
+        console.log("invalid signature")
+
         return {
             status: 'error',
             message: 'Invalid signature key',
@@ -128,7 +132,7 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
             responseData = await TransactionModel.findOneAndUpdate(
                 { bookingId: data.order_id },
                 { 
-                    status: CANCELED,
+                    status: 'CANCELED',
                     payment_type: data.payment_type,
                     va_numbers: data.va_numbers
                     ? data.va_numbers.map((va_number: { va_number: string; bank: string; }) => ({
@@ -141,6 +145,7 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
                  }
             );
             console.log('findOneAndUpdate result:', responseData);
+            
             if (!responseData) {
                 console.error('No document found with bookingId:', data.order_id);
             }

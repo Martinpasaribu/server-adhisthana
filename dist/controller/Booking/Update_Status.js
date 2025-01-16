@@ -19,13 +19,14 @@ const constant_1 = require("../../utils/constant");
 const controller_short_1 = require("../ShortAvailable/controller_short");
 const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY;
 const updateStatusBaseOnMidtransResponse = (transaction_id, data, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log('order_id:', transaction_id, 'order_id2:', data.order_id, 'data_status:', data.status_code, 'transaction_status:', data.transaction_status, 'data gross amount:', data.gross_amount, 'midtrans_key:', MIDTRANS_SERVER_KEY, 'payment_type :', data.payment_type, 'va_numbers :', data.va_numbers, 'bank :', data.bank, 'card_type :', data.card_type);
+    console.log('order_id:', transaction_id, 'order_id2:', data.order_id, 'data_status:', data.status_code, 'transaction_status:', data.transaction_status, 'data gross amount:', data.gross_amount, 'midtrans_key:', MIDTRANS_SERVER_KEY, 'payment_type :', data.payment_type, 'va_numbers :', data.va_numbers, 'bank :', data.bank, 'card_type :', data.card_type, 'signature_key :', data.signature_key);
     // Generate signature hash
     const hash = crypto_1.default
         .createHash('sha512')
         .update(`${transaction_id}${data.status_code}${data.gross_amount}${MIDTRANS_SERVER_KEY}`)
         .digest('hex');
     if (data.signature_key !== hash) {
+        console.log("invalid signature");
         return {
             status: 'error',
             message: 'Invalid signature key',
@@ -101,7 +102,7 @@ const updateStatusBaseOnMidtransResponse = (transaction_id, data, res) => __awai
             break;
         case 'expire':
             responseData = yield models_transaksi_1.TransactionModel.findOneAndUpdate({ bookingId: data.order_id }, {
-                status: constant_1.CANCELED,
+                status: 'CANCELED',
                 payment_type: data.payment_type,
                 va_numbers: data.va_numbers
                     ? data.va_numbers.map((va_number) => ({

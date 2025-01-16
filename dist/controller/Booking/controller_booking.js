@@ -567,17 +567,20 @@ class BookingController {
                 // console.log("Formatted Transaction ID:", formattedTransactionId);
                 // Menunggu hasil findOne dengan bookingId yang sudah diformat
                 const existingTransaction = yield models_transaksi_1.TransactionModel.findOne({ bookingId: formattedTransactionId });
+                let resultUpdate;
                 if (existingTransaction) {
                     // Properti bookingId sekarang tersedia
                     const result = (0, Update_Status_1.updateStatusBaseOnMidtransResponse)(data.order_id, data, res);
                     console.log('result = ', result);
+                    resultUpdate = result;
                 }
                 else {
                     console.log('Transaction not found in server, Data =', data);
                 }
                 res.status(200).json({
                     status: 'success',
-                    message: "OK"
+                    message: "OK",
+                    data: resultUpdate
                 });
             }
             catch (error) {
