@@ -651,5 +651,18 @@ class BookingController {
             }
         });
     }
+    static DelChartInSession(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            // Pastikan cart ada dan itemId diberikan
+            if (!req.session.cart) {
+                return res.status(400).json({ message: 'Cart is empty ' });
+            }
+            req.session.cart = [];
+            return res.status(200).json({
+                message: 'Field Chart has Deleted',
+                cart: req.session.cart
+            });
+        });
+    }
 }
 exports.BookingController = BookingController;
