@@ -70,7 +70,7 @@ app.use(session({
 
         secure: true,
         sameSite: 'none',
-        httpOnly: false, 
+        httpOnly: true, 
         maxAge: 1000 * 60 * 60 * 24, 
 
 
@@ -122,7 +122,15 @@ app.use((req, res, next) => {
     next();
 });
 
+app.use((req, res, next) => {
+    res.setHeader('Set-Cookie', 'test_cookie=test_value; Path=/; Secure; HttpOnly; SameSite=None');
+    next();
+});
 
+app.use((req, res, next) => {
+    res.setHeader('Set-Cookie', 'test_cookie=test_value; Path=/; Secure; HttpOnly; SameSite=None');
+    next();
+});
 
 
 app.use("/api/v1/room", RoomRouter)

@@ -64,7 +64,7 @@ app.use((0, express_session_1.default)({
         // ===========  Chrome , edge , fireFox Production  ==============
         secure: true,
         sameSite: 'none',
-        httpOnly: false,
+        httpOnly: true,
         maxAge: 1000 * 60 * 60 * 24,
         // ===========  Safari Production ==============
         // secure: true,           // Menggunakan HTTPS wajib
@@ -84,6 +84,14 @@ app.get('/', (req, res) => {
 app.use((req, res, next) => {
     console.log('Cookies:', req.headers.cookie || 'No cookies received');
     console.log('Session ID:', req.sessionID);
+    next();
+});
+app.use((req, res, next) => {
+    res.setHeader('Set-Cookie', 'test_cookie=test_value; Path=/; Secure; HttpOnly; SameSite=None');
+    next();
+});
+app.use((req, res, next) => {
+    res.setHeader('Set-Cookie', 'test_cookie=test_value; Path=/; Secure; HttpOnly; SameSite=None');
     next();
 });
 app.use("/api/v1/room", router_room_1.default);

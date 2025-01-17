@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TransactionController = void 0;
 const uuid_1 = require("uuid");
+const constant_1 = require("../../utils/constant");
 const models_transaksi_1 = require("../../models/Transaction/models_transaksi");
 class TransactionController {
     static getTransactionsById(req, res) {
@@ -55,6 +56,35 @@ class TransactionController {
                 res.status(202).json({
                     status: 'success',
                     data: transaction
+                });
+            }
+            catch (error) {
+                res.status(400).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: null,
+                    message: error.message,
+                    success: false
+                });
+                console.log(" Error get data by User ");
+            }
+        });
+    }
+    ;
+    static updateTransactionFailed(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const transactionId = req.params.order_id;
+                const update = yield models_transaksi_1.TransactionModel.findOneAndUpdate({ bookingId: transactionId }, { status: constant_1.EXPIRE });
+                if (!update) {
+                    return res.status(404).json({
+                        status: 'error',
+                        message: `Transaction not found by TRX :  ${transactionId}`
+                    });
+                }
+                res.status(202).json({
+                    status: 'success',
+                    data: update,
+                    message: "success set expire transaction"
                 });
             }
             catch (error) {

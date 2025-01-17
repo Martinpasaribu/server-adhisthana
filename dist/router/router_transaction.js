@@ -12,6 +12,7 @@ const TransactionRouter = express_1.default.Router();
 TransactionRouter.get("/get-transaction/:transaction_id", controller_transaction_1.TransactionController.getTransactionsById);
 TransactionRouter.get("/get-transaction-user/:user", VerifyId_1.verifyID, VerifyToken_1.verifyToken, controller_transaction_1.TransactionController.getTransactionsByUser);
 TransactionRouter.get("/get-transaction-user", VerifyId_1.verifyID, VerifyToken_1.verifyToken, controller_transaction_1.TransactionController.getTransactionsByMember);
+TransactionRouter.get("/update-status-failed/:order_id", controller_transaction_1.TransactionController.updateTransactionFailed);
 // TransactionRouter.get("/getContact", BookingController.getContact)
 // TransactionRouter.post("/addSubscribe", BookingController.addSubscribe);
 exports.default = TransactionRouter;

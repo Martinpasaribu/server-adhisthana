@@ -19,6 +19,8 @@ TransactionRouter.get("/get-transaction-user/:user", verifyID , verifyToken, Tra
 
 TransactionRouter.get("/get-transaction-user", verifyID , verifyToken, TransactionController.getTransactionsByMember);
 
+TransactionRouter.get("/update-status-failed/:order_id", TransactionController.updateTransactionFailed);
+
 
 
 

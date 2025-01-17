@@ -11,7 +11,7 @@ import { BookingModel } from '../../models/Booking/models_booking';
 import { snap } from '../../config/midtransConfig'
 
 
-import { PENDING_PAYMENT } from '../../utils/constant';
+import { EXPIRE, PENDING_PAYMENT } from '../../utils/constant';
 import { SessionModel } from '../../models/Booking/models_session';
 import { TransactionModel } from '../../models/Transaction/models_transaksi';
 
@@ -70,6 +70,43 @@ export class TransactionController {
                 res.status(202).json({
                     status: 'success',
                     data: transaction
+                })
+                
+            } catch (error) {
+                
+                res.status(400).json(
+                    {
+                        requestId: uuidv4(), 
+                        data: null,
+                        message:  (error as Error).message,
+                        success: false
+                    }
+                );
+
+                console.log(" Error get data by User ")
+            }
+        };
+
+        static async updateTransactionFailed(req: Request, res: Response) {
+ 
+            try {
+                const transactionId = req.params.order_id
+                
+                const update = await TransactionModel.findOneAndUpdate({bookingId : transactionId}, {status:EXPIRE});
+
+            
+                if(!update) {
+                    return res.status(404).json({
+                        status: 'error',
+                        message: `Transaction not found by TRX :  ${transactionId}`
+                    })
+                }
+            
+
+                res.status(202).json({
+                    status: 'success',
+                    data: update,
+                    message: "success set expire transaction"
                 })
                 
             } catch (error) {
