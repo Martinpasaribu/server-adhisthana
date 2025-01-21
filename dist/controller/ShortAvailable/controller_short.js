@@ -18,7 +18,13 @@ const models_room_1 = __importDefault(require("../../models/Room/models_room"));
 const models_booking_1 = require("../../models/Booking/models_booking");
 const models_transaksi_1 = require("../../models/Transaction/models_transaksi");
 const models_ShortAvailable_1 = require("../../models/ShortAvailable/models_ShortAvailable");
+const moment_1 = __importDefault(require("moment"));
+const models_SitemMinder_1 = require("../../models/SiteMinder/models_SitemMinder");
+const FilterAvaliableRoom_1 = require("./FilterAvaliableRoom");
+const SetPriceDayList_1 = require("./SetPriceDayList");
+const SetResponseShort_1 = require("./SetResponseShort");
 class ShortAvailableController {
+    // Short Available Room from hash checkout
     static getAvailableRooms(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -126,6 +132,7 @@ class ShortAvailableController {
             }
         });
     }
+    // In Use Controller Booking status update
     static addBookedRoomForAvailable(data, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -179,5 +186,62 @@ class ShortAvailableController {
         });
     }
     ;
+    // Short Available Room from hash checkout
+    static getAvailableRoomsWithSiteMinder(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { checkIn, checkOut } = req.body;
+                if (!checkIn || !checkOut) {
+                    return res.status(400).json({ message: "Tanggal check-in dan check-out diperlukan." });
+                }
+                // Konversi tanggal ke UTC
+                const checkInDate = new Date(checkIn);
+                const checkOutDate = new Date(checkOut);
+                const dateMinderStart = moment_1.default.utc(checkIn).format('YYYY-MM-DD');
+                const dateMinderEnd = moment_1.default.utc(checkOut).subtract(1, 'days').format('YYYY-MM-DD');
+                const dateMinderEnds = moment_1.default.utc(checkOut).format('YYYY-MM-DD');
+                const Day = {
+                    In: dateMinderStart,
+                    Out: dateMinderEnds
+                };
+                // console.log('test in :', checkIn, 'convert :', dateMinderStart);
+                // console.log('test out :', checkOut, 'convert :', dateMinderEnd);
+                if (checkInDate >= checkOutDate) {
+                    return res.status(400).json({ message: "Tanggal check-out harus lebih besar dari tanggal check-in." });
+                }
+                const siteMinders = yield models_SitemMinder_1.SiteMinderModel.find({
+                    isDeleted: false,
+                    date: { $gte: dateMinderStart, $lte: dateMinderEnd },
+                });
+                if (!siteMinders || siteMinders.length === 0) {
+                    return res.status(404).json({ message: "Tidak ada data SiteMinder yang ditemukan untuk tanggal tersebut." });
+                }
+                // Iterasi setiap SiteMinder untuk memperbarui RoomModel
+                for (const siteMinder of siteMinders) {
+                    const { roomId, price } = siteMinder;
+                    yield models_room_1.default.findOneAndUpdate({ _id: roomId }, { price: price });
+                }
+                const resultFilter = yield (0, FilterAvaliableRoom_1.FilterAvailable)(checkInDate, checkOutDate);
+                const setPriceDayList = yield (0, SetPriceDayList_1.SetPriceDayList)(resultFilter, siteMinders, Day);
+                // Saya akan menggabungkan PriceDateList dengan RoomsModel
+                const updateRoomsAvailable = (0, SetResponseShort_1.SetResponseShort)(resultFilter, setPriceDayList);
+                res.status(200).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: updateRoomsAvailable,
+                    message: `Successfully retrieved rooms. From Date: ${checkInDate.toISOString()} To: ${checkOutDate.toISOString()}`,
+                    success: true,
+                });
+            }
+            catch (error) {
+                console.error(error);
+                res.status(500).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: null,
+                    message: error.message,
+                    success: false,
+                });
+            }
+        });
+    }
 }
 exports.ShortAvailableController = ShortAvailableController;

@@ -10,4 +10,5 @@ const ShortAvailableRouter = express_1.default.Router();
 ShortAvailableRouter.get("/getShortVila", controller_short_1.ShortAvailableController.getShortVila);
 ShortAvailableRouter.post("/get-short-available", controller_short_1.ShortAvailableController.getAvailableRooms);
 ShortAvailableRouter.get("/get-short-available", controller_short_1.ShortAvailableController.getAvailableRooms);
+ShortAvailableRouter.post("/get-available-set-minder", controller_short_1.ShortAvailableController.getAvailableRoomsWithSiteMinder);
 exports.default = ShortAvailableRouter;

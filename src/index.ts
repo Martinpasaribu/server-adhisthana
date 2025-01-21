@@ -15,6 +15,8 @@ import { connectToMongoDB } from "./config/mongoDbCloud";
 import ShortAvailableRouter from "./router/router_shortAvailable";
 import TransactionRouter from "./router/router_transaction";
 import cookieParser from 'cookie-parser';
+import SessionRouter from "./router/router_session";
+import SiteMinderRouter from "./router/router_siteminder";
 
 
 const app: express.Application = express();
@@ -100,6 +102,10 @@ declare module 'express-session' {
       userId: string;
       night: string;
       refreshToken : string;
+      date : {
+        checkin : Date |string ;
+        checkout : Date |string ;
+      };
     }
   }
 
@@ -141,6 +147,9 @@ app.use("/api/v1/auth", AuthRouter)
 app.use("/api/v1/user", UserRouter)
 app.use("/api/v1/short", ShortAvailableRouter)
 app.use("/api/v1/transaction", TransactionRouter)
+app.use("/api/v1/session", SessionRouter)
+app.use("/api/v1/site/minder", SiteMinderRouter)
+
 
 
 

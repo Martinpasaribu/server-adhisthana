@@ -9,16 +9,16 @@ const BookingRouter = express_1.default.Router();
 // semantic meaning
 BookingRouter.get("/getOffers", controller_booking_1.BookingController.getOffers);
 BookingRouter.get("/get", controller_booking_1.BookingController.getOffers);
-BookingRouter.get("/get-total-price", controller_booking_1.BookingController.GetTotalPrice);
-BookingRouter.get("/debug-session", controller_booking_1.BookingController.CekSessions);
-BookingRouter.get("/get-chart", controller_booking_1.BookingController.GetChartRoom);
-BookingRouter.post("/remove-cart", controller_booking_1.BookingController.RemoveCart);
-BookingRouter.post("/remove-cart-in-session", controller_booking_1.BookingController.DelChartInSession);
 BookingRouter.post("/addBooking", controller_booking_1.BookingController.addBooking);
-BookingRouter.post("/add-to-cart", controller_booking_1.BookingController.PostChartRoom);
-BookingRouter.post("/del-to-cart", controller_booking_1.BookingController.DelChartRoom);
-BookingRouter.post("/add-to-night", controller_booking_1.BookingController.SetNight);
 BookingRouter.post("/notification", controller_booking_1.BookingController.TrxNotif);
+// BookingRouter.get("/get-chart", BookingController.GetChartRoom);
+// BookingRouter.get("/get-total-price", BookingController.GetTotalPrice);
+// BookingRouter.get("/debug-session", BookingController.CekSessions);
+// BookingRouter.post("/remove-cart",  BookingController.RemoveCart);
+// BookingRouter.post("/remove-cart-in-session",  BookingController.DelChartInSession);
+// BookingRouter.post("/add-to-cart", BookingController.PostChartRoom);
+// BookingRouter.post("/del-to-cart", BookingController.DelChartRoom);
+// BookingRouter.post("/add-to-night", BookingController.SetNight);
 // BookingRouter.get("/get-transaction/:transaction_id", BookingController.getTransactionsById);
 // BookingRouter.get("/getContact", BookingController.getContact)
 // BookingRouter.post("/addSubscribe", BookingController.addSubscribe);

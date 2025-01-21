@@ -27,6 +27,8 @@ const mongoDbCloud_1 = require("./config/mongoDbCloud");
 const router_shortAvailable_1 = __importDefault(require("./router/router_shortAvailable"));
 const router_transaction_1 = __importDefault(require("./router/router_transaction"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
+const router_session_1 = __importDefault(require("./router/router_session"));
+const router_siteminder_1 = __importDefault(require("./router/router_siteminder"));
 const app = (0, express_1.default)();
 dotenv_1.default.config();
 app.use((0, cors_1.default)({
@@ -102,6 +104,8 @@ app.use("/api/v1/auth", router_auth_1.default);
 app.use("/api/v1/user", router_user_1.default);
 app.use("/api/v1/short", router_shortAvailable_1.default);
 app.use("/api/v1/transaction", router_transaction_1.default);
+app.use("/api/v1/session", router_session_1.default);
+app.use("/api/v1/site/minder", router_siteminder_1.default);
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // await connectToDatabase();

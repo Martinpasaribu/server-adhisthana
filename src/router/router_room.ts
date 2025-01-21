@@ -71,6 +71,7 @@ RoomRouter.delete("/deleteRoomPermanent/:id", RoomController.deletedRoomPermanen
 
 RoomRouter.get("/updatePacketAll/:id", RoomController.updatePacketAll)
 RoomRouter.patch("/updateRoomPart/:id", RoomController.updateRoomPart)
+RoomRouter.get("/getid-from-siteminder", RoomController.getIdToSiteMinder)
 // RoomRouter.delete("/deletedSoftRoom/:id", RoomController.deletedSoftRoom)
 
 export default RoomRouter;

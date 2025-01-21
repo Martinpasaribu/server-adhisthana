@@ -23,6 +23,7 @@ interface IRoom extends Document {
     imagePoster: string;
     maxCapacity: number;
     price:number;
+    priceDateList:number;
     size: number;
     bedType: string;
     available: number;
@@ -69,6 +70,13 @@ const RoomSchema: Schema = new Schema(
             min: [1, 'price must more then 0'],
             trim: true
         },
+        priceDateList: {
+            type: Number,
+            required: false,
+            // min: [1, 'price must more then 0'],
+            trim: true
+        },
+
         size: {
             type: Number,
             required: false,

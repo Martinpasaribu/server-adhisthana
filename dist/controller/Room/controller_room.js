@@ -177,5 +177,32 @@ class RoomController {
         });
     }
     ;
+    static getIdToSiteMinder(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                let data;
+                data = yield models_room_1.default.find({
+                    isDeleted: false,
+                }, {
+                    name: true,
+                    _id: true
+                });
+                res.status(201).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: data,
+                    message: "Successfully Fetch Data Room.",
+                    success: true
+                });
+            }
+            catch (error) {
+                res.status(400).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: null,
+                    message: error.message,
+                    success: false
+                });
+            }
+        });
+    }
 }
 exports.RoomController = RoomController;

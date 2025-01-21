@@ -219,6 +219,48 @@ export class RoomController {
         }
     };
 
+    static async getIdToSiteMinder(req: Request, res: Response) {
+
+        try {
+
+            let data ;
+
+            data = await RoomModel.find(
+                
+                { 
+                    isDeleted: false,
+
+                },
+
+                {
+                    name: true,
+                    _id:true
+                }
+            );
+            
+            res.status(201).json(
+                {
+                    requestId: uuidv4(), 
+                    data: data,
+                    message: "Successfully Fetch Data Room.",
+                    success: true
+                }
+            );
+
+        } catch (error) {
+            
+            res.status(400).json(
+                {
+                    requestId: uuidv4(), 
+                    data: null,
+                    message:  (error as Error).message,
+                    success: false
+                }
+            );
+        }
+
+    }
+
     // static async deletedSoftRoom(req: Request, res: Response) {
 
     //     try {

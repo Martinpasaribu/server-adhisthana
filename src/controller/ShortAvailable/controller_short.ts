@@ -11,107 +11,108 @@ import { BookingModel } from '../../models/Booking/models_booking';
 import { snap } from '../../config/midtransConfig'
 
 import { PENDING_PAYMENT } from '../../utils/constant';
-import { SessionModel } from '../../models/Booking/models_session';
 import { TransactionModel } from '../../models/Transaction/models_transaksi';
 import { ShortAvailableModel } from '../../models/ShortAvailable/models_ShortAvailable';
+import moment from 'moment';
+import { SiteMinderModel } from '../../models/SiteMinder/models_SitemMinder';
+import { FilterAvailable } from './FilterAvaliableRoom';
+import { SetPriceDayList } from './SetPriceDayList';
+import { SetResponseShort } from './SetResponseShort';
 
 export class ShortAvailableController {
 
 
-    static async getAvailableRooms(req: Request, res: Response) {
+        // Short Available Room from hash checkout
+        static async getAvailableRooms(req: Request, res: Response) {
 
-        try {
-            const { checkIn, checkOut } = req.body;
-    
-            if (!checkIn || !checkOut) {
-                return res.status(400).json({ message: "Tanggal check-in dan check-out diperlukan." });
-            }
-    
-            // Konversi tanggal ke UTC
-            const checkInDate = new Date(checkIn);
-            const checkOutDate = new Date(checkOut);
-    
-            if (checkInDate >= checkOutDate) {
-                return res.status(400).json({ message: "Tanggal check-out harus lebih besar dari tanggal check-in." });
-            }
-    
-            // Debug: Log input tanggal dalam UTC
-            // console.log("CheckIn UTC:", checkInDate.toISOString());
-            // console.log("CheckOut UTC:", checkOutDate.toISOString());
-    
-            // Fiks Booking { checkIn dan CheckOut} : { 12 PM & 15 PM }
+            try {
+                const { checkIn, checkOut } = req.body;
+        
+                if (!checkIn || !checkOut) {
+                    return res.status(400).json({ message: "Tanggal check-in dan check-out diperlukan." });
+                }
+        
+                // Konversi tanggal ke UTC
+                const checkInDate = new Date(checkIn);
+                const checkOutDate = new Date(checkOut);
+        
+                if (checkInDate >= checkOutDate) {
+                    return res.status(400).json({ message: "Tanggal check-out harus lebih besar dari tanggal check-in." });
+                }
+        
+                // Debug: Log input tanggal dalam UTC
+                // console.log("CheckIn UTC:", checkInDate.toISOString());
+                // console.log("CheckOut UTC:", checkOutDate.toISOString());
+        
+                // Fiks Booking { checkIn dan CheckOut} : { 12 PM & 15 PM }
 
-            // Query untuk mencari unavailable rooms
-            const unavailableRooms = await ShortAvailableModel.find({
-                status: "PAID",
-                $or: [
-                    {
-                        checkIn: { $lt: checkOutDate.toISOString() }, 
-                        checkOut: { $gt: checkInDate.toISOString() }, 
-                    },
-                ],
-            });
-    
-            // Debug: Log hasil query unavailableRooms
-            // console.log("Unavailable Rooms:", unavailableRooms);
-    
-            // Hitung jumlah room yang sudah dipesan
-            const roomUsageCount: Record<string, number> = {};
-
-            unavailableRooms.forEach((transaction) => {
-                transaction.products.forEach((product: { roomId: mongoose.Types.ObjectId | string; quantity: number }) => {
-                    const roomId = product.roomId.toString();
-                    roomUsageCount[roomId] = (roomUsageCount[roomId] || 0) + product.quantity;
+                // Query untuk mencari unavailable rooms
+                const unavailableRooms = await ShortAvailableModel.find({
+                    status: "PAID",
+                    $or: [
+                        {
+                            checkIn: { $lt: checkOutDate.toISOString() }, 
+                            checkOut: { $gt: checkInDate.toISOString() }, 
+                        },
+                    ],
                 });
-            });
-    
-            // Debug: Log hasil roomUsageCount
-            // console.log("Room Usage Count:", roomUsageCount);
-    
-            // Ambil semua room dari database
-            const allRooms = await RoomModel.find({ isDeleted: false });
-    
-            // Debug: Log semua room
-            // console.log("All Rooms:", allRooms);
-    
-            // Filter room yang tersedia
-            const availableRooms = allRooms
-                .map((room) => {
-                    
-                    const usedCount = roomUsageCount[room._id.toString()] || 0;
-                    const availableCount = room.available - usedCount;
-    
-                    return {
-                        ...room.toObject(),
-                        availableCount: availableCount > 0 ? availableCount : 0,
-                    };
-                })
-                .filter((room) => room.availableCount > 0);
-    
-            // Debug: Log room yang tersedia
-            // console.log("Available Rooms:", availableRooms);
-    
-            res.status(200).json({
-                requestId: uuidv4(),
-                data: availableRooms,
-                message: `Successfully retrieved rooms. From Date: ${checkInDate.toISOString()} To: ${checkOutDate.toISOString()}`,
-                success: true,
-            });
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({
-                requestId: uuidv4(),
-                data: null,
-                message: (error as Error).message,
-                success: false,
-            });
+        
+                // Debug: Log hasil query unavailableRooms
+                // console.log("Unavailable Rooms:", unavailableRooms);
+        
+                // Hitung jumlah room yang sudah dipesan
+                const roomUsageCount: Record<string, number> = {};
+
+                unavailableRooms.forEach((transaction) => {
+                    transaction.products.forEach((product: { roomId: mongoose.Types.ObjectId | string; quantity: number }) => {
+                        const roomId = product.roomId.toString();
+                        roomUsageCount[roomId] = (roomUsageCount[roomId] || 0) + product.quantity;
+                    });
+                });
+        
+                // Debug: Log hasil roomUsageCount
+                // console.log("Room Usage Count:", roomUsageCount);
+        
+                // Ambil semua room dari database
+                const allRooms = await RoomModel.find({ isDeleted: false });
+        
+                // Debug: Log semua room
+                // console.log("All Rooms:", allRooms);
+        
+                // Filter room yang tersedia
+                const availableRooms = allRooms
+                    .map((room) => {
+                        
+                        const usedCount = roomUsageCount[room._id.toString()] || 0;
+                        const availableCount = room.available - usedCount;
+        
+                        return {
+                            ...room.toObject(),
+                            availableCount: availableCount > 0 ? availableCount : 0,
+                        };
+                    })
+                    .filter((room) => room.availableCount > 0);
+        
+                // Debug: Log room yang tersedia
+                // console.log("Available Rooms:", availableRooms);
+        
+                res.status(200).json({
+                    requestId: uuidv4(),
+                    data: availableRooms,
+                    message: `Successfully retrieved rooms. From Date: ${checkInDate.toISOString()} To: ${checkOutDate.toISOString()}`,
+                    success: true,
+                });
+            } catch (error) {
+                console.error(error);
+                res.status(500).json({
+                    requestId: uuidv4(),
+                    data: null,
+                    message: (error as Error).message,
+                    success: false,
+                });
+            }
         }
-    }
-    
-            
-
-
-
+        
         static async getShortVila(req: Request, res: Response) {
             const { checkin, checkout } = req.query;
         
@@ -150,6 +151,7 @@ export class ShortAvailableController {
             }
         }
       
+        // In Use Controller Booking status update
         static async addBookedRoomForAvailable(data: any, res: Response) {
             try {
               // Membuat instance baru dengan data dari parameter
@@ -205,6 +207,90 @@ export class ShortAvailableController {
         };
         
 
+        // Short Available Room from hash checkout
+        static async getAvailableRoomsWithSiteMinder(req: Request, res: Response) {
 
+            try {
+                const { checkIn, checkOut } = req.body;
+        
+                if (!checkIn || !checkOut) {
+                    return res.status(400).json({ message: "Tanggal check-in dan check-out diperlukan." });
+                }
+        
+                // Konversi tanggal ke UTC
+                const checkInDate = new Date(checkIn);
+                const checkOutDate = new Date(checkOut);
+
+                const dateMinderStart = moment.utc(checkIn).format('YYYY-MM-DD'); 
+                const dateMinderEnd = moment.utc(checkOut).subtract(1, 'days').format('YYYY-MM-DD'); 
+                
+                const dateMinderEnds = moment.utc(checkOut).format('YYYY-MM-DD');
+                
+                const Day =  {
+                    In : dateMinderStart,
+                    Out : dateMinderEnds
+                }
+
+                // console.log('test in :', checkIn, 'convert :', dateMinderStart);
+                // console.log('test out :', checkOut, 'convert :', dateMinderEnd);
+                
+
+                
+                if (checkInDate >= checkOutDate) {
+                    return res.status(400).json({ message: "Tanggal check-out harus lebih besar dari tanggal check-in." });
+                }
+
+
+              
+                const siteMinders = await SiteMinderModel.find({
+                    isDeleted: false,
+                    date: { $gte: dateMinderStart, $lte: dateMinderEnd }, 
+                });
+
+
+                if (!siteMinders || siteMinders.length === 0) {
+                    return res.status(404).json({ message: "Tidak ada data SiteMinder yang ditemukan untuk tanggal tersebut." });
+                }
+
+                // Iterasi setiap SiteMinder untuk memperbarui RoomModel
+                for (const siteMinder of siteMinders) {
+                    const { roomId, price } = siteMinder;
+
+                  
+                    await RoomModel.findOneAndUpdate(
+                        { _id: roomId }, 
+                        { price: price } 
+                    );
+                }
+
+
+
+
+                const resultFilter = await FilterAvailable(checkInDate,checkOutDate)
+
+  
+                const setPriceDayList = await SetPriceDayList(resultFilter,siteMinders, Day)
+
+                // Saya akan menggabungkan PriceDateList dengan RoomsModel
+                const updateRoomsAvailable =  SetResponseShort(resultFilter,setPriceDayList)
+
+
+                res.status(200).json({
+                    requestId: uuidv4(),
+                    data: updateRoomsAvailable,
+                    message: `Successfully retrieved rooms. From Date: ${checkInDate.toISOString()} To: ${checkOutDate.toISOString()}`,
+                    success: true,
+                });
+                
+            } catch (error) {
+                console.error(error);
+                res.status(500).json({
+                    requestId: uuidv4(),
+                    data: null,
+                    message: (error as Error).message,
+                    success: false,
+                });
+            }
+        }
         
 }

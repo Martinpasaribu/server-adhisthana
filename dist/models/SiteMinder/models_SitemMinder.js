@@ -33,102 +33,34 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.SiteMinderModel = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-const RoomSchema = new mongoose_1.Schema({
-    name: {
+const SiteMinderSchema = new mongoose_1.Schema({
+    roomId: {
         type: String,
-        required: [true, "name cannot be empty"],
-        trim: true
+        trim: true,
     },
-    maxCapacity: {
-        type: Number,
-        required: false,
-        trim: true
-    },
-    shortDesc: {
+    date: {
         type: String,
-        required: false,
-        trim: true
-    },
-    describe: {
-        type: String,
-        required: false,
-        trim: true
+        trim: true,
     },
     price: {
         type: Number,
-        required: false,
-        min: [1, 'price must more then 0'],
-        trim: true
-    },
-    priceDateList: {
-        type: Number,
-        required: false,
-        // min: [1, 'price must more then 0'],
-        trim: true
-    },
-    size: {
-        type: Number,
-        required: false,
-        min: [1, 'size must more then 0'],
-        trim: true
-    },
-    bedType: {
-        type: String,
-        required: false,
-        trim: true
-    },
-    available: {
-        type: Number,
-        required: false,
-        trim: true
-    },
-    image: [{
-            row: { type: Number },
-            image: { type: String }
-        }],
-    imagePoster: {
-        type: String,
-        required: false,
         trim: true,
-    },
-    imageShort: {
-        type: String,
-        required: false,
-        trim: true,
-    },
-    facility: [{
-            type: String
-        }],
-    rating: {
-        type: String,
-        required: false,
-        trim: true
-    },
-    review: {
-        type: String,
-        required: false,
-        trim: true
-    },
-    used: {
-        type: Number,
-        required: false,
-        trim: true
     },
     createAt: {
         type: Number,
-        default: Date.now
+        default: Date.now,
     },
     creatorId: {
         type: String,
-        required: false
+        required: false,
     },
     isDeleted: {
         type: Boolean,
-        default: false
+        default: false,
     },
 }, {
     timestamps: true,
 });
-const RoomModel = mongoose_1.default.model('Room', RoomSchema, 'Room');
-exports.default = RoomModel;
+exports.SiteMinderModel = mongoose_1.default.model('SiteMinder', SiteMinderSchema, 'SiteMinder');

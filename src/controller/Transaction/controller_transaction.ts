@@ -12,7 +12,6 @@ import { snap } from '../../config/midtransConfig'
 
 
 import { EXPIRE, PENDING_PAYMENT } from '../../utils/constant';
-import { SessionModel } from '../../models/Booking/models_session';
 import { TransactionModel } from '../../models/Transaction/models_transaksi';
 
 import { ShortAvailableController } from '../ShortAvailable/controller_short';
