@@ -6,6 +6,7 @@ export const calculateTotalPrice = (cart :any, siteMinders : any) => {
     let grandTotal = 0; // Untuk menyimpan total keseluruhan
 
     cart.forEach((cartItem : any) => {
+        
         const { roomId, quantity } = cartItem;
 
         // Filter data siteMinders berdasarkan roomId dari cart

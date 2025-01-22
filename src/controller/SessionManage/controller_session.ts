@@ -252,6 +252,7 @@ export class SessionController {
 
         // sudah di tambah siteminder data
         static async GetTotalPrice(req: Request, res: Response) {
+            
             try {
                 // Debugging: Lihat session yang ada di setiap permintaan
                 console.log('Session:', req.session);
@@ -307,6 +308,7 @@ export class SessionController {
                     message: 'Successfully calculated total price.',
                     success: true,
                 });
+
             } catch (error) {
                 console.error('Error in GetTotalPrice:', error);
               

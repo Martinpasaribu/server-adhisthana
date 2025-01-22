@@ -24,13 +24,22 @@ const transactionService_1 = require("./transactionService");
 const constant_1 = require("../../utils/constant");
 const models_transaksi_1 = require("../../models/Transaction/models_transaksi");
 const Update_Status_1 = require("./Update_Status");
+const FilterAvaliableRoom_1 = require("../ShortAvailable/FilterAvaliableRoom");
+const SiteMinderFilter_1 = require("./SiteMinderFilter");
+const SetPriceDayList_1 = require("../ShortAvailable/SetPriceDayList");
+const SetResponseShort_1 = require("../ShortAvailable/SetResponseShort");
 class BookingController {
     static addBooking(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const BookingReq = req.body;
             try {
-                const roomDetails = yield models_room_1.default.find({ _id: { $in: BookingReq.room.map((r) => r.roomId) } });
-                // Validate room availability
+                const RoomCanUse = yield (0, FilterAvaliableRoom_1.FilterAvailable)(BookingReq.checkIn, BookingReq.checkOut);
+                // Ambil hanya data ruangan yang sesuai dari RoomCanUse berdasarkan roomId di BookingReq
+                const roomDetails = RoomCanUse.filter((room) => BookingReq.room.some((r) => r.roomId.toString() === room._id.toString()));
+                if (!roomDetails) {
+                    return res.status(400).json({ status: 'error', message: `Filter Room Available not found` });
+                }
+                // Validate again room availability
                 for (const roomBooking of BookingReq.room) {
                     const room = roomDetails.find(r => r._id.toString() === roomBooking.roomId.toString());
                     if (!room) {
@@ -48,43 +57,57 @@ class BookingController {
                     }
                 }
                 const night = Number(BookingReq.night);
-                // // Hitung grossPrice
-                // const grossAmount02 = roomDetails.reduce((acc, room) => {
-                //     const roomBooking = BookingReq.room.find((r: { roomId: any }) => r.roomId.toString() === room._id.toString());
-                //     if (!roomBooking) return acc; // Tangani kemungkinan roomBooking undefined
-                //     return acc + room.price * roomBooking.quantity * night;
-                // }, 0);
-                // const grossAmount03 = roomDetails.map(room => {
+                const Day = {
+                    In: BookingReq.checkIn,
+                    Out: BookingReq.checkOut
+                };
+                const grossAmount = Number(BookingReq.grossAmount);
+                const bookingId = 'TRX-' + crypto_1.default.randomBytes(5).toString('hex');
+                // Ambil data harga di siteMinder berdasarkan waktu In dan Out
+                const FilterSiteMinders = yield (0, SiteMinderFilter_1.FilterSiteMinder)(BookingReq.checkIn, BookingReq.checkOut);
+                // Filter Room dengan harga yang sudah singkron dengan siteMinder
+                const setPriceDayList = yield (0, SetPriceDayList_1.SetPriceDayList)(roomDetails, FilterSiteMinders, Day);
+                // Filter untuk singkron price per Item dengan lama malam -nya menjadi priceDateList
+                const updateRoomsAvailable = (0, SetResponseShort_1.SetResponseShort)(roomDetails, setPriceDayList);
+                // const item_details = updateRoomsAvailable.map((room : any)=> {
                 //     const roomBooking = BookingReq.room.find((r: { roomId: any }) => r.roomId.toString() === room._id.toString());
                 //     return {
                 //         id: room._id,
-                //         price: room.price + room.price * 0.12,
-                //         quantity: roomBooking.quantity * night,
+                //         price: room.priceDateList + ( room.priceDateList * 0.12),
+                //         quantity: roomBooking.quantity ,
                 //         name: room.name,
                 //     };
                 //  })
-                const grossAmount = Number(BookingReq.grossAmount);
-                // const tax = Number(grossAmount02 * 0.12)
-                const bookingId = 'TRX-' + crypto_1.default.randomBytes(5).toString('hex');
+                //  console.log("Hasil item_details :", item_details);
                 // Create transaction in Midtrans
                 const midtransPayload = {
                     transaction_details: {
                         order_id: bookingId,
-                        gross_amount: grossAmount,
+                        gross_amount: grossAmount, // Pastikan nilai ini sudah mencakup pajak dan harga total
                     },
                     customer_details: {
                         first_name: BookingReq.name,
                         email: BookingReq.email,
                     },
-                    item_details: roomDetails.map(room => {
-                        const roomBooking = BookingReq.room.find((r) => r.roomId.toString() === room._id.toString());
-                        return {
-                            id: room._id,
-                            price: room.price + room.price * 0.12,
-                            quantity: roomBooking.quantity * night,
-                            name: room.name,
-                        };
-                    })
+                    item_details: [
+                        ...updateRoomsAvailable.map((room) => {
+                            const roomBooking = BookingReq.room.find((r) => r.roomId.toString() === room._id.toString());
+                            const tax = room.priceDateList * 0.12; // Hitung pajak 12%
+                            return {
+                                id: room._id,
+                                price: room.priceDateList,
+                                quantity: roomBooking.quantity,
+                                name: room.name,
+                            };
+                        }),
+                        // Tambahkan rincian pajak sebagai item tambahan
+                        {
+                            id: 'TAX-12%',
+                            price: updateRoomsAvailable.reduce((total, room) => total + (room.priceDateList * 0.12), 0), // Total pajak untuk semua item
+                            quantity: 1,
+                            name: 'Tax (12%)',
+                        },
+                    ],
                 };
                 // console.log('hasil client : ', grossAmount)
                 // console.log('hasil server : ', grossAmount02 + tax)

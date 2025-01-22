@@ -6,13 +6,19 @@ import mongoose from 'mongoose';
 
 export const FilterAvailable = async ( checkInDate: any , checkOutDate : any   ) => {
 
+                    const In = new Date(checkInDate)
+                    const Out = new Date(checkOutDate)
+
+                    console.log("format checkin yang masuk:" , In )
+                    console.log("format checkout yang masuk:" , Out )
+
                     // Query untuk mencari unavailable rooms
                     const unavailableRooms = await ShortAvailableModel.find({
                         status: "PAID",
                         $or: [
                             {
-                                checkIn: { $lte: checkOutDate.toISOString() },
-                                checkOut: { $gte: checkInDate.toISOString() },
+                                checkIn: { $lte: In.toISOString() },
+                                checkOut: { $gte: Out.toISOString() },
                             },
                         ],
                     });

@@ -217,13 +217,18 @@ class ShortAvailableController {
                     return res.status(404).json({ message: "Tidak ada data SiteMinder yang ditemukan untuk tanggal tersebut." });
                 }
                 // Iterasi setiap SiteMinder untuk memperbarui RoomModel
-                for (const siteMinder of siteMinders) {
-                    const { roomId, price } = siteMinder;
-                    yield models_room_1.default.findOneAndUpdate({ _id: roomId }, { price: price });
-                }
+                // for (const siteMinder of siteMinders) {
+                //     const { roomId, price } = siteMinder;
+                //     await RoomModel.findOneAndUpdate(
+                //         { _id: roomId }, 
+                //         { price: price } 
+                //     );
+                // }
+                // Filter Room yang Available
                 const resultFilter = yield (0, FilterAvaliableRoom_1.FilterAvailable)(checkInDate, checkOutDate);
+                // Filter Room dengan harga yang sudah singkron dengan siteMinder
                 const setPriceDayList = yield (0, SetPriceDayList_1.SetPriceDayList)(resultFilter, siteMinders, Day);
-                // Saya akan menggabungkan PriceDateList dengan RoomsModel
+                // Filter untuk singkron price per Item dengan lama malam -nya menjadi priceDateList
                 const updateRoomsAvailable = (0, SetResponseShort_1.SetResponseShort)(resultFilter, setPriceDayList);
                 res.status(200).json({
                     requestId: (0, uuid_1.v4)(),

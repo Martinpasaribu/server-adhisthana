@@ -12,12 +12,17 @@ import { snap } from '../../config/midtransConfig'
 
 import { transactionService } from './transactionService';
 import { generateBookingId } from './nanoid'
-
+import moment from 'moment';
 import { PENDING_PAYMENT } from '../../utils/constant';
 import { SessionModel } from '../../models/Booking/models_session';
 import { TransactionModel } from '../../models/Transaction/models_transaksi';
 import { updateStatusBaseOnMidtransResponse } from './Update_Status';
 import { ShortAvailableController } from '../ShortAvailable/controller_short';
+import { FilterAvailable } from '../ShortAvailable/FilterAvaliableRoom';
+import { SiteMinderModel } from '../../models/SiteMinder/models_SitemMinder';
+import { FilterSiteMinder } from './SiteMinderFilter';
+import { SetPriceDayList } from '../ShortAvailable/SetPriceDayList';
+import { SetResponseShort } from '../ShortAvailable/SetResponseShort';
 
 export class BookingController {
 
@@ -27,12 +32,26 @@ export class BookingController {
             const BookingReq = req.body;
 
             try {
-                       
-                const roomDetails = await RoomModel.find({ _id: { $in: BookingReq.room.map((r: { roomId: any; }) => r.roomId) } });
+                const RoomCanUse = await FilterAvailable(BookingReq.checkIn, BookingReq.checkOut);
 
-                // Validate room availability
+               
+                
+                // Ambil hanya data ruangan yang sesuai dari RoomCanUse berdasarkan roomId di BookingReq
+                const roomDetails = RoomCanUse.filter((room: any) => 
+                    BookingReq.room.some((r: { roomId: any }) => r.roomId.toString() === room._id.toString())
+                );
+
+                if (!roomDetails) {
+                    return res.status(400).json({ status: 'error', message: `Filter Room Available not found` });
+                }
+
+
+                // Validate again room availability
                 for (const roomBooking of BookingReq.room) {
                     const room = roomDetails.find(r => r._id.toString() === roomBooking.roomId.toString());
+
+
+
                     if (!room) {
                         return res.status(400).json({ status: 'error', message: `Room with ID ${roomBooking.roomId} not found` });
                     }
@@ -41,6 +60,8 @@ export class BookingController {
                     if (room.available <= 0) {
                         return res.status(400).json({ status: 'error', message: `Room with ID ${roomBooking.roomId} is sold out` });
                     }
+                    
+
                     if (roomBooking.quantity > room.available) {
                         return res.status(400).json({ 
                             status: 'error', 
@@ -50,51 +71,77 @@ export class BookingController {
                 }
 
                 const night = Number(BookingReq.night)
-                // // Hitung grossPrice
-                // const grossAmount02 = roomDetails.reduce((acc, room) => {
-                //     const roomBooking = BookingReq.room.find((r: { roomId: any }) => r.roomId.toString() === room._id.toString());
-                //     if (!roomBooking) return acc; // Tangani kemungkinan roomBooking undefined
-                //     return acc + room.price * roomBooking.quantity * night;
-                // }, 0);
 
-                // const grossAmount03 = roomDetails.map(room => {
-                //     const roomBooking = BookingReq.room.find((r: { roomId: any }) => r.roomId.toString() === room._id.toString());
-                //     return {
-                //         id: room._id,
-                //         price: room.price + room.price * 0.12,
-                //         quantity: roomBooking.quantity * night,
-                //         name: room.name,
-                //     };
-                //  })
+                const Day =  {
+                    In : BookingReq.checkIn,
+                    Out : BookingReq.checkOut
+                }
 
                 const grossAmount = Number(BookingReq.grossAmount)
-                // const tax = Number(grossAmount02 * 0.12)
+
 
                 const bookingId = 'TRX-' + crypto.randomBytes(5).toString('hex');
 
+                // Ambil data harga di siteMinder berdasarkan waktu In dan Out
+                const FilterSiteMinders = await FilterSiteMinder(BookingReq.checkIn, BookingReq.checkOut)
+                               
+
+
+                // Filter Room dengan harga yang sudah singkron dengan siteMinder
+                const setPriceDayList = await SetPriceDayList(roomDetails,FilterSiteMinders, Day)
+
+                // Filter untuk singkron price per Item dengan lama malam -nya menjadi priceDateList
+                const updateRoomsAvailable =  SetResponseShort(roomDetails,setPriceDayList)
 
                 
+                
+                // const item_details = updateRoomsAvailable.map((room : any)=> {
+                //     const roomBooking = BookingReq.room.find((r: { roomId: any }) => r.roomId.toString() === room._id.toString());
+                //     return {
+                //         id: room._id,
+                //         price: room.priceDateList + ( room.priceDateList * 0.12),
+                //         quantity: roomBooking.quantity ,
+                //         name: room.name,
+                //     };
+                //  })
+                 
+                //  console.log("Hasil item_details :", item_details);
+                 
                 // Create transaction in Midtrans
+
                 const midtransPayload = {
+                    
                     transaction_details: {
                         order_id: bookingId,
-                        gross_amount: grossAmount,
-                    },  
-                    customer_details: {
-                        first_name: BookingReq.name, 
-                        email: BookingReq.email, 
+                        gross_amount: grossAmount, // Pastikan nilai ini sudah mencakup pajak dan harga total
                     },
 
-                    item_details: roomDetails.map(room => {
-                        const roomBooking = BookingReq.room.find((r: { roomId: any }) => r.roomId.toString() === room._id.toString());
-                        return {
-                            id: room._id,
-                            price: room.price + room.price * 0.12,
-                            quantity: roomBooking.quantity * night,
-                            name: room.name,
-                        };
-                     })
+                    customer_details: {
+                        first_name: BookingReq.name,
+                        email: BookingReq.email,
+                    },
+
+                    item_details: [
+                        ...updateRoomsAvailable.map((room: any) => {
+                            const roomBooking = BookingReq.room.find((r: { roomId: any }) => r.roomId.toString() === room._id.toString());
+                            const tax = room.priceDateList * 0.12; // Hitung pajak 12%
+                            return {
+                                id: room._id,
+                                price: room.priceDateList,
+                                quantity: roomBooking.quantity,
+                                name: room.name,
+                            };
+                        }),
+                        // Tambahkan rincian pajak sebagai item tambahan
+                        {
+                            id: 'TAX-12%',
+                            price: updateRoomsAvailable.reduce((total: number, room: any) => total + (room.priceDateList * 0.12), 0), // Total pajak untuk semua item
+                            quantity: 1,
+                            name: 'Tax (12%)',
+                        },
+                    ],
                 };
+
                 
                 // console.log('hasil client : ', grossAmount)
                 // console.log('hasil server : ', grossAmount02 + tax)

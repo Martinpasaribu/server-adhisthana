@@ -253,25 +253,25 @@ export class ShortAvailableController {
                 }
 
                 // Iterasi setiap SiteMinder untuk memperbarui RoomModel
-                for (const siteMinder of siteMinders) {
-                    const { roomId, price } = siteMinder;
+                // for (const siteMinder of siteMinders) {
+                //     const { roomId, price } = siteMinder;
 
                   
-                    await RoomModel.findOneAndUpdate(
-                        { _id: roomId }, 
-                        { price: price } 
-                    );
-                }
+                //     await RoomModel.findOneAndUpdate(
+                //         { _id: roomId }, 
+                //         { price: price } 
+                //     );
+                // }
 
 
 
-
+                // Filter Room yang Available
                 const resultFilter = await FilterAvailable(checkInDate,checkOutDate)
 
-  
+                // Filter Room dengan harga yang sudah singkron dengan siteMinder
                 const setPriceDayList = await SetPriceDayList(resultFilter,siteMinders, Day)
 
-                // Saya akan menggabungkan PriceDateList dengan RoomsModel
+                // Filter untuk singkron price per Item dengan lama malam -nya menjadi priceDateList
                 const updateRoomsAvailable =  SetResponseShort(resultFilter,setPriceDayList)
 
 

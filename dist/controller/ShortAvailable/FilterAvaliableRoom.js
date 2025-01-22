@@ -16,13 +16,17 @@ exports.FilterAvailable = void 0;
 const models_room_1 = __importDefault(require("../../models/Room/models_room"));
 const models_ShortAvailable_1 = require("../../models/ShortAvailable/models_ShortAvailable");
 const FilterAvailable = (checkInDate, checkOutDate) => __awaiter(void 0, void 0, void 0, function* () {
+    const In = new Date(checkInDate);
+    const Out = new Date(checkOutDate);
+    console.log("format checkin yang masuk:", In);
+    console.log("format checkout yang masuk:", Out);
     // Query untuk mencari unavailable rooms
     const unavailableRooms = yield models_ShortAvailable_1.ShortAvailableModel.find({
         status: "PAID",
         $or: [
             {
-                checkIn: { $lte: checkOutDate.toISOString() },
-                checkOut: { $gte: checkInDate.toISOString() },
+                checkIn: { $lte: In.toISOString() },
+                checkOut: { $gte: Out.toISOString() },
             },
         ],
     });
