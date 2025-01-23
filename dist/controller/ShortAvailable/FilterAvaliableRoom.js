@@ -18,15 +18,15 @@ const models_ShortAvailable_1 = require("../../models/ShortAvailable/models_Shor
 const FilterAvailable = (checkInDate, checkOutDate) => __awaiter(void 0, void 0, void 0, function* () {
     const In = new Date(checkInDate);
     const Out = new Date(checkOutDate);
-    console.log("format checkin yang masuk:", In);
-    console.log("format checkout yang masuk:", Out);
+    // console.log("format checkin yang masuk:" , In )
+    // console.log("format checkout yang masuk:" , Out )
     // Query untuk mencari unavailable rooms
     const unavailableRooms = yield models_ShortAvailable_1.ShortAvailableModel.find({
         status: "PAID",
         $or: [
             {
-                checkIn: { $lte: In.toISOString() },
-                checkOut: { $gte: Out.toISOString() },
+                checkIn: { $lte: Out.toISOString() },
+                checkOut: { $gte: In.toISOString() },
             },
         ],
     });

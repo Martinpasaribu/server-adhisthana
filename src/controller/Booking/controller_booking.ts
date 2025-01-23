@@ -91,9 +91,8 @@ export class BookingController {
                 const setPriceDayList = await SetPriceDayList(roomDetails,FilterSiteMinders, Day)
 
                 // Filter untuk singkron price per Item dengan lama malam -nya menjadi priceDateList
-                const updateRoomsAvailable =  SetResponseShort(roomDetails,setPriceDayList)
+                const updateRoomsAvailable =  await SetResponseShort(roomDetails,setPriceDayList)
 
-                
                 
                 // const item_details = updateRoomsAvailable.map((room : any)=> {
                 //     const roomBooking = BookingReq.room.find((r: { roomId: any }) => r.roomId.toString() === room._id.toString());
@@ -107,6 +106,30 @@ export class BookingController {
                  
                 //  console.log("Hasil item_details :", item_details);
                  
+                //  const item_details = [
+                //         ...updateRoomsAvailable.map((room: any) => {
+                //             const roomBooking = BookingReq.room.find((r: { roomId: any }) => r.roomId.toString() === room._id.toString());
+                //             const tax = room.priceDateList * 0.12; // Hitung pajak 12%
+                //             return {
+                //                 id: room._id,
+                //                 price: room.priceDateList + tax,
+                //                 quantity: roomBooking.quantity,
+                //                 name: room.name,
+                //             };
+                //         }),
+                //         // Tambahkan rincian pajak sebagai item tambahan
+                //         {
+                //             id: 'TAX-12%',
+                //             price: updateRoomsAvailable.reduce((total: number, room: any) => total + (room.priceDateList * 0.12), 0), // Total pajak untuk semua item
+                //             quantity: 1,
+                //             name: 'Tax (12%)',
+                //         },
+                //     ]
+
+                //     console.log("Hasil updateRoomsAvailable :", updateRoomsAvailable); 
+                //     console.log("Hasil item_details :", item_details); 
+
+
                 // Create transaction in Midtrans
 
                 const midtransPayload = {
@@ -123,27 +146,33 @@ export class BookingController {
 
                     item_details: [
                         ...updateRoomsAvailable.map((room: any) => {
-                            const roomBooking = BookingReq.room.find((r: { roomId: any }) => r.roomId.toString() === room._id.toString());
-                            const tax = room.priceDateList * 0.12; // Hitung pajak 12%
-                            return {
-                                id: room._id,
-                                price: room.priceDateList,
-                                quantity: roomBooking.quantity,
-                                name: room.name,
-                            };
+                          const roomBooking = BookingReq.room.find((r: { roomId: any }) => r.roomId.toString() === room._id.toString());
+                          return {
+                            id: room._id,
+                            price: room.priceDateList,
+                            quantity: roomBooking?.quantity || 1, // Tambahkan quantity sesuai pesanan
+                            name: room.name,
+                          };
                         }),
                         // Tambahkan rincian pajak sebagai item tambahan
                         {
-                            id: 'TAX-12%',
-                            price: updateRoomsAvailable.reduce((total: number, room: any) => total + (room.priceDateList * 0.12), 0), // Total pajak untuk semua item
-                            quantity: 1,
-                            name: 'Tax (12%)',
+                          id: 'TAX-12%',
+                          price: updateRoomsAvailable.reduce((total: number, room: any) => {
+                            const roomBooking = BookingReq.room.find((r: { roomId: any }) => r.roomId.toString() === room._id.toString());
+                            const quantity = roomBooking?.quantity || 1; // Ambil quantity dari pesanan
+                            return total + (room.priceDateList * quantity * 0.12); // Hitung pajak berdasarkan quantity
+                          }, 0),
+                          quantity: 1,
+                          name: 'Tax (12%)',
                         },
-                    ],
-                };
+                      ]
+                      
 
-                
-                // console.log('hasil client : ', grossAmount)
+
+                };
+     
+                console.log('hasil midtransPayload : ', midtransPayload);
+
                 // console.log('hasil server : ', grossAmount02 + tax)
                 // console.log('hasil server2 : ', grossAmount03)
 

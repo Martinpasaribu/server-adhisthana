@@ -23,6 +23,7 @@ const models_SitemMinder_1 = require("../../models/SiteMinder/models_SitemMinder
 const FilterAvaliableRoom_1 = require("./FilterAvaliableRoom");
 const SetPriceDayList_1 = require("./SetPriceDayList");
 const SetResponseShort_1 = require("./SetResponseShort");
+const FilterUnAvailable_1 = require("./FilterUnAvailable");
 class ShortAvailableController {
     // Short Available Room from hash checkout
     static getAvailableRooms(req, res) {
@@ -226,6 +227,8 @@ class ShortAvailableController {
                 // }
                 // Filter Room yang Available
                 const resultFilter = yield (0, FilterAvaliableRoom_1.FilterAvailable)(checkInDate, checkOutDate);
+                // Filter Room yang sudah penuh
+                const unavailableRooms = yield (0, FilterUnAvailable_1.FilterUnAvailable)(resultFilter);
                 // Filter Room dengan harga yang sudah singkron dengan siteMinder
                 const setPriceDayList = yield (0, SetPriceDayList_1.SetPriceDayList)(resultFilter, siteMinders, Day);
                 // Filter untuk singkron price per Item dengan lama malam -nya menjadi priceDateList
@@ -233,6 +236,7 @@ class ShortAvailableController {
                 res.status(200).json({
                     requestId: (0, uuid_1.v4)(),
                     data: updateRoomsAvailable,
+                    dataUnAvailable: unavailableRooms,
                     message: `Successfully retrieved rooms. From Date: ${checkInDate.toISOString()} To: ${checkOutDate.toISOString()}`,
                     success: true,
                 });

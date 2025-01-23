@@ -18,6 +18,7 @@ import { SiteMinderModel } from '../../models/SiteMinder/models_SitemMinder';
 import { FilterAvailable } from './FilterAvaliableRoom';
 import { SetPriceDayList } from './SetPriceDayList';
 import { SetResponseShort } from './SetResponseShort';
+import { FilterUnAvailable } from './FilterUnAvailable';
 
 export class ShortAvailableController {
 
@@ -268,6 +269,9 @@ export class ShortAvailableController {
                 // Filter Room yang Available
                 const resultFilter = await FilterAvailable(checkInDate,checkOutDate)
 
+                // Filter Room yang sudah penuh
+                const unavailableRooms = await FilterUnAvailable(resultFilter)
+
                 // Filter Room dengan harga yang sudah singkron dengan siteMinder
                 const setPriceDayList = await SetPriceDayList(resultFilter,siteMinders, Day)
 
@@ -278,6 +282,7 @@ export class ShortAvailableController {
                 res.status(200).json({
                     requestId: uuidv4(),
                     data: updateRoomsAvailable,
+                    dataUnAvailable: unavailableRooms,
                     message: `Successfully retrieved rooms. From Date: ${checkInDate.toISOString()} To: ${checkOutDate.toISOString()}`,
                     success: true,
                 });
@@ -287,6 +292,7 @@ export class ShortAvailableController {
                 res.status(500).json({
                     requestId: uuidv4(),
                     data: null,
+
                     message: (error as Error).message,
                     success: false,
                 });

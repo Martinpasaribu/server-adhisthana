@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SetMinderController = void 0;
 const uuid_1 = require("uuid");
 const models_SitemMinder_1 = require("../../models/SiteMinder/models_SitemMinder");
+const models_ShortAvailable_1 = require("../../models/ShortAvailable/models_ShortAvailable");
 class SetMinderController {
     static SetUpPrice(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -113,6 +114,63 @@ class SetMinderController {
             }
             catch (error) {
                 res.status(500).json({ message: 'Failed to fetch prices', error });
+            }
+        });
+    }
+    static GetAllRoom(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { year, month } = req.query;
+                if (!year || !month) {
+                    return res
+                        .status(400)
+                        .json({ message: "Year and month are required" });
+                }
+                const startDate = new Date(`${year}-${month}-01`);
+                const endDate = new Date(startDate);
+                endDate.setMonth(endDate.getMonth() + 1);
+                // Generate all dates within the range
+                const generateDateRange = (start, end) => {
+                    const dates = [];
+                    let currentDate = new Date(start);
+                    while (currentDate < end) {
+                        dates.push(currentDate.toISOString().split("T")[0]);
+                        currentDate.setDate(currentDate.getDate() + 1);
+                    }
+                    return dates;
+                };
+                const dateRange = generateDateRange(startDate, endDate);
+                // Fetch data from the database
+                const roomData = yield models_ShortAvailable_1.ShortAvailableModel.find({ isDeleted: false });
+                const resultFilter = {};
+                roomData.forEach((room) => {
+                    room.products.forEach((product) => {
+                        const roomId = product.roomId;
+                        if (!resultFilter[roomId]) {
+                            resultFilter[roomId] = {};
+                            dateRange.forEach((date) => {
+                                resultFilter[roomId][date] = 0; // Set default value to 0
+                            });
+                        }
+                        const checkIn = new Date(room.checkIn).toISOString().split("T")[0];
+                        const checkOut = new Date(room.checkOut).toISOString().split("T")[0];
+                        const validDates = generateDateRange(new Date(checkIn), new Date(checkOut));
+                        validDates.forEach((date) => {
+                            if (resultFilter[roomId][date] !== undefined) {
+                                resultFilter[roomId][date] += product.quantity;
+                            }
+                        });
+                    });
+                });
+                res.status(200).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: resultFilter,
+                    message: `Successfully retrieved rooms. From year: ${year} month: ${month}`,
+                    success: true,
+                });
+            }
+            catch (error) {
+                res.status(500).json({ message: "Failed to fetch Room", error });
             }
         });
     }

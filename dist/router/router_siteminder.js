@@ -10,4 +10,5 @@ const SiteMinderRouter = express_1.default.Router();
 SiteMinderRouter.post("/set-minder", controller_minder_1.SetMinderController.SetUpPrice);
 SiteMinderRouter.get("/get-minder", controller_minder_1.SetMinderController.GetAllPrice);
 SiteMinderRouter.get("/get-minder-year", controller_minder_1.SetMinderController.GetAllPriceByYear);
+SiteMinderRouter.get("/get-room", controller_minder_1.SetMinderController.GetAllRoom);
 exports.default = SiteMinderRouter;
