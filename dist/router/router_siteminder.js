@@ -10,5 +10,7 @@ const SiteMinderRouter = express_1.default.Router();
 SiteMinderRouter.post("/set-minder", controller_minder_1.SetMinderController.SetUpPrice);
 SiteMinderRouter.get("/get-minder", controller_minder_1.SetMinderController.GetAllPrice);
 SiteMinderRouter.get("/get-minder-year", controller_minder_1.SetMinderController.GetAllPriceByYear);
-SiteMinderRouter.get("/get-room", controller_minder_1.SetMinderController.GetAllRoom);
+SiteMinderRouter.get("/get-available", controller_minder_1.SetMinderController.GetAllRoomWithAvailable);
+SiteMinderRouter.get("/get-unavailable", controller_minder_1.SetMinderController.GetAllRoomWithUnAvailable);
+SiteMinderRouter.get("/get-transaction", controller_minder_1.SetMinderController.GetAllTransactionFromYearAndMonth);
 exports.default = SiteMinderRouter;
