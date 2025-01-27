@@ -3,14 +3,14 @@ import { Request, Response, NextFunction  } from 'express';
 import mongoose from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
 
-import RoomModel from '../../models/Room/models_room';
+import RoomModel from '../../../models/Room/models_room';
 
-
-import { ShortAvailableController } from '../ShortAvailable/controller_short';
-import { SiteMinderModel } from '../../models/SiteMinder/models_SitemMinder';
-import { ShortAvailableModel } from '../../models/ShortAvailable/models_ShortAvailable';
-import { Logging } from '../../log';
-import { TransactionModel } from '../../models/Transaction/models_transaksi';
+import { NationalHolidays } from '../../../utils/constant'
+import { ShortAvailableController } from '../../ShortAvailable/controller_short';
+import { SiteMinderModel } from '../../../models/SiteMinder/models_SitemMinder';
+import { ShortAvailableModel } from '../../../models/ShortAvailable/models_ShortAvailable';
+import { Logging } from '../../../log';
+import { TransactionModel } from '../../../models/Transaction/models_transaksi';
 
 
 export class SetMinderController {
@@ -56,6 +56,179 @@ export class SetMinderController {
               }
 
         }
+
+
+        static async SetPriceForHolidays(req: Request, res: Response) {
+          try {
+              const { id, price } = req.query;
+      
+              // Validasi input
+              if (!id || price == null) {
+                  return res.status(400).json({
+                      message: 'Room ID and price are required',
+                  });
+              }
+      
+              // Ambil daftar tanggal hari libur nasional
+              const nationalHolidayDates = Object.keys(NationalHolidays).filter(
+                  (date) => NationalHolidays[date].holiday === true
+              );
+      
+              if (nationalHolidayDates.length === 0) {
+                  return res.status(404).json({
+                      message: 'No national holidays found for the provided year',
+                  });
+              }
+      
+              // Siapkan operasi bulk untuk pembaruan harga
+              const bulkOperations = nationalHolidayDates.map((date) => ({
+                  updateOne: {
+                      filter: { roomId: id, date },
+                      update: { $set: { price } },
+                      upsert: true, // Jika data belum ada, tambahkan
+                  },
+              }));
+      
+              // Jalankan operasi bulk
+              if (bulkOperations.length > 0) {
+                  await SiteMinderModel.bulkWrite(bulkOperations);
+              }
+      
+              res.status(200).json({
+                  requestId: uuidv4(),
+                  data: null,
+                  message: `Prices updated for national holidays`,
+                  success: true,
+              });
+          } catch (error) {
+              res.status(500).json({
+                  requestId: uuidv4(),
+                  data: null,
+                  message: (error as Error).message,
+                  success: false,
+              });
+          }
+        }
+      
+        static async SetPriceWeekDay(req: Request, res: Response) {
+          try {
+              const { year, id, price } = req.query;
+      
+              // Validasi input
+              if (!id || !price || !year) {
+                  return res.status(400).json({
+                      message: 'Room ID and price are required by Weekday',
+                  });
+              }
+      
+              // Ambil semua tanggal dalam tahun tertentu kecuali Jumat dan Sabtu
+
+              const allDatesInYear = [];
+              const startDate = new Date(`${year}-01-01`); // Awal tahun
+              const endDate = new Date(`${year}-12-31`); // Akhir
+      
+              // Metode setDate() sering digunakan untuk memanipulasi tanggal dalam sebuah loop, seperti saat membuat daftar tanggal dalam satu tahun.
+              for (let d = startDate; d <= endDate; d.setDate(d.getDate() + 1)) // getDate mengembalikan angka yang merepresentasikan hari dalam seminggu 
+                
+                {
+                  // getDay() Mengembalikan hari dalam seminggu dari tanggal dan bulan tertentu sebagai nilai numerik
+                  const dayOfWeek = d.getDay(); // Ex : 0 = Minggu, 1 = Senin, ..., 6 = Sabtu
+
+                  if (dayOfWeek !== 5 && dayOfWeek !== 6) { // Kecualikan Jumat (5) dan Sabtu (6) untuk disimpan
+
+                    //  mengembalikan tanggal dalam format ISO (contoh: 2025-01-01T00:00:00.000Z). .split('T')[0] mengambil bagian tanggal saja (contoh: 2025-01-01).
+                      allDatesInYear.push(d.toISOString().split('T')[0]); 
+
+                  }
+              }
+      
+              // Siapkan operasi bulk untuk pembaruan harga
+              const bulkOperations = allDatesInYear.map((date) => ({
+                  updateOne: {
+                      filter: { roomId: id, date },
+                      update: { $set: { price } },
+                      upsert: true, // Jika data belum ada, tambahkan
+                  },
+              }));
+      
+              // Jalankan operasi bulk
+              if (bulkOperations.length > 0) {
+                  await SiteMinderModel.bulkWrite(bulkOperations);
+              }
+      
+              res.status(200).json({
+                  requestId: uuidv4(),
+                  data: null,
+                  message: `Prices updated for all weekdays except Fridays and Saturdays`,
+                  success: true,
+              });
+          } catch (error) {
+              res.status(500).json({
+                  requestId: uuidv4(),
+                  data: null,
+                  message: (error as Error).message,
+                  success: false,
+              });
+          }
+        }
+
+        static async SetPriceWeekend(req: Request, res: Response) {
+          try {
+            const { year, id, price } = req.query;
+      
+            // Validasi input
+            if (!id || !price || !year) {
+                return res.status(400).json({
+                    message: 'Room ID and price are required by Weekday',
+                });
+            }
+        
+            // Ambil semua tanggal dalam tahun tertentu hanya untuk Jumat dan Sabtu
+
+            const allDatesInYear = [];
+            const startDate = new Date(`${year}-01-01`); // Awal tahun
+            const endDate = new Date(`${year}-12-31`); // Akhir
+    
+        
+            // Loop untuk mengidentifikasi tanggal yang jatuh pada Jumat dan Sabtu
+            for (let d = startDate; d <= endDate; d.setDate(d.getDate() + 1)) {
+              const dayOfWeek = d.getDay(); // 0 = Minggu, 1 = Senin, ..., 6 = Sabtu
+        
+              if (dayOfWeek === 5 || dayOfWeek === 6) { // Jumat (5) atau Sabtu (6)
+                allDatesInYear.push(d.toISOString().split('T')[0]); // Menyimpan tanggal dalam format ISO
+              }
+            }
+        
+            // Siapkan operasi bulk untuk pembaruan harga
+            const bulkOperations = allDatesInYear.map((date) => ({
+              updateOne: {
+                filter: { roomId: id, date },
+                update: { $set: { price } },
+                upsert: true, // Jika data belum ada, tambahkan
+              },
+            }));
+        
+            // Jalankan operasi bulk
+            if (bulkOperations.length > 0) {
+              await SiteMinderModel.bulkWrite(bulkOperations);
+            }
+        
+            res.status(200).json({
+              requestId: uuidv4(),
+              data: null,
+              message: `Prices updated for Fridays and Saturdays only`,
+              success: true,
+            });
+          } catch (error) {
+            res.status(500).json({
+              requestId: uuidv4(),
+              data: null,
+              message: (error as Error).message,
+              success: false,
+            });
+          }
+        }
+           
 
         static async GetAllPriceByYear(req: Request, res: Response) {
 
@@ -179,7 +352,7 @@ export class SetMinderController {
             // Ambil data dari database
             const roomData = await ShortAvailableModel.find({ isDeleted: false });
         
-            const Room = await RoomModel.find()
+            const Room = await RoomModel.find({ isDeleted: false })
 
             const availabilityRoom =  Room.map( room => { return { id: room._id.toString(), availability : room.available } })
 
@@ -236,7 +409,6 @@ export class SetMinderController {
         }
         
 
-
         static async GetAllRoomWithUnAvailable(req: Request, res: Response) {
           try {
             const { year, month } = req.query;
@@ -274,7 +446,7 @@ export class SetMinderController {
             // Ambil data dari database
             const roomData = await ShortAvailableModel.find({ isDeleted: false });
         
-            const Room = await RoomModel.find()
+            const Room = await RoomModel.find({ isDeleted: false })
 
             const availabilityRoom =  Room.map( room => { return { id: room._id.toString(), availability : room.available } })
 
@@ -358,18 +530,18 @@ export class SetMinderController {
             endDate.setMonth(endDate.getMonth() + 1); // Menambahkan 1 bulan untuk mendapatkan batas akhir bulan
         
             // Query untuk mencari transaksi yang terjadi dalam bulan dan tahun tersebut
-            const transactions = await TransactionModel.find({
+            const transactions = await TransactionModel.find({   status : "PAID",
               checkIn: {
                 $gte: startDate.toISOString(),  // Lebih besar atau sama dengan 1st day bulan
                 $lt: endDate.toISOString()      // Kurang dari 1st day bulan berikutnya
-              }
+              }, isDeleted: false 
             });
             // const transactions = await TransactionModel.find({}, "checkIn").limit(10);
 
          
         
-            Logging(transactions, "hasil short transaction");
-            Logging(startDate, "awal sampai akhir ", endDate);
+            // Logging(transactions, "hasil short transaction");
+            // Logging(startDate, "awal sampai akhir ", endDate);
 
             // Kirimkan hasil response
             res.status(200).json({
@@ -383,5 +555,69 @@ export class SetMinderController {
           }
         }
 
+        static async DeletedTransaction(req: Request, res: Response){
+
+          try {
+            let ShortAvailable ;
+            let Transaction ;
+
+            const { id } = req.query;
+            
+            ShortAvailable= await ShortAvailableModel.findOneAndUpdate({transactionId :  id},{ isDeleted: false },{ new: true, runValidators: true });
+          
+            if (!ShortAvailable) {
+                return res.status(404).json({
+                    requestId: uuidv4(),
+                    data: null,
+                    message: "Data ShortAvailable not found.",
+                    success: false
+                });
+            }
+
+             await ShortAvailableModel.updateMany(
+                { transactionId: id },
+                { isDeleted: true }
+              );
+
+            Transaction = await TransactionModel.findOneAndUpdate({bookingId :  id},{ isDeleted: false },{ new: true, runValidators: true });
+          
+            if (!Transaction) {
+                return res.status(404).json({
+                    requestId: uuidv4(),
+                    data: null,
+                    message: "Transaction not found.",
+                    success: false
+                });
+            }
+            await TransactionModel.updateMany(
+              { bookingId: id },
+              { isDeleted: true }
+            );
+
+
+            res.status(201).json(
+                {
+                    requestId: uuidv4(), 
+                    data: [],
+                    message: `Successfully Deleted ID : ${id}  `,
+                    success: true
+                }
+            );
+
+
+          } catch (error) {
+            
+            res.status(400).json(
+                {
+                    requestId: uuidv4(), 
+                    data: null,
+                    message:  (error as Error).message,
+                    success: false
+                }
+            );
+
+          }
+
+        }
         
 }

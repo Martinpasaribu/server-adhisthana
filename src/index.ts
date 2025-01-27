@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import cors from 'cors';
 import session from 'express-session';
 import MongoDBStore from 'connect-mongodb-session';
-
+import './controller/PendingRoom/Cron_job'
 import { connectToDatabase } from "./config/mongodbLocal";
 import RoomRouter from "./router/router_room";
 import InstagramRouter from "./router/router_instagram";
@@ -87,7 +87,14 @@ app.use(session({
     },
 }));
 
-
+// Deklarasi Tipe yang Diperluas
+declare module 'express-serve-static-core' {
+    interface Request {
+      userId?: string; // Tambahkan properti userId
+    }
+  }
+  
+// Deklarasi Tipe yang Diperluas
 declare module 'express-session' {
     interface SessionData {
       cart?: {

@@ -51,6 +51,9 @@ const BookingSchema = new mongoose_1.Schema({
         // required: [true, "checkIn cannot be empty"],
         trim: true
     },
+    phone: {
+        type: Number, // Tidak perlu trim di tipe Number
+    },
     checkIn: {
         type: String,
         // required: [true, "checkIn cannot be empty"],

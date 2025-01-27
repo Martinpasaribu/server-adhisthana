@@ -24,6 +24,7 @@ const FilterAvaliableRoom_1 = require("./FilterAvaliableRoom");
 const SetPriceDayList_1 = require("./SetPriceDayList");
 const SetResponseShort_1 = require("./SetResponseShort");
 const FilterUnAvailable_1 = require("./FilterUnAvailable");
+const Controller_PendingRoom_1 = require("../PendingRoom/Controller_PendingRoom");
 class ShortAvailableController {
     // Short Available Room from hash checkout
     static getAvailableRooms(req, res) {
@@ -187,7 +188,7 @@ class ShortAvailableController {
         });
     }
     ;
-    // Short Available Room from hash checkout
+    // Short Available Room from hash checkout In  { USE } 
     static getAvailableRoomsWithSiteMinder(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -217,26 +218,20 @@ class ShortAvailableController {
                 if (!siteMinders || siteMinders.length === 0) {
                     return res.status(404).json({ message: "Tidak ada data SiteMinder yang ditemukan untuk tanggal tersebut." });
                 }
-                // Iterasi setiap SiteMinder untuk memperbarui RoomModel
-                // for (const siteMinder of siteMinders) {
-                //     const { roomId, price } = siteMinder;
-                //     await RoomModel.findOneAndUpdate(
-                //         { _id: roomId }, 
-                //         { price: price } 
-                //     );
-                // }
                 // Filter Room yang Available
-                const resultFilter = yield (0, FilterAvaliableRoom_1.FilterAvailable)(checkInDate, checkOutDate);
+                const availableRooms = yield (0, FilterAvaliableRoom_1.FilterAvailable)(checkInDate, checkOutDate);
                 // Filter Room yang sudah penuh
-                const unavailableRooms = yield (0, FilterUnAvailable_1.FilterUnAvailable)(resultFilter);
+                const unavailableRooms = yield (0, FilterUnAvailable_1.FilterUnAvailable)(availableRooms);
+                // Filter Room yang sudah tersedia namun butuh pengecekan apakah ada room yang masih dipending
+                const availableRoomsWithoutPending = yield Controller_PendingRoom_1.PendingRoomController.FilterWithPending(availableRooms, checkInDate, checkOutDate, req, res);
                 // Filter Room dengan harga yang sudah singkron dengan siteMinder
-                const setPriceDayList = yield (0, SetPriceDayList_1.SetPriceDayList)(resultFilter, siteMinders, Day);
+                const setPriceDayList = yield (0, SetPriceDayList_1.SetPriceDayList)(availableRoomsWithoutPending === null || availableRoomsWithoutPending === void 0 ? void 0 : availableRoomsWithoutPending.WithoutPending, siteMinders, Day);
                 // Filter untuk singkron price per Item dengan lama malam -nya menjadi priceDateList
-                const updateRoomsAvailable = (0, SetResponseShort_1.SetResponseShort)(resultFilter, setPriceDayList);
+                const updateRoomsAvailable = yield (0, SetResponseShort_1.SetResponseShort)(availableRoomsWithoutPending === null || availableRoomsWithoutPending === void 0 ? void 0 : availableRoomsWithoutPending.WithoutPending, setPriceDayList);
                 res.status(200).json({
                     requestId: (0, uuid_1.v4)(),
                     data: updateRoomsAvailable,
-                    dataUnAvailable: unavailableRooms,
+                    dataUnAvailable: (unavailableRooms === null || unavailableRooms === void 0 ? void 0 : unavailableRooms.length) === 0 ? availableRoomsWithoutPending === null || availableRoomsWithoutPending === void 0 ? void 0 : availableRoomsWithoutPending.PendingRoom : unavailableRooms.concat(availableRoomsWithoutPending === null || availableRoomsWithoutPending === void 0 ? void 0 : availableRoomsWithoutPending.PendingRoom),
                     message: `Successfully retrieved rooms. From Date: ${checkInDate.toISOString()} To: ${checkOutDate.toISOString()}`,
                     success: true,
                 });

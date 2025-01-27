@@ -260,27 +260,27 @@ export class AuthController {
    
             // $ne adalah operator MongoDB yang berarti "not equal" (tidak sama).
 
-            // Update pada BookingModel
-            const bookingUpdate = await BookingModel.updateMany(
-                { email, userId: { $ne: userId } }, 
-                { userId } 
-            );
+            // // Update pada BookingModel
+            // const bookingUpdate = await BookingModel.updateMany(
+            //     { email, userId: { $ne: userId } }, 
+            //     { userId } 
+            // );
 
       
-            if (bookingUpdate.matchedCount === 0) {
-                return res.status(200).json({ message: "No bookings updated. All matching records already have the same userId." });
-            }
+            // if (bookingUpdate.matchedCount === 0) {
+            //     return res.status(200).json({ message: "No bookings updated. All matching records already have the same userId." });
+            // }
 
-            // Update pada TransactionModel
-            const transactionUpdate = await TransactionModel.updateMany(
-                { email, userId: { $ne: userId } }, 
-                { userId } 
-            );
+            // // Update pada TransactionModel
+            // const transactionUpdate = await TransactionModel.updateMany(
+            //     { email, userId: { $ne: userId } }, 
+            //     { userId } 
+            // );
 
        
-            if (transactionUpdate.matchedCount === 0) {
-                return res.status(200).json({ message: "No transactions updated. All matching records already have the same userId." });
-            }
+            // if (transactionUpdate.matchedCount === 0) {
+            //     return res.status(200).json({ message: "No transactions updated. All matching records already have the same userId." });
+            // }
 
 
             // await ShortAvailableModel.findOneAndUpdate({ email: req.body.email, },{userId:req.userId});            

@@ -6,37 +6,32 @@ import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
 
 
-import RoomModel from '../../models/Room/models_room';
-import { BookingModel } from '../../models/Booking/models_booking';
 import { snap } from '../../config/midtransConfig'
 
-import { transactionService } from './transactionService';
-import { generateBookingId } from './nanoid'
-import moment from 'moment';
 import { PENDING_PAYMENT } from '../../utils/constant';
-import { SessionModel } from '../../models/Booking/models_session';
-import { TransactionModel } from '../../models/Transaction/models_transaksi';
-import { updateStatusBaseOnMidtransResponse } from './Update_Status';
-import { ShortAvailableController } from '../ShortAvailable/controller_short';
+
 import { FilterAvailable } from '../ShortAvailable/FilterAvaliableRoom';
-import { SiteMinderModel } from '../../models/SiteMinder/models_SitemMinder';
 import { FilterSiteMinder } from './SiteMinderFilter';
 import { SetPriceDayList } from '../ShortAvailable/SetPriceDayList';
 import { SetResponseShort } from '../ShortAvailable/SetResponseShort';
+import { PendingRoomController } from '../PendingRoom/Controller_PendingRoom';
+import { SetAvailableCount } from './SetAvailableCounts';
+import { transactionService } from '../Transaction/TransactionService';
 
 export class BookingController {
 
         static async addBooking(req: Request, res: Response) {
 
 
+            const UserId = req.userId;
             const BookingReq = req.body;
 
             try {
+
+
                 const RoomCanUse = await FilterAvailable(BookingReq.checkIn, BookingReq.checkOut);
 
-               
-                
-                // Ambil hanya data ruangan yang sesuai dari RoomCanUse berdasarkan roomId di BookingReq
+                // Ambil hanya data room yang sesuai dari RoomCanUse berdasarkan roomId di BookingReq
                 const roomDetails = RoomCanUse.filter((room: any) => 
                     BookingReq.room.some((r: { roomId: any }) => r.roomId.toString() === room._id.toString())
                 );
@@ -49,8 +44,6 @@ export class BookingController {
                 // Validate again room availability
                 for (const roomBooking of BookingReq.room) {
                     const room = roomDetails.find(r => r._id.toString() === roomBooking.roomId.toString());
-
-
 
                     if (!room) {
                         return res.status(400).json({ status: 'error', message: `Room with ID ${roomBooking.roomId} not found` });
@@ -68,6 +61,16 @@ export class BookingController {
                             message: `Room with ID ${roomBooking.roomId} has only ${room.available} available, but you requested ${roomBooking.quantity}` 
                         });
                     }
+                }
+
+                // Filter Room dari req Booking dari ketersedia room dan menambahkan poerpty stock ketersedian room dengan range tanggal tersebut
+                const RoomsAvailableCount = await SetAvailableCount(BookingReq.room,BookingReq.checkIn, BookingReq.checkOut);
+                
+                // Filter Is there a pending room?
+                const availableRoomsWithoutPending = await PendingRoomController.FilterWithPending(RoomsAvailableCount, BookingReq.checkIn, BookingReq.checkOut, req,res)
+
+                if(availableRoomsWithoutPending?.PendingRoom.length > 0) {
+                    return res.status(400).json({ status: 'error', message: `Some of the rooms you select have already been purchased`, data :availableRoomsWithoutPending?.PendingRoom });
                 }
 
                 const night = Number(BookingReq.night)
@@ -93,44 +96,8 @@ export class BookingController {
                 // Filter untuk singkron price per Item dengan lama malam -nya menjadi priceDateList
                 const updateRoomsAvailable =  await SetResponseShort(roomDetails,setPriceDayList)
 
-                
-                // const item_details = updateRoomsAvailable.map((room : any)=> {
-                //     const roomBooking = BookingReq.room.find((r: { roomId: any }) => r.roomId.toString() === room._id.toString());
-                //     return {
-                //         id: room._id,
-                //         price: room.priceDateList + ( room.priceDateList * 0.12),
-                //         quantity: roomBooking.quantity ,
-                //         name: room.name,
-                //     };
-                //  })
-                 
-                //  console.log("Hasil item_details :", item_details);
-                 
-                //  const item_details = [
-                //         ...updateRoomsAvailable.map((room: any) => {
-                //             const roomBooking = BookingReq.room.find((r: { roomId: any }) => r.roomId.toString() === room._id.toString());
-                //             const tax = room.priceDateList * 0.12; // Hitung pajak 12%
-                //             return {
-                //                 id: room._id,
-                //                 price: room.priceDateList + tax,
-                //                 quantity: roomBooking.quantity,
-                //                 name: room.name,
-                //             };
-                //         }),
-                //         // Tambahkan rincian pajak sebagai item tambahan
-                //         {
-                //             id: 'TAX-12%',
-                //             price: updateRoomsAvailable.reduce((total: number, room: any) => total + (room.priceDateList * 0.12), 0), // Total pajak untuk semua item
-                //             quantity: 1,
-                //             name: 'Tax (12%)',
-                //         },
-                //     ]
-
-                //     console.log("Hasil updateRoomsAvailable :", updateRoomsAvailable); 
-                //     console.log("Hasil item_details :", item_details); 
-
-
-                // Create transaction in Midtrans
+                // SetUp Room yang akan masuk dalam Room Pending
+                await PendingRoomController.SetPending(BookingReq.room,bookingId, UserId, BookingReq.checkIn, BookingReq.checkOut, req, res )
 
                 const midtransPayload = {
                     
@@ -155,26 +122,25 @@ export class BookingController {
                           };
                         }),
                         // Tambahkan rincian pajak sebagai item tambahan
-                        {
-                          id: 'TAX-12%',
-                          price: updateRoomsAvailable.reduce((total: number, room: any) => {
-                            const roomBooking = BookingReq.room.find((r: { roomId: any }) => r.roomId.toString() === room._id.toString());
-                            const quantity = roomBooking?.quantity || 1; // Ambil quantity dari pesanan
-                            return total + (room.priceDateList * quantity * 0.12); // Hitung pajak berdasarkan quantity
-                          }, 0),
-                          quantity: 1,
-                          name: 'Tax (12%)',
-                        },
+                        // {
+                        //   id: 'TAX-12%',
+                        //   price: updateRoomsAvailable.reduce((total: number, room: any) => {
+                        //     const roomBooking = BookingReq.room.find((r: { roomId: any }) => r.roomId.toString() === room._id.toString());
+                        //     const quantity = roomBooking?.quantity || 1; // Ambil quantity dari pesanan
+                        //     return total + (room.priceDateList * quantity * 0.12); // Hitung pajak berdasarkan quantity
+                        //   }, 0),
+                        //   quantity: 1,
+                        //   name: 'Tax (12%)',
+                        // },
                       ]
                       
 
 
                 };
      
-                console.log('hasil midtransPayload : ', midtransPayload);
+                // console.log('hasil midtransPayload : ', midtransPayload);
+                console.log('hasil payload BookingReq : ', BookingReq);
 
-                // console.log('hasil server : ', grossAmount02 + tax)
-                // console.log('hasil server2 : ', grossAmount03)
 
                 const midtransResponse = await snap.createTransaction(midtransPayload);
               
@@ -184,11 +150,12 @@ export class BookingController {
                     bookingId,
                     name : BookingReq.name,
                     email : BookingReq.email,
+                    phone : BookingReq.phone,
                     status: PENDING_PAYMENT,
                     checkIn: BookingReq.checkIn, // Tambahkan properti ini jika dibutuhkan
                     checkOut: BookingReq.checkOut, // Tambahkan properti ini jika dibutuhkan
                     grossAmount,
-                    userId: uuidv4(),
+                    userId: UserId ?? BookingReq.email,
                     products: roomDetails.map(room => {
                         const roomBooking = BookingReq.room.find(
                           (r: { roomId: any }) => r.roomId.toString() === room._id.toString()
@@ -198,7 +165,7 @@ export class BookingController {
                           roomId: room._id,
                           name: room.name,
                           quantity: roomBooking?.quantity, // Optional chaining jika roomBooking tidak ditemukan
-                          price: room.price, // Menambahkan price dari room
+                          price: roomBooking?.price, // Menambahkan price dari room
                         };
                       }),
                       
@@ -212,11 +179,11 @@ export class BookingController {
                 });
                 
 
-
                 // Save booking (transaction) to your database
-                const bookingData = {
+                const bookingData = await transactionService.createBooking({
                     name : BookingReq.name,
                     email : BookingReq.email,
+                    phone : BookingReq.phone,
                     orderId: bookingId,
                     checkIn: BookingReq.checkIn,
                     checkOut: BookingReq.checkOut,
@@ -225,7 +192,7 @@ export class BookingController {
                     amountTotal: grossAmount,
                     amountBefDisc: BookingReq.amountBefDisc || grossAmount, // Assuming discount might apply
                     couponId: BookingReq.couponId || null, // Optional coupon ID
-                    userId: uuidv4(), // Replace with the actual user ID if available
+                    userId: UserId ?? BookingReq.email,
                     creatorId: uuidv4(), // Replace with actual creator ID if available
                     rooms: roomDetails.map(room => {
                         const roomBooking = BookingReq.room.find(
@@ -234,18 +201,19 @@ export class BookingController {
                         return {
                             roomId: room._id,
                             quantity: roomBooking.quantity,
+                            price: roomBooking?.price, 
                         };
                     }),
-                };
+                })
 
 
-                const booking = await transactionService.createBooking(bookingData);
+                
 
 
                 res.status(201).json({
                     status: 'success',
                     data: {
-                        message:' successfully On Checkout',
+                        message:' successfully Booking',
                         id:bookingId,
                         transaction,
                         paymentUrl: midtransResponse.redirect_url,
@@ -271,236 +239,201 @@ export class BookingController {
 
         }
         
-        static async getOffers(req: Request, res: Response) {
-            const { checkin, checkout } = req.query;
+
+
+        // static async getOffers(req: Request, res: Response) {
+        //     const { checkin, checkout } = req.query;
         
-            try {
-              // Validasi dan konversi parameter checkin dan checkout
-              if (!checkin || !checkout) {
-                return res.status(400).json({
-                  requestId: uuidv4(),
-                  data: null,
-                  message: "Check-in and check-out dates are required.",
-                  success: false,
-                });
-              }
+        //     try {
+        //       // Validasi dan konversi parameter checkin dan checkout
+        //       if (!checkin || !checkout) {
+        //         return res.status(400).json({
+        //           requestId: uuidv4(),
+        //           data: null,
+        //           message: "Check-in and check-out dates are required.",
+        //           success: false,
+        //         });
+        //       }
         
-              // Query ke MongoDB
-              const data = await BookingModel.find({
-                isDeleted: false,
-                checkIn:  checkin ,
-                checkOut:  checkout ,
-              });
+        //       // Query ke MongoDB
+        //       const data = await BookingModel.find({
+        //         isDeleted: false,
+        //         checkIn:  checkin ,
+        //         checkOut:  checkout ,
+        //       });
         
-              res.status(200).json({
-                requestId: uuidv4(),
-                data: data,
-                message: `Successfully get vila.`,
-                success: true,
-              });
+        //       res.status(200).json({
+        //         requestId: uuidv4(),
+        //         data: data,
+        //         message: `Successfully get vila.`,
+        //         success: true,
+        //       });
               
-            } catch (error) {
-              res.status(500).json({
-                requestId: uuidv4(),
-                data: null,
-                message: (error as Error).message,
-                success: false,
-              });
-            }
-          }
+        //     } catch (error) {
+        //       res.status(500).json({
+        //         requestId: uuidv4(),
+        //         data: null,
+        //         message: (error as Error).message,
+        //         success: false,
+        //       });
+        //     }
+        //   }
 
-        static async getRoomByParams(req: Request, res: Response) {
-            
-            let data ;
+        // static async deletedRoomPermanent(req: Request, res: Response) {
 
-            const { id } = req.params; 
-            
-            try {
-                    
-                new mongoose.Types.ObjectId(id), 
+        //     try {
 
-                data = await RoomModel.find({ _id : id , isDeleted: false});
-                
-                res.status(201).json(
-                    {
-                        requestId: uuidv4(), 
-                        data: data,
-                        message: "Successfully Fetch Data Room by Params.",
-                        success: true
-                    }
-                );
-
-            } catch (error) {
-                
-                res.status(400).json(
-                    {
-                        requestId: uuidv4(), 
-                        data: null,
-                        message:  (error as Error).message,
-                        RoomId: `Room id : ${id}`,
-                        success: false
-                    }
-                );
-            }
-
-        }
-
-        static async deletedRoomPermanent(req: Request, res: Response) {
-
-            try {
-
-                const { id } = req.params; 
+        //         const { id } = req.params; 
 
             
-                const deletedRoom = await RoomModel.findOneAndDelete({_id:id});
+        //         const deletedRoom = await RoomModel.findOneAndDelete({_id:id});
 
                 
-                res.status(201).json(
-                    {
-                        requestId: uuidv4(), 
-                        data: deletedRoom,
-                        message: "Successfully DeletedPermanent Data Room as Cascade .",
-                        success: true
-                    }
-                );
+        //         res.status(201).json(
+        //             {
+        //                 requestId: uuidv4(), 
+        //                 data: deletedRoom,
+        //                 message: "Successfully DeletedPermanent Data Room as Cascade .",
+        //                 success: true
+        //             }
+        //         );
 
-            } catch (error) {
+        //     } catch (error) {
                 
-                res.status(400).json(
-                    {
-                        requestId: uuidv4(), 
-                        data: null,
-                        message:  (error as Error).message,
-                        success: false
-                    }
-                );
-            }
+        //         res.status(400).json(
+        //             {
+        //                 requestId: uuidv4(), 
+        //                 data: null,
+        //                 message:  (error as Error).message,
+        //                 success: false
+        //             }
+        //         );
+        //     }
 
-        }
-
-        static async updatePacketAll(req: Request, res: Response, next:NextFunction ) {
-
-            const { id } = req.params; 
-            const updateData = req.body; 
+        // }
         
-            try {
+        // static async updateRoomPart(req: Request, res: Response) {
+
+        //     const { id } = req.params; 
+        //     const updateData = req.body; 
+
+        //     // if (updateData._id) {
+        //     //     delete updateData._id;
+        //     // }
+
+        //     try {
             
-                const updatedPacket = await RoomModel.findOneAndUpdate(
-                    { _id: id },         
-                    updateData,            
-                    { new: true, runValidators: true } 
-                );
+        //         const updatedRoom = await RoomModel.findOneAndUpdate(
+        //             // new mongoose.Types.ObjectId(id),        
+        //             {_id:id},
+        //             updateData,            
+        //             { new: true, runValidators: true } 
+        //         );
         
-                if (!updatedPacket) {
-                    return res.status(404).json({
-                        requestId: uuidv4(), 
-                        success: false,
-                        message: "Packet not found",
-                    });
-                }
+        //         if (!updatedRoom) {
+        //             return res.status(404).json({
+        //                 requestId: uuidv4(), 
+        //                 success: false,
+        //                 message: "Room not found",
+        //             });
+        //         }
         
-                res.status(200).json({
-                    requestId: uuidv4(), 
-                    success: true,
-                    message: "Successfully updated Packet data",
-                    data: updatedPacket
-                });
+        //         res.status(200).json({
+        //             requestId: uuidv4(), 
+        //             success: true,
+        //             message: "Successfully updated Room data",
+        //             data: updatedRoom
+        //         });
         
-            } catch (error) {
-                res.status(400).json({
-                    requestId: uuidv4(), 
-                    success: false,
-                    message: (error as Error).message,
-                });
-            }
-        };
-        
-        static async updateRoomPart(req: Request, res: Response) {
+        //     } catch (error) {
+        //         res.status(400).json({
+        //             requestId: uuidv4(), 
+        //             success: false,
+        //             message: (error as Error).message,
+        //         });
+        //     }
+        // };
 
-            const { id } = req.params; 
-            const updateData = req.body; 
-
-            // if (updateData._id) {
-            //     delete updateData._id;
-            // }
-
-            try {
-            
-                const updatedRoom = await RoomModel.findOneAndUpdate(
-                    // new mongoose.Types.ObjectId(id),        
-                    {_id:id},
-                    updateData,            
-                    { new: true, runValidators: true } 
-                );
+        // static async TrxNotif(req: Request, res: Response) {
+        //     try {
+        //         const data = req.body;
         
-                if (!updatedRoom) {
-                    return res.status(404).json({
-                        requestId: uuidv4(), 
-                        success: false,
-                        message: "Room not found",
-                    });
-                }
+        //         // console.log("Data from midtrans:", data);
         
-                res.status(200).json({
-                    requestId: uuidv4(), 
-                    success: true,
-                    message: "Successfully updated Room data",
-                    data: updatedRoom
-                });
+        //         // Menghilangkan prefiks "order-" dari transaction_id
+        //         const formattedTransactionId = data.order_id.replace(/^order-/, "");
         
-            } catch (error) {
-                res.status(400).json({
-                    requestId: uuidv4(), 
-                    success: false,
-                    message: (error as Error).message,
-                });
-            }
-        };
-
-        static async TrxNotif(req: Request, res: Response) {
-            try {
-                const data = req.body;
+        //         // console.log("Formatted Transaction ID:", formattedTransactionId);
         
-                // console.log("Data from midtrans:", data);
-        
-                // Menghilangkan prefiks "order-" dari transaction_id
-                const formattedTransactionId = data.order_id.replace(/^order-/, "");
-        
-                // console.log("Formatted Transaction ID:", formattedTransactionId);
-        
-                // Menunggu hasil findOne dengan bookingId yang sudah diformat
-                const existingTransaction = await TransactionModel.findOne({ bookingId: formattedTransactionId });
+        //         // Menunggu hasil findOne dengan bookingId yang sudah diformat
+        //         const existingTransaction = await TransactionModel.findOne({ bookingId: formattedTransactionId });
 
-                let resultUpdate : any 
+        //         let resultUpdate : any 
 
-                if (existingTransaction) {
-                    // Properti bookingId sekarang tersedia
-                    const result = await updateStatusBaseOnMidtransResponse(data.order_id, data, res);
-                    console.log('result = ', result);
-                    resultUpdate = result
+        //         if (existingTransaction) {
+        //             // Properti bookingId sekarang tersedia
+        //             const result = await updateStatusBaseOnMidtransResponse(data.order_id, data, res);
+        //             console.log('result = ', result);
+        //             resultUpdate = result
 
-                } else {
+        //         } else {
 
-                    console.log('Transaction not found in server, Data =', data);
-                }
+        //             console.log('Transaction not found in server, Data =', data);
+        //         }
 
-                res.status(200).json({
+        //         res.status(200).json({
 
-                    status: 'success',
-                    message: "OK",
-                    data: resultUpdate
+        //             status: 'success',
+        //             message: "OK",
+        //             data: resultUpdate
     
-                })
+        //         })
 
-            } catch (error) {
-                console.error('Error handling transaction notification:', error);
+        //     } catch (error) {
+        //         console.error('Error handling transaction notification:', error);
                 
-                res.status(500).json({ 
+        //         res.status(500).json({ 
                     
-                    error: 'Internal Server Error' 
-                });
-            }
-        }
+        //             error: 'Internal Server Error' 
+        //         });
+        //     }
+        // }
+
+        // static async getRoomByParams(req: Request, res: Response) {
+            
+        //     let data ;
+
+        //     const { id } = req.params; 
+            
+        //     try {
+                    
+        //         new mongoose.Types.ObjectId(id), 
+
+        //         data = await RoomModel.find({ _id : id , isDeleted: false});
+                
+        //         res.status(201).json(
+        //             {
+        //                 requestId: uuidv4(), 
+        //                 data: data,
+        //                 message: "Successfully Fetch Data Room by Params.",
+        //                 success: true
+        //             }
+        //         );
+
+        //     } catch (error) {
+                
+        //         res.status(400).json(
+        //             {
+        //                 requestId: uuidv4(), 
+        //                 data: null,
+        //                 message:  (error as Error).message,
+        //                 RoomId: `Room id : ${id}`,
+        //                 success: false
+        //             }
+        //         );
+        //     }
+
+        // }
 
         // static async deletedSoftRoom(req: Request, res: Response) {
 

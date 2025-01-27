@@ -2,7 +2,7 @@
 
 
 
-export const calculateTotalPrice = (cart :any, siteMinders : any) => {
+export const calculateTotalPrice = async (cart :any, siteMinders : any) => {
     let grandTotal = 0; // Untuk menyimpan total keseluruhan
 
     cart.forEach((cartItem : any) => {
@@ -26,3 +26,25 @@ export const calculateTotalPrice = (cart :any, siteMinders : any) => {
 
     return grandTotal;
 };
+
+export const FilterRoomToCheckout = async (cart: any[], siteMinders: any[]) => {
+    return cart.map((cartItem: any) => {
+      const { roomId, quantity } = cartItem;
+  
+      // Filter data siteMinders berdasarkan roomId dari cart
+      const roomPrices = siteMinders.filter((minder: any) => minder.roomId === roomId);
+  
+      // Hitung total harga untuk roomId ini
+      const roomTotal = roomPrices.reduce((sum: number, minder: any) => sum + minder.price, 0);
+  
+      // Kalikan dengan jumlah quantity dari cart
+      const totalForThisRoom = roomTotal * quantity;
+  
+      return {
+        roomId: roomId,
+        quantity: quantity,
+        price: totalForThisRoom,
+      };
+    });
+  };
+  

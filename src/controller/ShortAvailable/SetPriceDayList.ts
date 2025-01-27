@@ -9,7 +9,7 @@ export const SetPriceDayList = (cart: any, siteMinders: any, date: any) => {
         const roomTotal = roomPrices.reduce((sum: any, minder: any) => sum + minder.price, 0);
 
         
-        console.log(`RoomId: ${_id}, Date for ${date.In} / ${date.Out} price: ${roomTotal}`);
+        // console.log(`RoomId: ${_id}, Date for ${date.In} / ${date.Out} price: ${roomTotal}`);
 
         // Return object { id, price } untuk setiap room
         return {

@@ -21,7 +21,7 @@ TransactionRouter.get("/get-transaction-user", verifyID , verifyToken, Transacti
 
 TransactionRouter.get("/update-status-failed/:order_id", TransactionController.updateTransactionFailed);
 
-
+TransactionRouter.post("/notification", TransactionController.TrxNotif);
 
 
 

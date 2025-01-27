@@ -10,10 +10,11 @@ import { TransactionModel } from '../../models/Transaction/models_transaksi';
 class TransactionService {
 
     // Fungsi untuk membuat Data Transaksi 
-    async createTransaction({ bookingId, name, email,  status, grossAmount, userId, checkIn, checkOut, products, snap_token, paymentUrl, payment_type, bank, card_type, va_numbers,  } : createTransaction) {
+    async createTransaction({ bookingId, name, email, phone, status, grossAmount, userId, checkIn, checkOut, products, snap_token, paymentUrl, payment_type, bank, card_type, va_numbers,  } : createTransaction) {
         const transaction = {
             name,
             email,
+            phone,
             bookingId,
             status,
             grossAmount,
@@ -50,6 +51,7 @@ class TransactionService {
             orderId,
             name,
             email,
+            phone,
             checkIn,
             checkOut,
             adult,
@@ -66,6 +68,7 @@ class TransactionService {
             const bookingData = {
                 name,
                 email,
+                phone,
                 oderId: orderId,
                 checkIn,
                 checkOut,

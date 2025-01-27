@@ -12,6 +12,7 @@ interface IBooking extends Document {
     _id: string;
     name: string;
     email: string;
+    phone: number;
     oderId: string;
     checkIn: string;
     checkOut: string;
@@ -49,6 +50,9 @@ const BookingSchema: Schema = new Schema(
             type: String,
             // required: [true, "checkIn cannot be empty"],
             trim: true
+        },
+        phone: {
+            type: Number, // Tidak perlu trim di tipe Number
         },
         checkIn: {
             type: String,

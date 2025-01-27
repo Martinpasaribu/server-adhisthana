@@ -2,7 +2,7 @@ import express, { Request, Response, NextFunction } from "express";
 
 import { uploadImage } from "./ImageKit/index";
 
-import { RoomController } from "../controller/Room/controller_room";
+import { RoomController } from "../controller/Admin/Room/controller_room";
 import { upload } from "./ImageKit/index";
 import activityLogger from "../middleware/logActivity";
 

@@ -16,6 +16,7 @@ interface ITran extends Document {
     _id: string;
     name: string;
     email: string;
+    phone: number,
     bookingId: string;
     status: string;
     payment_type: string;
@@ -52,6 +53,9 @@ const TransactionSchema: Schema = new Schema(
             type: String,
             // required: [true, "userId cannot be empty"],
             trim: true,
+        },
+        phone: {
+            type: Number, // Tidak perlu trim di tipe Number
         },
         status: {
             type: String,

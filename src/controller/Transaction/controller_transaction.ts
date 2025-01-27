@@ -15,9 +15,54 @@ import { EXPIRE, PENDING_PAYMENT } from '../../utils/constant';
 import { TransactionModel } from '../../models/Transaction/models_transaksi';
 
 import { ShortAvailableController } from '../ShortAvailable/controller_short';
+import { updateStatusBaseOnMidtransResponse } from './Update_Status';
 
 export class TransactionController {
 
+        static async TrxNotif(req: Request, res: Response) {
+            try {
+                const data = req.body;
+        
+                // console.log("Data from midtrans:", data);
+        
+                // Menghilangkan prefiks "order-" dari transaction_id
+                const formattedTransactionId = data.order_id.replace(/^order-/, "");
+        
+                // console.log("Formatted Transaction ID:", formattedTransactionId);
+        
+                // Menunggu hasil findOne dengan bookingId yang sudah diformat
+                const existingTransaction = await TransactionModel.findOne({ bookingId: formattedTransactionId });
+
+                let resultUpdate : any 
+
+                if (existingTransaction) {
+                    // Properti bookingId sekarang tersedia
+                    const result = await updateStatusBaseOnMidtransResponse(data.order_id, data, res);
+                    console.log('result = ', result);
+                    resultUpdate = result
+
+                } else {
+
+                    console.log('Transaction not found in server, Data =', data);
+                }
+
+                res.status(200).json({
+
+                    status: 'success',
+                    message: "OK",
+                    data: resultUpdate
+
+                })
+
+            } catch (error) {
+                console.error('Error handling transaction notification:', error);
+                
+                res.status(500).json({ 
+                    
+                    error: 'Internal Server Error' 
+                });
+            }
+        }
 
         static async getTransactionsById (req: Request, res: Response) {
  

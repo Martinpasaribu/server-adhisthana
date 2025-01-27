@@ -1,28 +1,28 @@
 import crypto from 'crypto';
 import { TransactionModel } from '../../models/Transaction/models_transaksi';
 import { CANCELED, PAID, PENDING_PAYMENT } from '../../utils/constant';
-import { RoomController } from '../Room/controller_room';
+import { RoomController } from '../Admin/Room/controller_room';
 import { ShortAvailableController } from '../ShortAvailable/controller_short';
+import { PendingRoomController } from '../PendingRoom/Controller_PendingRoom';
 
 const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY;
 
 export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, data : any, res:any) => {
    
-    console.log(
-        'order_id:', transaction_id,
-        'order_id2:', data.order_id,
-        'data_status:', data.status_code,
-        'transaction_status:', data.transaction_status,
-        'data gross amount:', data.gross_amount,
-        'midtrans_key:', MIDTRANS_SERVER_KEY,
-        'payment_type :', data.payment_type,
-        'va_numbers :', data.va_numbers,
-        'bank :', data.bank,
-        'card_type :', data.card_type,
-        'signature_key :', data.signature_key,
-        // " Data1 yang akan dimasukan ke short : ", data
-        
-    );
+    // console.log(
+    //     'order_id:', transaction_id,
+    //     'order_id2:', data.order_id,
+    //     'data_status:', data.status_code,
+    //     'transaction_status:', data.transaction_status,
+    //     'data gross amount:', data.gross_amount,
+    //     'midtrans_key:', MIDTRANS_SERVER_KEY,
+    //     'payment_type :', data.payment_type,
+    //     'va_numbers :', data.va_numbers,
+    //     'bank :', data.bank,
+    //     'card_type :', data.card_type,
+    //     'signature_key :', data.signature_key,
+    //     // " Data1 yang akan dimasukan ke short : ", data
+    // );
 
     // Generate signature hash
     const hash = crypto
@@ -176,6 +176,9 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
         default:
             console.warn('Unhandled transaction status:', data.transaction_status);
     }
+
+    // Perbaharui Room Pending pada saat user sudah melakukan transaction atau pembayaran gagal 
+    await PendingRoomController.UpdatePending(data.order_id);
 
     return {
         status: 'success',

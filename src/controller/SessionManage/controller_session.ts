@@ -17,7 +17,7 @@ import { TransactionModel } from '../../models/Transaction/models_transaksi';
 import { ShortAvailableController } from '../ShortAvailable/controller_short';
 import moment from 'moment';
 import { SiteMinderModel } from '../../models/SiteMinder/models_SitemMinder';
-import { calculateTotalPrice } from './calculateTotalPrice';
+import { calculateTotalPrice, FilterRoomToCheckout } from './calculateTotalPrice';
 
 export class SessionController {
 
@@ -255,7 +255,7 @@ export class SessionController {
             
             try {
                 // Debugging: Lihat session yang ada di setiap permintaan
-                console.log('Session:', req.session);
+                // console.log('Session:', req.session);
         
                 // Cek apakah cart ada di session
                 if (!req.session.cart) {
@@ -267,7 +267,6 @@ export class SessionController {
                 const night = req.session.night;
                 const date = req.session.date;
                 
-
                 // Jika cart kosong, kirimkan respons error
                 if (cart.length === 0) {
                     return res.status(404).json({ message: 'There are problems in sessions charts' });
@@ -276,24 +275,30 @@ export class SessionController {
                 if (!night) {
                     return res.status(404).json({ message: 'There are problems in sessions night set' });
                 }
-
-                                
+                                                
                 const dateMinderStart = moment.utc(date?.checkin).format('YYYY-MM-DD'); 
                 const dateMinderEnd = moment.utc(date?.checkout).subtract(1, 'days').format('YYYY-MM-DD'); 
 
+
+         
+
+
+
+                            
 
                 const siteMinders = await SiteMinderModel.find({
                     isDeleted: false,
                     date: { $gte: dateMinderStart, $lte: dateMinderEnd }, // Filter berdasarkan tanggal
                 });
 
-                console.log('site minder data in server:', siteMinders); // Debugging
+                // console.log('site minder data in server:', siteMinders); // Debugging
 
-                const totalPrice = calculateTotalPrice(cart, siteMinders);
+                const totalPrice = await calculateTotalPrice(cart, siteMinders);
+
+                const Rooms = await FilterRoomToCheckout(cart, siteMinders);
         
 
         
-                const tax = totalPrice * 0.12;
 
                 // Debugging totalPrice
                 console.log('Total Price:', totalPrice); // Debugging
@@ -301,9 +306,8 @@ export class SessionController {
                 // Kirim respons dengan cart dan total harga
                 return res.status(200).json({
                     requestId: uuidv4(),
-                    data: cart,
-                    totalPrice: totalPrice + tax,
-                    nonTax: totalPrice,
+                    data: Rooms,
+                    totalPrice: totalPrice,
                     amountNight: night,
                     message: 'Successfully calculated total price.',
                     success: true,
@@ -409,78 +413,6 @@ export class SessionController {
             );
         }
         
-        // sebelum ditambahkan siteminder data
-        // static async GetTotalPrice(req: Request, res: Response) {
-        //     try {
-        //         // Debugging: Lihat session yang ada di setiap permintaan
-        //         console.log('Session:', req.session);
-        
-        //         // Cek apakah cart ada di session
-        //         if (!req.session.cart) {
-        //             req.session.cart = [];
-        //         }
-      
-        //         // Ambil data cart dari session
-        //         const cart = req.session.cart;
-        //         const night = req.session.night;
-        //         const date = req.session.date;
-                
 
-        //         // Jika cart kosong, kirimkan respons error
-        //         if (cart.length === 0) {
-        //             return res.status(404).json({ message: 'There are problems in sessions charts' });
-        //         }
-
-        //         if (!night) {
-        //             return res.status(404).json({ message: 'There are problems in sessions night set' });
-        //         }
-
-                                
-        //         const dateMinderStart = moment.utc(date?.checkin).format('YYYY-MM-DD'); 
-        //         const dateMinderEnd = moment.utc(date?.checkout).subtract(1, 'days').format('YYYY-MM-DD'); 
-
-
-        //         const siteMinders = await SiteMinderModel.find({
-        //             isDeleted: false,
-        //             date: { $gte: dateMinderStart, $lte: dateMinderEnd }, // Filter berdasarkan tanggal
-        //         });
-
-        //         console.log('site minder data in server:', siteMinders); // Debugging
-        //         // console.log('Cart in server:', cart); // Debugging
-        
-        //         // Hitung total harga: price * quantity untuk setiap item, lalu jumlahkan
-        //         const totalPrice = cart.reduce((total, item) => {
-        //             const price = Number(item.price);
-        //             const malam = Number(night);
-        //             const quantity = Number(item.quantity);
-        //             return total + price * quantity * malam ;
-        //         }, 0);
-        
-        //         const tax = totalPrice * 0.12;
-
-        //         // Debugging totalPrice
-        //         console.log('Total Price:', totalPrice); // Debugging
-        
-        //         // Kirim respons dengan cart dan total harga
-        //         return res.status(200).json({
-        //             requestId: uuidv4(),
-        //             data: cart,
-        //             totalPrice: totalPrice + tax,
-        //             amountNight: night,
-        //             message: 'Successfully calculated total price.',
-        //             success: true,
-        //         });
-        //     } catch (error) {
-        //         console.error('Error in GetTotalPrice:', error);
-              
-        //         res.status(500).json({
-        //             requestId: uuidv4(),
-        //             data: null,
-        //             // message: (error as Error).message,
-        //             message: 'Error to acumulation price'+ (error as Error).message, 
-        //             success: false,
-        //         });
-        //     }
-        // }
  
 }

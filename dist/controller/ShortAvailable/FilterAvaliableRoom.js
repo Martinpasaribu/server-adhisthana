@@ -29,6 +29,7 @@ const FilterAvailable = (checkInDate, checkOutDate) => __awaiter(void 0, void 0,
                 checkOut: { $gte: In.toISOString() },
             },
         ],
+        isDeleted: false
     });
     // console.log("Room yang sudah dibooking :" , unavailableRooms)
     // console.log("format checkin:" , checkInDate.toISOString() )

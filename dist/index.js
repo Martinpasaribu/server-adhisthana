@@ -17,6 +17,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const cors_1 = __importDefault(require("cors"));
 const express_session_1 = __importDefault(require("express-session"));
 const connect_mongodb_session_1 = __importDefault(require("connect-mongodb-session"));
+require("./controller/PendingRoom/Cron_job");
 const router_room_1 = __importDefault(require("./router/router_room"));
 const router_instagram_1 = __importDefault(require("./router/router_instagram"));
 const router_contact_1 = __importDefault(require("./router/router_contact"));

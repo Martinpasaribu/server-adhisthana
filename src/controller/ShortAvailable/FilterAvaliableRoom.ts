@@ -21,6 +21,7 @@ export const FilterAvailable = async ( checkInDate: any , checkOutDate : any   )
                                 checkOut: { $gte: In.toISOString() },
                             },
                         ],
+                        isDeleted: false
                     });
     
                     // console.log("Room yang sudah dibooking :" , unavailableRooms)

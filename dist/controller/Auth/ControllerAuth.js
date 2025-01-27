@@ -20,8 +20,6 @@ const jwt_decode_1 = require("jwt-decode");
 const axios_1 = __importDefault(require("axios"));
 const uuid_1 = require("uuid");
 const models_user_1 = __importDefault(require("../../models/User/models_user"));
-const models_booking_1 = require("../../models/Booking/models_booking");
-const models_transaksi_1 = require("../../models/Transaction/models_transaksi");
 dotenv_1.default.config();
 class AuthController {
     static Login(req, res) {
@@ -207,16 +205,22 @@ class AuthController {
                 const email = user.email;
                 req.session.userId = userId;
                 // $ne adalah operator MongoDB yang berarti "not equal" (tidak sama).
-                // Update pada BookingModel
-                const bookingUpdate = yield models_booking_1.BookingModel.updateMany({ email, userId: { $ne: userId } }, { userId });
-                if (bookingUpdate.matchedCount === 0) {
-                    return res.status(200).json({ message: "No bookings updated. All matching records already have the same userId." });
-                }
-                // Update pada TransactionModel
-                const transactionUpdate = yield models_transaksi_1.TransactionModel.updateMany({ email, userId: { $ne: userId } }, { userId });
-                if (transactionUpdate.matchedCount === 0) {
-                    return res.status(200).json({ message: "No transactions updated. All matching records already have the same userId." });
-                }
+                // // Update pada BookingModel
+                // const bookingUpdate = await BookingModel.updateMany(
+                //     { email, userId: { $ne: userId } }, 
+                //     { userId } 
+                // );
+                // if (bookingUpdate.matchedCount === 0) {
+                //     return res.status(200).json({ message: "No bookings updated. All matching records already have the same userId." });
+                // }
+                // // Update pada TransactionModel
+                // const transactionUpdate = await TransactionModel.updateMany(
+                //     { email, userId: { $ne: userId } }, 
+                //     { userId } 
+                // );
+                // if (transactionUpdate.matchedCount === 0) {
+                //     return res.status(200).json({ message: "No transactions updated. All matching records already have the same userId." });
+                // }
                 // await ShortAvailableModel.findOneAndUpdate({ email: req.body.email, },{userId:req.userId});            
                 // if (!ShortAvailableModel) {
                 //     return res.status(404).json({ message: "ShortAvailable not update" });

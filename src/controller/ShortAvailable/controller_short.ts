@@ -19,6 +19,7 @@ import { FilterAvailable } from './FilterAvaliableRoom';
 import { SetPriceDayList } from './SetPriceDayList';
 import { SetResponseShort } from './SetResponseShort';
 import { FilterUnAvailable } from './FilterUnAvailable';
+import { PendingRoomController } from '../PendingRoom/Controller_PendingRoom';
 
 export class ShortAvailableController {
 
@@ -208,7 +209,7 @@ export class ShortAvailableController {
         };
         
 
-        // Short Available Room from hash checkout
+        // Short Available Room from hash checkout In  { USE } 
         static async getAvailableRoomsWithSiteMinder(req: Request, res: Response) {
 
             try {
@@ -253,36 +254,28 @@ export class ShortAvailableController {
                     return res.status(404).json({ message: "Tidak ada data SiteMinder yang ditemukan untuk tanggal tersebut." });
                 }
 
-                // Iterasi setiap SiteMinder untuk memperbarui RoomModel
-                // for (const siteMinder of siteMinders) {
-                //     const { roomId, price } = siteMinder;
-
-                  
-                //     await RoomModel.findOneAndUpdate(
-                //         { _id: roomId }, 
-                //         { price: price } 
-                //     );
-                // }
-
-
 
                 // Filter Room yang Available
-                const resultFilter = await FilterAvailable(checkInDate,checkOutDate)
+                const availableRooms = await FilterAvailable(checkInDate,checkOutDate)
 
                 // Filter Room yang sudah penuh
-                const unavailableRooms = await FilterUnAvailable(resultFilter)
+                const unavailableRooms = await FilterUnAvailable(availableRooms)
 
+                // Filter Room yang sudah tersedia namun butuh pengecekan apakah ada room yang masih dipending
+                const availableRoomsWithoutPending = await PendingRoomController.FilterWithPending(availableRooms,checkInDate,checkOutDate, req,res)
+                
                 // Filter Room dengan harga yang sudah singkron dengan siteMinder
-                const setPriceDayList = await SetPriceDayList(resultFilter,siteMinders, Day)
+                const setPriceDayList = await SetPriceDayList(availableRoomsWithoutPending?.WithoutPending,siteMinders, Day)
 
                 // Filter untuk singkron price per Item dengan lama malam -nya menjadi priceDateList
-                const updateRoomsAvailable =  SetResponseShort(resultFilter,setPriceDayList)
+                const updateRoomsAvailable =  await SetResponseShort(availableRoomsWithoutPending?.WithoutPending,setPriceDayList)
 
+                
 
                 res.status(200).json({
                     requestId: uuidv4(),
                     data: updateRoomsAvailable,
-                    dataUnAvailable: unavailableRooms,
+                    dataUnAvailable: unavailableRooms?.length === 0  ? availableRoomsWithoutPending?.PendingRoom : unavailableRooms.concat(availableRoomsWithoutPending?.PendingRoom),
                     message: `Successfully retrieved rooms. From Date: ${checkInDate.toISOString()} To: ${checkOutDate.toISOString()}`,
                     success: true,
                 });

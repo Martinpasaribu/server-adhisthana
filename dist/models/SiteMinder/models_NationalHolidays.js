@@ -33,70 +33,19 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TransactionModel = void 0;
+exports.NationalHolidaysModel = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-const TransactionSchema = new mongoose_1.Schema({
-    bookingId: {
+const NationalHolidaysSchema = new mongoose_1.Schema({
+    roomId: {
         type: String,
         trim: true,
     },
-    userId: {
-        type: String,
-        // required: [true, "userId cannot be empty"],
-        trim: true,
-    },
-    name: {
-        type: String,
-        // required: [true, "userId cannot be empty"],
-        trim: true,
-    },
-    email: {
-        type: String,
-        // required: [true, "userId cannot be empty"],
-        trim: true,
-    },
-    phone: {
-        type: Number, // Tidak perlu trim di tipe Number
-    },
-    status: {
+    date: {
         type: String,
         trim: true,
     },
-    payment_type: {
-        type: String,
-        trim: true,
-    },
-    va_numbers: [{
-            va_number: { type: String },
-            bank: { type: String }
-        }],
-    bank: { type: String, trim: true },
-    card_type: { type: String, trim: true },
-    grossAmount: {
-        type: Number, // Tidak perlu trim di tipe Number
-    },
-    checkIn: {
-        type: String,
-        trim: true,
-    },
-    checkOut: {
-        type: String,
-        trim: true,
-    },
-    products: [
-        {
-            roomId: { type: String, trim: true },
-            name: { type: String, trim: true },
-            price: { type: Number }, // Tidak perlu trim di tipe Number
-            quantity: { type: Number }, // Tidak perlu trim di tipe Number
-        },
-    ],
-    snap_token: {
-        type: String,
-        trim: true,
-    },
-    paymentUrl: {
-        type: String,
+    price: {
+        type: Number,
         trim: true,
     },
     createAt: {
@@ -114,4 +63,4 @@ const TransactionSchema = new mongoose_1.Schema({
 }, {
     timestamps: true,
 });
-exports.TransactionModel = mongoose_1.default.model('Transaction', TransactionSchema, 'Transaction');
+exports.NationalHolidaysModel = mongoose_1.default.model('NationalHolidays', NationalHolidaysSchema, 'NationalHolidays');

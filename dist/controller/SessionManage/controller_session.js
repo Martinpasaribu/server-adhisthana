@@ -201,7 +201,7 @@ class SessionController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 // Debugging: Lihat session yang ada di setiap permintaan
-                console.log('Session:', req.session);
+                // console.log('Session:', req.session);
                 // Cek apakah cart ada di session
                 if (!req.session.cart) {
                     req.session.cart = [];
@@ -223,17 +223,16 @@ class SessionController {
                     isDeleted: false,
                     date: { $gte: dateMinderStart, $lte: dateMinderEnd }, // Filter berdasarkan tanggal
                 });
-                console.log('site minder data in server:', siteMinders); // Debugging
-                const totalPrice = (0, calculateTotalPrice_1.calculateTotalPrice)(cart, siteMinders);
-                const tax = totalPrice * 0.12;
+                // console.log('site minder data in server:', siteMinders); // Debugging
+                const totalPrice = yield (0, calculateTotalPrice_1.calculateTotalPrice)(cart, siteMinders);
+                const Rooms = yield (0, calculateTotalPrice_1.FilterRoomToCheckout)(cart, siteMinders);
                 // Debugging totalPrice
                 console.log('Total Price:', totalPrice); // Debugging
                 // Kirim respons dengan cart dan total harga
                 return res.status(200).json({
                     requestId: (0, uuid_1.v4)(),
-                    data: cart,
-                    totalPrice: totalPrice + tax,
-                    nonTax: totalPrice,
+                    data: Rooms,
+                    totalPrice: totalPrice,
                     amountNight: night,
                     message: 'Successfully calculated total price.',
                     success: true,

@@ -2,6 +2,7 @@
 export interface createTransaction {
     name:string;
     email:string;
+    phone: number,
     bookingId:string;
     status:string;
     grossAmount:number;
@@ -50,6 +51,7 @@ export default interface updateTransactionStatus {
 export interface createTransactionBooking {
     name: string,
     email: string,
+    phone: number,
     orderId: string;
     checkIn: string;
     checkOut: string;

@@ -13,7 +13,42 @@ exports.TransactionController = void 0;
 const uuid_1 = require("uuid");
 const constant_1 = require("../../utils/constant");
 const models_transaksi_1 = require("../../models/Transaction/models_transaksi");
+const Update_Status_1 = require("./Update_Status");
 class TransactionController {
+    static TrxNotif(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const data = req.body;
+                // console.log("Data from midtrans:", data);
+                // Menghilangkan prefiks "order-" dari transaction_id
+                const formattedTransactionId = data.order_id.replace(/^order-/, "");
+                // console.log("Formatted Transaction ID:", formattedTransactionId);
+                // Menunggu hasil findOne dengan bookingId yang sudah diformat
+                const existingTransaction = yield models_transaksi_1.TransactionModel.findOne({ bookingId: formattedTransactionId });
+                let resultUpdate;
+                if (existingTransaction) {
+                    // Properti bookingId sekarang tersedia
+                    const result = yield (0, Update_Status_1.updateStatusBaseOnMidtransResponse)(data.order_id, data, res);
+                    console.log('result = ', result);
+                    resultUpdate = result;
+                }
+                else {
+                    console.log('Transaction not found in server, Data =', data);
+                }
+                res.status(200).json({
+                    status: 'success',
+                    message: "OK",
+                    data: resultUpdate
+                });
+            }
+            catch (error) {
+                console.error('Error handling transaction notification:', error);
+                res.status(500).json({
+                    error: 'Internal Server Error'
+                });
+            }
+        });
+    }
     static getTransactionsById(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
