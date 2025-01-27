@@ -140,8 +140,8 @@ export class TransactionController {
                 const update = await TransactionModel.findOneAndUpdate({bookingId : transactionId}, {status:EXPIRE});
                 
                 // Perbaharui Room Pending pada saat user sudah melakukan transaction atau pembayaran gagal 
-                await PendingRoomController.UpdatePending(transactionId);
-            
+                const messagePendingRoom = await PendingRoomController.UpdatePending(transactionId);
+                        
                 if(!update) {
                     return res.status(404).json({
                         status: 'error',
@@ -153,6 +153,7 @@ export class TransactionController {
                 res.status(202).json({
                     status: 'success',
                     data: update,
+                    messagePendingRoom: messagePendingRoom,
                     message: "success set expire transaction"
                 })
                 

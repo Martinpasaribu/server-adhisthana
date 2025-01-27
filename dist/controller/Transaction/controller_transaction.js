@@ -112,7 +112,7 @@ class TransactionController {
                 const transactionId = req.params.order_id;
                 const update = yield models_transaksi_1.TransactionModel.findOneAndUpdate({ bookingId: transactionId }, { status: constant_1.EXPIRE });
                 // Perbaharui Room Pending pada saat user sudah melakukan transaction atau pembayaran gagal 
-                yield Controller_PendingRoom_1.PendingRoomController.UpdatePending(transactionId);
+                const messagePendingRoom = yield Controller_PendingRoom_1.PendingRoomController.UpdatePending(transactionId);
                 if (!update) {
                     return res.status(404).json({
                         status: 'error',
@@ -122,6 +122,7 @@ class TransactionController {
                 res.status(202).json({
                     status: 'success',
                     data: update,
+                    messagePendingRoom: messagePendingRoom,
                     message: "success set expire transaction"
                 });
             }

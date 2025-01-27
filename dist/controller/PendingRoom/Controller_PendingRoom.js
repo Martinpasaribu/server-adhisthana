@@ -196,6 +196,8 @@ class PendingRoomController {
             }
             catch (error) {
                 console.error(error);
+                const message = ` Transaction: ${TransactionId} error set no pending : ${error}`;
+                return message;
             }
         });
     }
