@@ -10,10 +10,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SetAvailableCount = void 0;
-const FilterAvaliableRoom_1 = require("../ShortAvailable/FilterAvaliableRoom");
+const FilterAvailableRoom_1 = require("../ShortAvailable/FilterAvailableRoom");
 const SetAvailableCount = (rooms, checkInDate, checkOutDate) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const RoomsAvailableCount = yield (0, FilterAvaliableRoom_1.FilterAvailable)(checkInDate, checkOutDate);
+        const RoomsAvailableCount = yield (0, FilterAvailableRoom_1.FilterAvailable)(checkInDate, checkOutDate);
         const FilterAvailableCount = rooms.map((room) => {
             // Temukan elemen RoomsAvailableCount dengan roomId yang cocok
             const availableRoom = RoomsAvailableCount.find((data) => data._id.toString() === room.roomId);

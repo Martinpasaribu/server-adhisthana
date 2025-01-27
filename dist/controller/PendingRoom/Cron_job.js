@@ -15,7 +15,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const node_cron_1 = __importDefault(require("node-cron"));
 const models_PendingRoom_1 = require("../../models/PendingRoom/models_PendingRoom");
 node_cron_1.default.schedule('*/5 * * * *', () => __awaiter(void 0, void 0, void 0, function* () {
-    const now = new Date();
-    yield models_PendingRoom_1.PendingRoomModel.updateMany({ lockedUntil: { $lte: now } }, { isDeleted: true });
+    const nowWIB = new Date();
+    // Pastikan zona waktu sesuai WIB
+    const options = { timeZone: "Asia/Jakarta" };
+    const now = new Date(nowWIB.toLocaleString("en-US", options));
+    yield models_PendingRoom_1.PendingRoomModel.updateMany({ lockedUntil: { $lte: now.toString() } }, { isDeleted: true });
     console.log("Kunci stok yang sudah habis waktu berhasil dibersihkan");
 }));

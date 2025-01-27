@@ -18,7 +18,7 @@ const uuid_1 = require("uuid");
 const crypto_1 = __importDefault(require("crypto"));
 const midtransConfig_1 = require("../../config/midtransConfig");
 const constant_1 = require("../../utils/constant");
-const FilterAvaliableRoom_1 = require("../ShortAvailable/FilterAvaliableRoom");
+const FilterAvailableRoom_1 = require("../ShortAvailable/FilterAvailableRoom");
 const SiteMinderFilter_1 = require("./SiteMinderFilter");
 const SetPriceDayList_1 = require("../ShortAvailable/SetPriceDayList");
 const SetResponseShort_1 = require("../ShortAvailable/SetResponseShort");
@@ -31,7 +31,7 @@ class BookingController {
             const UserId = req.userId;
             const BookingReq = req.body;
             try {
-                const RoomCanUse = yield (0, FilterAvaliableRoom_1.FilterAvailable)(BookingReq.checkIn, BookingReq.checkOut);
+                const RoomCanUse = yield (0, FilterAvailableRoom_1.FilterAvailable)(BookingReq.checkIn, BookingReq.checkOut);
                 // Ambil hanya data room yang sesuai dari RoomCanUse berdasarkan roomId di BookingReq
                 const roomDetails = RoomCanUse.filter((room) => BookingReq.room.some((r) => r.roomId.toString() === room._id.toString()));
                 if (!roomDetails) {

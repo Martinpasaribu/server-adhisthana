@@ -14,13 +14,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShortAvailableController = void 0;
 const uuid_1 = require("uuid");
+// Gunakan dynamic import
 const models_room_1 = __importDefault(require("../../models/Room/models_room"));
 const models_booking_1 = require("../../models/Booking/models_booking");
 const models_transaksi_1 = require("../../models/Transaction/models_transaksi");
 const models_ShortAvailable_1 = require("../../models/ShortAvailable/models_ShortAvailable");
 const moment_1 = __importDefault(require("moment"));
 const models_SitemMinder_1 = require("../../models/SiteMinder/models_SitemMinder");
-const FilterAvaliableRoom_1 = require("./FilterAvaliableRoom");
+const FilterAvailableRoom_1 = require("./FilterAvailableRoom");
 const SetPriceDayList_1 = require("./SetPriceDayList");
 const SetResponseShort_1 = require("./SetResponseShort");
 const FilterUnAvailable_1 = require("./FilterUnAvailable");
@@ -219,7 +220,7 @@ class ShortAvailableController {
                     return res.status(404).json({ message: "Tidak ada data SiteMinder yang ditemukan untuk tanggal tersebut." });
                 }
                 // Filter Room yang Available
-                const availableRooms = yield (0, FilterAvaliableRoom_1.FilterAvailable)(checkInDate, checkOutDate);
+                const availableRooms = yield (0, FilterAvailableRoom_1.FilterAvailable)(checkInDate, checkOutDate);
                 // Filter Room yang sudah penuh
                 const unavailableRooms = yield (0, FilterUnAvailable_1.FilterUnAvailable)(availableRooms);
                 // Filter Room yang sudah tersedia namun butuh pengecekan apakah ada room yang masih dipending

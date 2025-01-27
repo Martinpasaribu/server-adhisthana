@@ -10,7 +10,7 @@ import { snap } from '../../config/midtransConfig'
 
 import { PENDING_PAYMENT } from '../../utils/constant';
 
-import { FilterAvailable } from '../ShortAvailable/FilterAvaliableRoom';
+import { FilterAvailable } from '../ShortAvailable/FilterAvailableRoom';
 import { FilterSiteMinder } from './SiteMinderFilter';
 import { SetPriceDayList } from '../ShortAvailable/SetPriceDayList';
 import { SetResponseShort } from '../ShortAvailable/SetResponseShort';
@@ -205,9 +205,6 @@ export class BookingController {
                         };
                     }),
                 })
-
-
-                
 
 
                 res.status(201).json({

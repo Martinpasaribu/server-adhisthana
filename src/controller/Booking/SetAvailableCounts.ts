@@ -1,4 +1,4 @@
-import { FilterAvailable } from "../ShortAvailable/FilterAvaliableRoom"
+import { FilterAvailable } from "../ShortAvailable/FilterAvailableRoom"
 
 
 export const SetAvailableCount = async (rooms : any, checkInDate: any , checkOutDate : any) => {

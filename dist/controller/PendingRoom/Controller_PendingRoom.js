@@ -20,13 +20,17 @@ class PendingRoomController {
                     return res.status(400).json({ message: 'Room, date, or userId is not available' });
                 }
                 const now = new Date();
+                const EndLockedUntil = new Date(now.getTime() + 7 * 60 * 1000); // Menambah 7 menit
+                const options = { timeZone: "Asia/Jakarta" };
+                const lockedUntilWIB = new Date(EndLockedUntil.toLocaleString("en-US", options));
+                const lockedUntil = lockedUntilWIB.toString();
                 // Iterasi melalui setiap room
                 for (const r of room) {
                     // Pastikan room memiliki properti yang diperlukan
                     if (!r.roomId || !r.quantity) {
                         return res.status(400).json({ message: `Room data is invalid for roomId: ${r.roomId}` });
                     }
-                    const lockedUntil = new Date(now.getTime() + 7 * 60 * 1000); // Locked for 7 minutes
+                    // Mengatur zona waktu WIB secara manual
                     // Buat entri baru di PendingRoomModel
                     yield models_PendingRoom_1.PendingRoomModel.create({
                         bookingId,
@@ -35,7 +39,7 @@ class PendingRoomController {
                         start: dateIn,
                         end: dateOut,
                         stock: r.quantity,
-                        lockedUntil,
+                        lockedUntil
                     });
                 }
             }
@@ -50,13 +54,16 @@ class PendingRoomController {
             const start = new Date(dateIn);
             const end = new Date(dateOut);
             try {
-                const now = new Date();
+                const nowWIB = new Date();
+                // Pastikan zona waktu sesuai WIB
+                const options = { timeZone: "Asia/Jakarta" };
+                const now = new Date(nowWIB.toLocaleString("en-US", options));
                 const DataPendingRoom = yield models_PendingRoom_1.PendingRoomModel.find({
                     $or: [
                         {
                             start: { $lte: end.toISOString() },
                             end: { $gte: start.toISOString() },
-                            lockedUntil: { $gte: now }
+                            lockedUntil: { $gte: now.toString() }
                         },
                     ],
                     isDeleted: false
