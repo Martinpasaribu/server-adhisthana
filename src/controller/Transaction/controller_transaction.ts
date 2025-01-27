@@ -16,6 +16,7 @@ import { TransactionModel } from '../../models/Transaction/models_transaksi';
 
 import { ShortAvailableController } from '../ShortAvailable/controller_short';
 import { updateStatusBaseOnMidtransResponse } from './Update_Status';
+import { PendingRoomController } from '../PendingRoom/Controller_PendingRoom';
 
 export class TransactionController {
 
@@ -137,7 +138,9 @@ export class TransactionController {
                 const transactionId = req.params.order_id
                 
                 const update = await TransactionModel.findOneAndUpdate({bookingId : transactionId}, {status:EXPIRE});
-
+                
+                // Perbaharui Room Pending pada saat user sudah melakukan transaction atau pembayaran gagal 
+                await PendingRoomController.UpdatePending(transactionId);
             
                 if(!update) {
                     return res.status(404).json({

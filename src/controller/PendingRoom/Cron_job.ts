@@ -2,7 +2,7 @@
 import cron  from 'node-cron'
 import { PendingRoomModel } from '../../models/PendingRoom/models_PendingRoom';
 
-cron.schedule('*/5 * * * *', async () => {
+cron.schedule('*/2 * * * *', async () => {
     
     const nowWIB = new Date();
 

@@ -13,14 +13,21 @@ export class PendingRoomController {
                 }
         
                 const now = new Date();
-                const EndLockedUntil = new Date(now.getTime() + 7 * 60 * 1000); // Menambah 7 menit
-                const options = { timeZone: "Asia/Jakarta" };
-                const lockedUntilWIB = new Date(
-                    EndLockedUntil.toLocaleString("en-US", options)
-                );
+                // const EndLockedUntil = new Date(now.getTime() + 7 * 60 * 1000); // Menambah 7 menit
+                // const options = { timeZone: "Asia/Jakarta" };
+                // const lockedUntilWIB = new Date(
+                //     EndLockedUntil.toLocaleString("en-US", options)
+                // );
 
-                const lockedUntil = lockedUntilWIB.toString();
+                const wibOffset = 7 * 60; // Offset dalam menit
+                const localOffset = now.getTimezoneOffset(); // Offset sistem lokal dalam menit
+                const wibTime = new Date(now.getTime() + (wibOffset - localOffset) * 60 * 1000);
+
+
+                const lockedUntil = wibTime.toString();
                 
+                console.log(` Data Pending room Date lockedUntil ${lockedUntil}: `)
+
                 // Iterasi melalui setiap room
                 for (const r of room) {
                     // Pastikan room memiliki properti yang diperlukan
@@ -62,9 +69,11 @@ export class PendingRoomController {
             const nowWIB = new Date();
 
             // Pastikan zona waktu sesuai WIB
+            // const options = { timeZone: "Asia/Jakarta" };
+            // const now = new Date(nowWIB.toLocaleString("en-US", options));
+            
             const options = { timeZone: "Asia/Jakarta" };
-            const now = new Date(nowWIB.toLocaleString("en-US", options));
-
+            const now = new Intl.DateTimeFormat("en-US", options).format(nowWIB);
 
             const DataPendingRoom = await PendingRoomModel.find({
                 $or: [
@@ -79,6 +88,7 @@ export class PendingRoomController {
 
             // console.log(` Data Pending room start ${dateIn}, end ${dateOut} : `, DataPendingRoom)
             // console.log(` Data Pending room Now ${now}: `, DataPendingRoom)
+            console.log(` Data Filter Pending room Date Now ${now}: `)
             // console.log(` Data room Now : `, rooms)
 
             const WithoutPending = rooms.filter((room: any) => {
