@@ -189,18 +189,27 @@ class PendingRoomController {
     static UpdatePending(TransactionId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const ResultUpdate = models_PendingRoom_1.PendingRoomModel.findOneAndUpdate({ bookingId: TransactionId, isDeleted: false }, { isDeleted: true });
-                console.log(" Data Room Pending has update ", ResultUpdate);
-                const message = ` Transaction: ${TransactionId} set no pending`;
-                return message;
+                // Menunggu hasil pembaruan dengan `await`
+                const ResultUpdate = yield models_PendingRoom_1.PendingRoomModel.findOneAndUpdate({ bookingId: TransactionId, isDeleted: false }, { isDeleted: true }, { new: true } // Mengembalikan data yang diperbarui
+                );
+                // Memeriksa apakah data berhasil diperbarui
+                if (ResultUpdate) {
+                    console.log("Data Room Pending has been updated", ResultUpdate);
+                    const message = `Transaction: ${TransactionId} set no pending`;
+                    return message;
+                }
+                else {
+                    const message = `Transaction: ${TransactionId} not found or already deleted`;
+                    console.warn(message);
+                    return message;
+                }
             }
             catch (error) {
-                console.error(error);
-                const message = ` Transaction: ${TransactionId} error set no pending : ${error}`;
+                console.error("Error updating room pending:", error);
+                const message = `Transaction: ${TransactionId} error setting no pending: ${error}`;
                 return message;
             }
         });
     }
-    ;
 }
 exports.PendingRoomController = PendingRoomController;
