@@ -157,13 +157,19 @@ export class PendingRoomController {
             // console.log(` Data Filter Pending room Date Now ${now}: `)
             // console.log(` Data room Now : `, rooms)
 
-            const UpdatedRooms = rooms.filter((room: any) => {
-                return !DataPendingRoom.some((data: any) => {
-                  const roomId = room._id ? room._id.toString() : room.roomId; // Jika `_id` tidak ada, gunakan `roomId`
-                  return data.roomId === roomId && data.stock >= (room.availableCount ?? room.quantity);
-                });
-            });
 
+            const UpdatedRooms = rooms.filter((room: any) => {
+                const roomId = room._id ? room._id.toString() : room.roomId;
+              
+                // Hitung total stock untuk roomId yang sama di DataPendingRoom
+                const totalStock = DataPendingRoom
+                  .filter((data: any) => data.roomId === roomId) // Ambil data dengan roomId yang sama
+                  .reduce((sum: number, data: any) => sum + data.stock, 0); // Jumlahkan stock
+              
+                // Periksa apakah availableCount lebih besar dari totalStock
+                return (room.availableCount ?? room.quantity) > totalStock;
+              });
+              
 
             // 1. Kelompokkan DataPendingRoom berdasarkan roomId
             const groupedPendingStock = DataPendingRoom.reduce((acc: any, data: any) => {
@@ -239,6 +245,10 @@ export class PendingRoomController {
                 const ResultUpdate = PendingRoomModel.findOneAndUpdate({ bookingId : TransactionId, isDeleted :false}, {isDeleted: true})
 
                 console.log(" Data Room Pending has update ", ResultUpdate);
+                
+                const message = ` Transaction: ${TransactionId} set no pending`
+
+                return message;
 
             } catch (error) {
 

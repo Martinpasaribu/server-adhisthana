@@ -152,10 +152,11 @@ const updateStatusBaseOnMidtransResponse = (transaction_id, data, res) => __awai
             console.warn('Unhandled transaction status:', data.transaction_status);
     }
     // Perbaharui Room Pending pada saat user sudah melakukan transaction atau pembayaran gagal 
-    yield Controller_PendingRoom_1.PendingRoomController.UpdatePending(transaction_id);
+    const messagePendingRoom = yield Controller_PendingRoom_1.PendingRoomController.UpdatePending(transaction_id);
     return {
         status: 'success',
         data: responseData,
+        messagePendingRoom: messagePendingRoom,
         message: 'Transaction status has been updated!',
     };
 });
