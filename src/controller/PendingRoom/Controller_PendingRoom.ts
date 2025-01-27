@@ -12,21 +12,18 @@ export class PendingRoomController {
                     return res.status(400).json({ message: 'Room, date, or userId is not available' });
                 }
         
-                const now = new Date();
-                // const EndLockedUntil = new Date(now.getTime() + 7 * 60 * 1000); // Menambah 7 menit
-                // const options = { timeZone: "Asia/Jakarta" };
-                // const lockedUntilWIB = new Date(
-                //     EndLockedUntil.toLocaleString("en-US", options)
-                // );
+                const nowUTC = new Date(); // Waktu sekarang UTC server
 
-                const wibOffset = 7 * 60; // Offset dalam menit
-                const localOffset = now.getTimezoneOffset(); // Offset sistem lokal dalam menit
-                const wibTime = new Date(now.getTime() + (wibOffset - localOffset) * 60 * 1000);
-
-
-                const lockedUntil = wibTime.toString();
+                // Konversi UTC ke WIB (UTC + 7 jam)
+                const wibOffset = 7 * 60 * 60 * 1000; // Offset WIB dalam milidetik (7 jam)
+                const wibTime = new Date(nowUTC.getTime() + wibOffset);
+              
+                // Format WIB untuk disimpan (contoh: '2025-01-27 15:00:00')
+                const wibFormatted = wibTime.toISOString().replace("T", " ").split(".")[0] + " GMT+0700 (WIB)";
                 
-                console.log(` Data Pending room Date lockedUntil ${lockedUntil}: `)
+                const lockedUntil = wibFormatted;
+                
+                console.log(` Data SetPending room Date lockedUntil ${lockedUntil}: `)
 
                 // Iterasi melalui setiap room
                 for (const r of room) {
@@ -34,11 +31,6 @@ export class PendingRoomController {
                     if (!r.roomId || !r.quantity) {
                         return res.status(400).json({ message: `Room data is invalid for roomId: ${r.roomId}` });
                     }
-        
-
-                    // Mengatur zona waktu WIB secara manual
-                    
-
 
                     // Buat entri baru di PendingRoomModel
                     await PendingRoomModel.create({
@@ -66,21 +58,24 @@ export class PendingRoomController {
 
             try {
                 
-            const nowWIB = new Date();
+                const nowUTC = new Date(); // Waktu sekarang UTC server
 
-            // Pastikan zona waktu sesuai WIB
-            // const options = { timeZone: "Asia/Jakarta" };
-            // const now = new Date(nowWIB.toLocaleString("en-US", options));
-            
-            const options = { timeZone: "Asia/Jakarta" };
-            const now = new Intl.DateTimeFormat("en-US", options).format(nowWIB);
+                // Konversi UTC ke WIB (UTC + 7 jam)
+                const wibOffset = 7 * 60 * 60 * 1000; // Offset WIB dalam milidetik (7 jam)
+                const wibTime = new Date(nowUTC.getTime() + wibOffset);
+              
+                // Format WIB untuk disimpan (contoh: '2025-01-27 15:00:00')
+                const wibFormatted = wibTime.toISOString().replace("T", " ").split(".")[0] + " GMT+0700 (WIB)";
+                
+                const now = wibFormatted;
+
 
             const DataPendingRoom = await PendingRoomModel.find({
                 $or: [
                     {
                         start: { $lte: end.toISOString() },
                         end: { $gte: start.toISOString() },
-                        lockedUntil: { $gte: now.toString() }
+                        lockedUntil: { $gte: now }
                     },
                 ],
                 isDeleted: false
