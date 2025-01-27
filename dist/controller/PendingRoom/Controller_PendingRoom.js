@@ -23,6 +23,8 @@ class PendingRoomController {
                 // Konversi UTC ke WIB (UTC + 7 jam)
                 const wibOffset = 7 * 60 * 60 * 1000; // Offset WIB dalam milidetik (7 jam)
                 const wibTime = new Date(nowUTC.getTime() + wibOffset);
+                // Menambahkan 5 menit ke waktu WIB
+                wibTime.setMinutes(wibTime.getMinutes() + 5);
                 // Format WIB untuk disimpan (contoh: '2025-01-27 15:00:00')
                 const wibFormatted = wibTime.toISOString().replace("T", " ").split(".")[0] + " GMT+0700 (WIB)";
                 const lockedUntil = wibFormatted;
@@ -109,7 +111,7 @@ class PendingRoomController {
     static UpdatePending(TransactionId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const ResultUpdate = models_PendingRoom_1.PendingRoomModel.findOneAndUpdate({ roomId: TransactionId, isDeleted: false }, { isDeleted: true });
+                const ResultUpdate = models_PendingRoom_1.PendingRoomModel.findOneAndUpdate({ bookingId: TransactionId, isDeleted: false }, { isDeleted: true });
                 console.log(" Data Room Pending has update ", ResultUpdate);
             }
             catch (error) {

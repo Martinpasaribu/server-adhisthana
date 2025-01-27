@@ -15,10 +15,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const node_cron_1 = __importDefault(require("node-cron"));
 const models_PendingRoom_1 = require("../../models/PendingRoom/models_PendingRoom");
 node_cron_1.default.schedule('*/2 * * * *', () => __awaiter(void 0, void 0, void 0, function* () {
-    const nowWIB = new Date();
-    // Pastikan zona waktu sesuai WIB
-    const options = { timeZone: "Asia/Jakarta" };
-    const now = new Date(nowWIB.toLocaleString("en-US", options));
+    const nowUTC = new Date(); // Waktu sekarang UTC server
+    // Konversi UTC ke WIB (UTC + 7 jam)
+    const wibOffset = 7 * 60 * 60 * 1000; // Offset WIB dalam milidetik (7 jam)
+    const wibTime = new Date(nowUTC.getTime() + wibOffset);
+    // Format WIB untuk disimpan (contoh: '2025-01-27 15:00:00')
+    const wibFormatted = wibTime.toISOString().replace("T", " ").split(".")[0] + " GMT+0700 (WIB)";
+    const now = wibFormatted;
     yield models_PendingRoom_1.PendingRoomModel.updateMany({ lockedUntil: { $lte: now.toString() } }, { isDeleted: true });
     console.log("Kunci stok yang sudah habis waktu berhasil dibersihkan");
 }));
