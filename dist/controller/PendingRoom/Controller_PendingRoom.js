@@ -53,7 +53,7 @@ class PendingRoomController {
             }
         });
     }
-    static FilterWithPending(rooms, dateIn, dateOut, req, res) {
+    static FilterForUpdateBookingWithPending(rooms, dateIn, dateOut, req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const start = new Date(dateIn);
             const end = new Date(dateOut);
@@ -79,19 +79,94 @@ class PendingRoomController {
                 // console.log(` Data Pending room Now ${now}: `, DataPendingRoom)
                 console.log(` Data Filter Pending room Date Now ${now}: `);
                 // console.log(` Data room Now : `, rooms)
-                const WithoutPending = rooms.filter((room) => {
+                const PendingRoom = rooms.filter((room) => {
+                    var _a;
+                    const roomId = room._id ? room._id.toString() : room.roomId;
+                    // Hitung total stock untuk roomId yang sama di DataPendingRoom
+                    const totalStock = DataPendingRoom
+                        .filter((data) => data.roomId === roomId) // Ambil data dengan roomId yang sama
+                        .reduce((sum, data) => sum + data.stock, 0); // Jumlahkan stock
+                    // Periksa apakah totalStock lebih besar atau sama dengan availableCount
+                    return totalStock >= ((_a = room.availableCount) !== null && _a !== void 0 ? _a : room.quantity);
+                });
+                // console.log(" result filter Pending room : ", availableRoomsWithoutPending)
+                // console.log(" result filter PendingRoom : ", PendingRoom)
+                const result = {
+                    PendingRoom
+                };
+                return result;
+            }
+            catch (error) {
+                console.error(error);
+                throw new Error('Function SetPending not implemented.');
+            }
+        });
+    }
+    ;
+    static FilterForUpdateVilaWithPending(rooms, dateIn, dateOut, req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const start = new Date(dateIn);
+            const end = new Date(dateOut);
+            try {
+                const nowUTC = new Date(); // Waktu sekarang UTC server
+                // Konversi UTC ke WIB (UTC + 7 jam)
+                const wibOffset = 7 * 60 * 60 * 1000; // Offset WIB dalam milidetik (7 jam)
+                const wibTime = new Date(nowUTC.getTime() + wibOffset);
+                // Format WIB untuk disimpan (contoh: '2025-01-27 15:00:00')
+                const wibFormatted = wibTime.toISOString().replace("T", " ").split(".")[0] + " GMT+0700 (WIB)";
+                const now = wibFormatted;
+                const DataPendingRoom = yield models_PendingRoom_1.PendingRoomModel.find({
+                    $or: [
+                        {
+                            start: { $lte: end.toISOString() },
+                            end: { $gte: start.toISOString() },
+                            lockedUntil: { $gte: now }
+                        },
+                    ],
+                    isDeleted: false
+                });
+                // console.log(` Data Pending room start ${dateIn}, end ${dateOut} : `, DataPendingRoom)
+                // console.log(` Data Pending room Now ${now}: `, DataPendingRoom)
+                // console.log(` Data Filter Pending room Date Now ${now}: `)
+                // console.log(` Data room Now : `, rooms)
+                const UpdatedRooms = rooms.filter((room) => {
                     return !DataPendingRoom.some((data) => {
                         var _a;
                         const roomId = room._id ? room._id.toString() : room.roomId; // Jika `_id` tidak ada, gunakan `roomId`
                         return data.roomId === roomId && data.stock >= ((_a = room.availableCount) !== null && _a !== void 0 ? _a : room.quantity);
                     });
                 });
+                // 1. Kelompokkan DataPendingRoom berdasarkan roomId
+                const groupedPendingStock = DataPendingRoom.reduce((acc, data) => {
+                    const roomId = data.roomId;
+                    if (!acc[roomId]) {
+                        acc[roomId] = 0;
+                    }
+                    acc[roomId] += data.stock; // Jumlahkan stock untuk setiap roomId
+                    return acc;
+                }, {});
+                //   console.log(" result filter groupedPendingStock : ", groupedPendingStock)
+                // 2. Filter dan perbarui rooms
+                const WithoutPending = UpdatedRooms.filter((room) => {
+                    var _a;
+                    const roomId = room._id ? room._id.toString() : room.roomId;
+                    return !groupedPendingStock[roomId] || groupedPendingStock[roomId] < ((_a = room.availableCount) !== null && _a !== void 0 ? _a : room.quantity);
+                }).map((room) => {
+                    var _a;
+                    const roomId = room._id ? room._id.toString() : room.roomId;
+                    const pendingStock = groupedPendingStock[roomId] || 0; // Ambil stock pending jika ada
+                    return Object.assign(Object.assign({}, room), { availableCount: ((_a = room.availableCount) !== null && _a !== void 0 ? _a : room.quantity) - pendingStock });
+                });
+                // console.log(" result filter WithoutPending : ", WithoutPending)
                 const PendingRoom = rooms.filter((room) => {
-                    return DataPendingRoom.some((data) => {
-                        var _a;
-                        const roomId = room._id ? room._id.toString() : room.roomId; // Sama seperti di atas
-                        return data.roomId === roomId && data.stock >= ((_a = room.availableCount) !== null && _a !== void 0 ? _a : room.quantity);
-                    });
+                    var _a;
+                    const roomId = room._id ? room._id.toString() : room.roomId;
+                    // Hitung total stock untuk roomId yang sama di DataPendingRoom
+                    const totalStock = DataPendingRoom
+                        .filter((data) => data.roomId === roomId) // Ambil data dengan roomId yang sama
+                        .reduce((sum, data) => sum + data.stock, 0); // Jumlahkan stock
+                    // Periksa apakah totalStock lebih besar atau sama dengan availableCount
+                    return totalStock >= ((_a = room.availableCount) !== null && _a !== void 0 ? _a : room.quantity);
                 });
                 // console.log(" result filter Pending room : ", availableRoomsWithoutPending)
                 // console.log(" result filter PendingRoom : ", PendingRoom)

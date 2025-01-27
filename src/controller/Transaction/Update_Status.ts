@@ -178,7 +178,7 @@ export const updateStatusBaseOnMidtransResponse = async (transaction_id : any, d
     }
 
     // Perbaharui Room Pending pada saat user sudah melakukan transaction atau pembayaran gagal 
-    await PendingRoomController.UpdatePending(data.order_id);
+    await PendingRoomController.UpdatePending(transaction_id);
 
     return {
         status: 'success',

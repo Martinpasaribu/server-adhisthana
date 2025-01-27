@@ -67,7 +67,7 @@ export class BookingController {
                 const RoomsAvailableCount = await SetAvailableCount(BookingReq.room,BookingReq.checkIn, BookingReq.checkOut);
                 
                 // Filter Is there a pending room?
-                const availableRoomsWithoutPending = await PendingRoomController.FilterWithPending(RoomsAvailableCount, BookingReq.checkIn, BookingReq.checkOut, req,res)
+                const availableRoomsWithoutPending = await PendingRoomController.FilterForUpdateVilaWithPending(RoomsAvailableCount, BookingReq.checkIn, BookingReq.checkOut, req,res)
 
                 if(availableRoomsWithoutPending?.PendingRoom.length > 0) {
                     return res.status(400).json({ status: 'error', message: `Some of the rooms you select have already been purchased`, data :availableRoomsWithoutPending?.PendingRoom });

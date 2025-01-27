@@ -224,7 +224,7 @@ class ShortAvailableController {
                 // Filter Room yang sudah penuh
                 const unavailableRooms = yield (0, FilterUnAvailable_1.FilterUnAvailable)(availableRooms);
                 // Filter Room yang sudah tersedia namun butuh pengecekan apakah ada room yang masih dipending
-                const availableRoomsWithoutPending = yield Controller_PendingRoom_1.PendingRoomController.FilterWithPending(availableRooms, checkInDate, checkOutDate, req, res);
+                const availableRoomsWithoutPending = yield Controller_PendingRoom_1.PendingRoomController.FilterForUpdateVilaWithPending(availableRooms, checkInDate, checkOutDate, req, res);
                 // Filter Room dengan harga yang sudah singkron dengan siteMinder
                 const setPriceDayList = yield (0, SetPriceDayList_1.SetPriceDayList)(availableRoomsWithoutPending === null || availableRoomsWithoutPending === void 0 ? void 0 : availableRoomsWithoutPending.WithoutPending, siteMinders, Day);
                 // Filter untuk singkron price per Item dengan lama malam -nya menjadi priceDateList

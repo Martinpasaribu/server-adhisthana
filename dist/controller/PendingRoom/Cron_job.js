@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const node_cron_1 = __importDefault(require("node-cron"));
 const models_PendingRoom_1 = require("../../models/PendingRoom/models_PendingRoom");
-node_cron_1.default.schedule('*/2 * * * *', () => __awaiter(void 0, void 0, void 0, function* () {
+node_cron_1.default.schedule('*/10 * * * *', () => __awaiter(void 0, void 0, void 0, function* () {
     const nowUTC = new Date(); // Waktu sekarang UTC server
     // Konversi UTC ke WIB (UTC + 7 jam)
     const wibOffset = 7 * 60 * 60 * 1000; // Offset WIB dalam milidetik (7 jam)

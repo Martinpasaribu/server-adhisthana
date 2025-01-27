@@ -57,7 +57,7 @@ class BookingController {
                 // Filter Room dari req Booking dari ketersedia room dan menambahkan poerpty stock ketersedian room dengan range tanggal tersebut
                 const RoomsAvailableCount = yield (0, SetAvailableCounts_1.SetAvailableCount)(BookingReq.room, BookingReq.checkIn, BookingReq.checkOut);
                 // Filter Is there a pending room?
-                const availableRoomsWithoutPending = yield Controller_PendingRoom_1.PendingRoomController.FilterWithPending(RoomsAvailableCount, BookingReq.checkIn, BookingReq.checkOut, req, res);
+                const availableRoomsWithoutPending = yield Controller_PendingRoom_1.PendingRoomController.FilterForUpdateVilaWithPending(RoomsAvailableCount, BookingReq.checkIn, BookingReq.checkOut, req, res);
                 if ((availableRoomsWithoutPending === null || availableRoomsWithoutPending === void 0 ? void 0 : availableRoomsWithoutPending.PendingRoom.length) > 0) {
                     return res.status(400).json({ status: 'error', message: `Some of the rooms you select have already been purchased`, data: availableRoomsWithoutPending === null || availableRoomsWithoutPending === void 0 ? void 0 : availableRoomsWithoutPending.PendingRoom });
                 }

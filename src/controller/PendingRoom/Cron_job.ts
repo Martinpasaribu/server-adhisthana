@@ -2,7 +2,7 @@
 import cron  from 'node-cron'
 import { PendingRoomModel } from '../../models/PendingRoom/models_PendingRoom';
 
-cron.schedule('*/2 * * * *', async () => {
+cron.schedule('*/10 * * * *', async () => {
     
   const nowUTC = new Date(); // Waktu sekarang UTC server
 
