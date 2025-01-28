@@ -10,7 +10,7 @@ const SessionRouter = express_1.default.Router();
 SessionRouter.get("/get-total-price", controller_session_1.SessionController.GetTotalPrice);
 SessionRouter.get("/debug-session", controller_session_1.SessionController.CekSessions);
 SessionRouter.get("/get-chart", controller_session_1.SessionController.GetChartRoom);
-SessionRouter.post("/remove-cart", controller_session_1.SessionController.RemoveCart);
+SessionRouter.post("/remove-session", controller_session_1.SessionController.RemoveSession);
 SessionRouter.post("/remove-cart-in-session", controller_session_1.SessionController.DelChartInSession);
 SessionRouter.post("/add-to-cart", controller_session_1.SessionController.PostChartRoom);
 SessionRouter.post("/del-to-cart", controller_session_1.SessionController.DelChartRoom);

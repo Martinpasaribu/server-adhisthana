@@ -277,7 +277,7 @@ class SessionController {
         });
     }
     ;
-    static RemoveCart(req, res) {
+    static RemoveSession(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 req.session.destroy((err) => {
@@ -294,13 +294,13 @@ class SessionController {
                     res.clearCookie('connect.sid'); // Ganti 'connect.sid' dengan nama cookie session Anda
                     res.status(200).json({
                         requestId: (0, uuid_1.v4)(),
-                        message: 'Session successfully deleted in server.',
+                        message: 'Data Session successfully Remove in server.',
                         success: true,
                     });
                 });
             }
             catch (error) {
-                console.error('Error in RemoveCart:', error);
+                console.error('Error in Remove Data Session:', error);
                 res.status(500).json({
                     requestId: (0, uuid_1.v4)(),
                     data: null,
@@ -312,15 +312,27 @@ class SessionController {
     }
     static DelChartInSession(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            // Pastikan cart ada dan itemId diberikan
-            if (!req.session.cart) {
-                return res.status(400).json({ message: 'Cart is empty ' });
+            try {
+                // Pastikan cart ada dan itemId diberikan
+                if (!req.session.cart) {
+                    return res.status(400).json({ message: 'Cart is empty ' });
+                }
+                req.session.cart = [];
+                res.status(200).json({
+                    requestId: (0, uuid_1.v4)(),
+                    message: 'Field Chart has Deleted in session',
+                    cart: req.session.cart,
+                });
             }
-            req.session.cart = [];
-            return res.status(200).json({
-                message: 'Field Chart has Deleted',
-                cart: req.session.cart
-            });
+            catch (error) {
+                console.error('Error in Deleted Field chart in session:', error);
+                res.status(500).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: null,
+                    message: error.message,
+                    success: false,
+                });
+            }
         });
     }
 }
