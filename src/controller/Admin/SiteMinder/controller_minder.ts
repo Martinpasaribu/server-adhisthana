@@ -347,7 +347,7 @@ export class SetMinderController {
             const dateRange = generateDateRange(startDate, endDate);
         
             // Log hasil rentang tanggal
-            Logging(dateRange, "Hasil generate Date range");
+            // Logging(dateRange, "Hasil generate Date range");
         
             // Ambil data dari database
             const roomData = await ShortAvailableModel.find({ isDeleted: false });
@@ -441,7 +441,7 @@ export class SetMinderController {
             const dateRange = generateDateRange(startDate, endDate);
         
             // Log hasil rentang tanggal
-            Logging(dateRange, "Hasil generate Date range");
+            // Logging(dateRange, "Hasil generate Date range");
         
             // Ambil data dari database
             const roomData = await ShortAvailableModel.find({ isDeleted: false });
@@ -547,7 +547,7 @@ export class SetMinderController {
             res.status(200).json({
               requestId: uuidv4(),
               data: transactions,
-              message: `Successfully retrieved transactions for year: ${year}, month: ${month}`,
+              message: `Transaction  ${year} - ${  Number(month) < 10 ? "0" + Number(month) : month}`,
               success: true,
             });
           } catch (error) {

@@ -139,7 +139,7 @@ export class BookingController {
                 };
      
                 // console.log('hasil midtransPayload : ', midtransPayload);
-                console.log('hasil payload BookingReq : ', BookingReq);
+                // console.log('hasil payload BookingReq : ', BookingReq);
 
 
                 const midtransResponse = await snap.createTransaction(midtransPayload);

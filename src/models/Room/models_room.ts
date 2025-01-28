@@ -18,6 +18,7 @@ interface Image {
 interface IRoom extends Document {
     _id: string;
     name: string;
+    nameAdditional: string;
     image: Image [],
     imageShort:string,
     imagePoster: string;
@@ -45,6 +46,11 @@ const RoomSchema: Schema = new Schema(
         name: {
             type: String,
             required: [true, "name cannot be empty"],
+            trim: true
+        },
+        nameAdditional: {
+            type: String,
+            required: [true, "subName cannot be empty"],
             trim: true
         },
         maxCapacity: {

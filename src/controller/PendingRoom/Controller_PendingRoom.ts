@@ -26,7 +26,7 @@ export class PendingRoomController {
                 
                 const lockedUntil = wibFormatted;
                 
-                console.log(` Data SetPending room Date lockedUntil ${lockedUntil}: `)
+                // console.log(` Data SetPending room Date lockedUntil ${lockedUntil}: `)
 
                 // Iterasi melalui setiap room
                 for (const r of room) {
@@ -249,7 +249,7 @@ export class PendingRoomController {
         
                 // Memeriksa apakah data berhasil diperbarui
                 if (ResultUpdate) {
-                    console.log("Data Room Pending has been updated", ResultUpdate);
+                    // console.log("Data Room Pending has been updated", ResultUpdate);
                     const message = `Transaction: ${TransactionId} set no pending`;
                     return message;
                 } else {

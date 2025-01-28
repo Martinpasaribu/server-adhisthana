@@ -300,7 +300,7 @@ class SetMinderController {
                 // Pastikan rentang tanggal dihitung dengan benar
                 const dateRange = generateDateRange(startDate, endDate);
                 // Log hasil rentang tanggal
-                (0, log_1.Logging)(dateRange, "Hasil generate Date range");
+                // Logging(dateRange, "Hasil generate Date range");
                 // Ambil data dari database
                 const roomData = yield models_ShortAvailable_1.ShortAvailableModel.find({ isDeleted: false });
                 const Room = yield models_room_1.default.find({ isDeleted: false });
@@ -371,7 +371,7 @@ class SetMinderController {
                 // Pastikan rentang tanggal dihitung dengan benar
                 const dateRange = generateDateRange(startDate, endDate);
                 // Log hasil rentang tanggal
-                (0, log_1.Logging)(dateRange, "Hasil generate Date range");
+                // Logging(dateRange, "Hasil generate Date range");
                 // Ambil data dari database
                 const roomData = yield models_ShortAvailable_1.ShortAvailableModel.find({ isDeleted: false });
                 const Room = yield models_room_1.default.find({ isDeleted: false });
@@ -453,7 +453,7 @@ class SetMinderController {
                 res.status(200).json({
                     requestId: (0, uuid_1.v4)(),
                     data: transactions,
-                    message: `Successfully retrieved transactions for year: ${year}, month: ${month}`,
+                    message: `Transaction  ${year} - ${Number(month) < 10 ? "0" + Number(month) : month}`,
                     success: true,
                 });
             }

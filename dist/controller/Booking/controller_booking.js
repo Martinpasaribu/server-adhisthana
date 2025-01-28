@@ -109,7 +109,7 @@ class BookingController {
                     ]
                 };
                 // console.log('hasil midtransPayload : ', midtransPayload);
-                console.log('hasil payload BookingReq : ', BookingReq);
+                // console.log('hasil payload BookingReq : ', BookingReq);
                 const midtransResponse = yield midtransConfig_1.snap.createTransaction(midtransPayload);
                 const transaction = yield TransactionService_1.transactionService.createTransaction({
                     bookingId,

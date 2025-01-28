@@ -40,6 +40,11 @@ const RoomSchema = new mongoose_1.Schema({
         required: [true, "name cannot be empty"],
         trim: true
     },
+    nameAdditional: {
+        type: String,
+        required: [true, "subName cannot be empty"],
+        trim: true
+    },
     maxCapacity: {
         type: Number,
         required: false,
