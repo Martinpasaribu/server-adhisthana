@@ -55,8 +55,8 @@ class DeliveryEmailController {
                     subject: "Here's Your Booking Confirmation & Receipt",
                     html: emailContent,
                 };
-                yield transporter.sendMail(mailOptions);
-                console.log("Successfully sent email to user.");
+                const result = yield transporter.sendMail(mailOptions);
+                console.log("Successfully sent email to user. : ", result);
                 // Respon sukses
                 // res.status(201).json({
                 //   requestId: uuidv4(),
@@ -70,7 +70,7 @@ class DeliveryEmailController {
                 //   message: (error as Error).message,
                 //   success: false,
                 // });
-                throw new Error(` Error after send Email to User`);
+                throw new Error(` Error after send Email to User: ${error}`);
             }
         });
     }

@@ -28,7 +28,7 @@ const FormatDate = (dates) => {
     return formattedDateTime;
 };
 const getEmailTemplate = (_a) => __awaiter(void 0, [_a], void 0, function* ({ ticketNumber, paymentStatus, }) {
-    var _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o;
+    var _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
     const templatePath = path_1.default.join(__dirname, '../DeliveryEmail/email-template.html');
     const DataTransaction = yield models_transaksi_1.TransactionModel.find({ bookingId: ticketNumber, isDeleted: false });
     if (!DataTransaction || DataTransaction.length === 0) {
@@ -60,18 +60,18 @@ const getEmailTemplate = (_a) => __awaiter(void 0, [_a], void 0, function* ({ ti
       <a href="${CEK_TRANSACTION}" class="button">View Transaction</a>
     `;
     // Debugging log
-    console.log("DataTransaction:", JSON.stringify(DataTransaction, null, 2));
-    console.log("Product list:", (_e = DataTransaction[0]) === null || _e === void 0 ? void 0 : _e.products);
+    // console.log("DataTransaction:", JSON.stringify(DataTransaction, null, 2));
+    // console.log("Product list:", DataTransaction[0]?.products);
     // Ganti placeholder dengan data dinamis
     emailTemplate = emailTemplate
-        .replace(/ID_Transaction/g, ((_f = DataTransaction[0]) === null || _f === void 0 ? void 0 : _f.bookingId) || "N/A")
-        .replace(/Name_User/g, ((_g = DataTransaction[0]) === null || _g === void 0 ? void 0 : _g.name) || "N/A")
-        .replace(/Total_Price/g, `${(_h = DataTransaction[0]) === null || _h === void 0 ? void 0 : _h.grossAmount.toLocaleString("id-ID")}`)
-        .replace(/CheckIn/g, FormatDate((_j = DataTransaction[0]) === null || _j === void 0 ? void 0 : _j.checkIn) || "N/A")
-        .replace(/CheckOut/g, FormatDate((_k = DataTransaction[0]) === null || _k === void 0 ? void 0 : _k.checkOut) || "N/A")
-        .replace(/Payment_Type/g, ((_l = DataTransaction[0]) === null || _l === void 0 ? void 0 : _l.payment_type) || "N/A")
-        .replace(/Status_Payment/g, (_m = DataTransaction[0]) === null || _m === void 0 ? void 0 : _m.status)
-        .replace(/Date_transaction/g, (_o = DataTransaction[0]) === null || _o === void 0 ? void 0 : _o.createdAt.toLocaleDateString("id-ID"))
+        .replace(/ID_Transaction/g, ((_e = DataTransaction[0]) === null || _e === void 0 ? void 0 : _e.bookingId) || "N/A")
+        .replace(/Name_User/g, ((_f = DataTransaction[0]) === null || _f === void 0 ? void 0 : _f.name) || "N/A")
+        .replace(/Total_Price/g, `${(_g = DataTransaction[0]) === null || _g === void 0 ? void 0 : _g.grossAmount.toLocaleString("id-ID")}`)
+        .replace(/CheckIn/g, FormatDate((_h = DataTransaction[0]) === null || _h === void 0 ? void 0 : _h.checkIn) || "N/A")
+        .replace(/CheckOut/g, FormatDate((_j = DataTransaction[0]) === null || _j === void 0 ? void 0 : _j.checkOut) || "N/A")
+        .replace(/Payment_Type/g, ((_k = DataTransaction[0]) === null || _k === void 0 ? void 0 : _k.payment_type) || "N/A")
+        .replace(/Status_Payment/g, (_l = DataTransaction[0]) === null || _l === void 0 ? void 0 : _l.status)
+        .replace(/Date_transaction/g, (_m = DataTransaction[0]) === null || _m === void 0 ? void 0 : _m.createdAt.toLocaleDateString("id-ID"))
         .replace("class=\"payment-status Status_Payment\"", `class="payment-status ${paymentClass}"`)
         .replace("{{PRODUCT_LIST}}", productListHTML)
         .replace("{{BUTTON_LINK}}", BUTTON_LINK_HTML);

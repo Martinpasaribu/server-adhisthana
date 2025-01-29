@@ -70,8 +70,8 @@ export const getEmailTemplate = async ({
     `;
 
   // Debugging log
-  console.log("DataTransaction:", JSON.stringify(DataTransaction, null, 2));
-  console.log("Product list:", DataTransaction[0]?.products);
+  // console.log("DataTransaction:", JSON.stringify(DataTransaction, null, 2));
+  // console.log("Product list:", DataTransaction[0]?.products);
 
   // Ganti placeholder dengan data dinamis
   emailTemplate = emailTemplate

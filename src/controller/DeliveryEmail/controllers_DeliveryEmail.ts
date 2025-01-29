@@ -54,10 +54,10 @@ export class DeliveryEmailController {
         html: emailContent,
       };
 
-      await transporter.sendMail(mailOptions);
+      const result = await transporter.sendMail(mailOptions);
 
 
-      console.log("Successfully sent email to user.")
+      console.log("Successfully sent email to user. : ", result);
       // Respon sukses
       // res.status(201).json({
       //   requestId: uuidv4(),
@@ -73,7 +73,7 @@ export class DeliveryEmailController {
       //   success: false,
       // });
 
-      throw new Error(` Error after send Email to User`);
+      throw new Error(` Error after send Email to User: ${error}`);
 
     }
   }
