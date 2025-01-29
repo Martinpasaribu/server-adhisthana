@@ -23,6 +23,8 @@ TransactionRouter.get("/update-status-failed/:order_id", TransactionController.u
 
 TransactionRouter.post("/notification", TransactionController.TrxNotif);
 
+TransactionRouter.post("/test", TransactionController.TestSendEmailTransaction);
+
 
 
 

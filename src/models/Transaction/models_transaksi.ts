@@ -30,6 +30,7 @@ interface ITran extends Document {
     va_numbers: VaNumber;
     bank: string;
     card_type: string;
+    createdAt: Date; 
     
 }
 

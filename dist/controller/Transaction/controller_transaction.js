@@ -15,6 +15,7 @@ const constant_1 = require("../../utils/constant");
 const models_transaksi_1 = require("../../models/Transaction/models_transaksi");
 const Update_Status_1 = require("./Update_Status");
 const Controller_PendingRoom_1 = require("../PendingRoom/Controller_PendingRoom");
+const controllers_DeliveryEmail_1 = require("../DeliveryEmail/controllers_DeliveryEmail");
 class TransactionController {
     static TrxNotif(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -36,6 +37,8 @@ class TransactionController {
                 else {
                     console.log('Transaction not found in server, Data =', data);
                 }
+                if (existingTransaction)
+                    yield controllers_DeliveryEmail_1.DeliveryEmailController.SendEmailDelivery(data.order_id, existingTransaction.status, existingTransaction.email, res);
                 res.status(200).json({
                     status: 'success',
                     message: "OK",
@@ -44,8 +47,11 @@ class TransactionController {
             }
             catch (error) {
                 console.error('Error handling transaction notification:', error);
-                res.status(500).json({
-                    error: 'Internal Server Error'
+                res.status(400).json({
+                    requestId: (0, uuid_1.v4)(),
+                    message: `Error handling transaction notification :' ${error.message}`,
+                    error: 'Error handling transaction notification',
+                    success: false,
                 });
             }
         });
@@ -166,5 +172,33 @@ class TransactionController {
         });
     }
     ;
+    static TestSendEmailTransaction(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { ticketNumber, paymentStatus, userEmail } = req.body;
+            try {
+                if (!ticketNumber || !paymentStatus || !userEmail) {
+                    return res.status(400).json({
+                        requestId: (0, uuid_1.v4)(),
+                        message: 'Missing required parameters',
+                        success: false,
+                    });
+                }
+                const data = yield controllers_DeliveryEmail_1.DeliveryEmailController.SendEmailDelivery(ticketNumber, paymentStatus, userEmail, res);
+                console.log(" berhasil send email :", data);
+                // res.status(202).json({
+                //     status: 'success',
+                //     data: data
+                // })
+            }
+            catch (error) {
+                res.status(400).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: null,
+                    message: error.message,
+                    success: false
+                });
+            }
+        });
+    }
 }
 exports.TransactionController = TransactionController;

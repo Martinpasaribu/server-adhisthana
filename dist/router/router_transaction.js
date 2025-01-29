@@ -14,6 +14,7 @@ TransactionRouter.get("/get-transaction-user/:user", VerifyId_1.verifyID, Verify
 TransactionRouter.get("/get-transaction-user", VerifyId_1.verifyID, VerifyToken_1.verifyToken, controller_transaction_1.TransactionController.getTransactionsByMember);
 TransactionRouter.get("/update-status-failed/:order_id", controller_transaction_1.TransactionController.updateTransactionFailed);
 TransactionRouter.post("/notification", controller_transaction_1.TransactionController.TrxNotif);
+TransactionRouter.post("/test", controller_transaction_1.TransactionController.TestSendEmailTransaction);
 // TransactionRouter.get("/getContact", BookingController.getContact)
 // TransactionRouter.post("/addSubscribe", BookingController.addSubscribe);
 exports.default = TransactionRouter;

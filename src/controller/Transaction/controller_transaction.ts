@@ -17,6 +17,7 @@ import { TransactionModel } from '../../models/Transaction/models_transaksi';
 import { ShortAvailableController } from '../ShortAvailable/controller_short';
 import { updateStatusBaseOnMidtransResponse } from './Update_Status';
 import { PendingRoomController } from '../PendingRoom/Controller_PendingRoom';
+import { DeliveryEmailController } from '../DeliveryEmail/controllers_DeliveryEmail';
 
 export class TransactionController {
 
@@ -47,6 +48,8 @@ export class TransactionController {
                     console.log('Transaction not found in server, Data =', data);
                 }
 
+                if (existingTransaction) await DeliveryEmailController.SendEmailDelivery( data.order_id, existingTransaction.status,existingTransaction.email, res);
+
                 res.status(200).json({
 
                     status: 'success',
@@ -58,9 +61,11 @@ export class TransactionController {
             } catch (error) {
                 console.error('Error handling transaction notification:', error);
                 
-                res.status(500).json({ 
-                    
-                    error: 'Internal Server Error' 
+                res.status(400).json({
+                  requestId: uuidv4(),
+                  message: `Error handling transaction notification :' ${(error as Error).message}`,
+                  error: 'Error handling transaction notification' ,
+                  success: false,
                 });
             }
         }
@@ -207,7 +212,42 @@ export class TransactionController {
             }
         };
 
+        static async TestSendEmailTransaction (req: Request, res: Response) {
 
+            const {  ticketNumber, paymentStatus, userEmail } = req.body;
+
+            try {
+                
+
+                if ( !ticketNumber  || !paymentStatus || !userEmail) {
+                    return res.status(400).json({
+                      requestId: uuidv4(),
+                      message: 'Missing required parameters',
+                      success: false,
+                    });
+                }
+
+                const data = await DeliveryEmailController.SendEmailDelivery( ticketNumber, paymentStatus,userEmail, res)
+
+                console.log(" berhasil send email :", data)
+                // res.status(202).json({
+                //     status: 'success',
+                //     data: data
+                // })
+
+            } catch (error) {
+                
+                res.status(400).json(
+                    {
+                        requestId: uuidv4(), 
+                        data: null,
+                        message:  (error as Error).message,
+                        success: false
+                    }
+                );
+
+            }
+        }
 
         
 }
