@@ -281,7 +281,6 @@ export class ShortAvailableController {
                 res.status(500).json({
                     requestId: uuidv4(),
                     data: null,
-
                     message: (error as Error).message,
                     success: false,
                 });

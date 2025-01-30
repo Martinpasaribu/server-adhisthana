@@ -10,7 +10,7 @@ interface GetEmailTemplateProps {
 const FormatDate = (dates : any) => {
 
   const date = new Date(dates);
-  const formattedDateTime = date.toLocaleString("en-US", {
+  const formattedDateTime = date.toLocaleString("id-ID", {
     year: "numeric",
     month: "long",
     day: "numeric",

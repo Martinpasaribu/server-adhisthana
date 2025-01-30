@@ -18,7 +18,7 @@ const path_1 = __importDefault(require("path"));
 const models_transaksi_1 = require("../../models/Transaction/models_transaksi");
 const FormatDate = (dates) => {
     const date = new Date(dates);
-    const formattedDateTime = date.toLocaleString("en-US", {
+    const formattedDateTime = date.toLocaleString("id-ID", {
         year: "numeric",
         month: "long",
         day: "numeric",
