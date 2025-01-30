@@ -303,9 +303,6 @@ class SetMinderController {
                 // Logging(dateRange, "Hasil generate Date range");
                 // Ambil data dari database
                 const roomData = yield models_ShortAvailable_1.ShortAvailableModel.find({ isDeleted: false });
-                const Room = yield models_room_1.default.find({ isDeleted: false });
-                const availabilityRoom = Room.map(room => { return { id: room._id.toString(), availability: room.available }; });
-                (0, log_1.Logging)(availabilityRoom, "Hasil availabilityRoom ");
                 // Struktur hasil filter
                 const resultFilter = {};
                 // Proses data
@@ -434,27 +431,45 @@ class SetMinderController {
                 if (!year || !month) {
                     return res.status(400).json({ message: "Year and month are required" });
                 }
-                // Pastikan bulan dua digit
-                const monthStr = String(month).padStart(2, "0"); // Menambahkan leading zero jika bulan kurang dari dua digit
-                const startDate = new Date(`${year}-${monthStr}-01T07:00:00.000Z`);
-                const endDate = new Date(`${year}-${monthStr}-01T15:00:00.000Z`);
-                endDate.setMonth(endDate.getMonth() + 1); // Menambahkan 1 bulan untuk mendapatkan batas akhir bulan
-                // Query untuk mencari transaksi yang terjadi dalam bulan dan tahun tersebut
-                const transactions = yield models_transaksi_1.TransactionModel.find({ status: "PAID",
+                // Format bulan agar selalu dua digit
+                const monthStr = String(month).padStart(2, "0");
+                // Dapatkan tanggal pertama bulan ini
+                const startDate = new Date(`${year}-${monthStr}-01T00:00:00.000Z`);
+                // Dapatkan tanggal terakhir bulan ini
+                const endDate = new Date(startDate);
+                endDate.setMonth(endDate.getMonth() + 1); // Tambah 1 bulan
+                endDate.setDate(0); // Set ke hari terakhir bulan sebelumnya (misal, 31 Januari)
+                console.log("Query range:", startDate.toISOString(), " - ", endDate.toISOString());
+                const AvailableRoom = yield models_ShortAvailable_1.ShortAvailableModel.find({
+                    status: "PAID",
                     checkIn: {
-                        $gte: startDate.toISOString(), // Lebih besar atau sama dengan 1st day bulan
-                        $lt: endDate.toISOString() // Kurang dari 1st day bulan berikutnya
-                    }, isDeleted: false
-                });
-                // const transactions = await TransactionModel.find({}, "checkIn").limit(10);
-                // Logging(transactions, "hasil short transaction");
-                // Logging(startDate, "awal sampai akhir ", endDate);
-                // Kirimkan hasil response
+                        $gte: startDate.toISOString(),
+                        $lt: endDate.toISOString(),
+                    },
+                    isDeleted: false
+                }, { transactionId: 1, _id: 0 });
+                console.log('data availble room :', AvailableRoom);
+                // Ambil hanya transactionId dari AvailableRoom
+                const transactionIds = AvailableRoom.map(room => room.transactionId);
+                const filterQuery = {
+                    status: "PAID",
+                    checkIn: {
+                        $gte: startDate.toISOString(),
+                        $lt: endDate.toISOString(),
+                    },
+                    isDeleted: false,
+                    bookingId: { $in: transactionIds } // Mencocokkan bookingId dengan transactionId
+                };
+                // Query untuk TransactionModel (ambil semua data)
+                const transactions = yield models_transaksi_1.TransactionModel.find(filterQuery);
+                console.log('data availble transactions :', transactions);
+                // Kirim hasil response
                 res.status(200).json({
                     requestId: (0, uuid_1.v4)(),
                     data: transactions,
-                    message: `Transaction  ${year} - ${Number(month) < 10 ? "0" + Number(month) : month}`,
-                    success: true,
+                    message: `Transaction ${year}-${monthStr}`,
+                    message2: `Query range:", ${startDate.toISOString()},  - , ${endDate.toISOString()}`,
+                    success: true
                 });
             }
             catch (error) {
