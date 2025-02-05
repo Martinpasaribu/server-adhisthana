@@ -69,6 +69,6 @@ RoomRouter.get("/getRoomByParams/:id", controller_room_1.RoomController.getRoomB
 RoomRouter.delete("/deleteRoomPermanent/:id", controller_room_1.RoomController.deletedRoomPermanent);
 RoomRouter.get("/updatePacketAll/:id", controller_room_1.RoomController.updatePacketAll);
 RoomRouter.patch("/updateRoomPart/:id", controller_room_1.RoomController.updateRoomPart);
-RoomRouter.get("/getid-from-siteminder", controller_room_1.RoomController.getIdToSiteMinder);
+RoomRouter.get("/get-full-room", controller_room_1.RoomController.getAllRoom);
 // RoomRouter.delete("/deletedSoftRoom/:id", RoomController.deletedSoftRoom)
 exports.default = RoomRouter;

@@ -12,18 +12,22 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyID = void 0;
-const models_user_1 = __importDefault(require("../models/User/models_user"));
-const verifyID = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    // kalo server direset sessionn akan hilang
+exports.verifyAdmin = void 0;
+const models_admin_1 = __importDefault(require("../models/Admin/models_admin"));
+const verifyAdmin = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("hasil Session from db :", req.session.userId);
     if (!req.session.userId) {
-        return res.status(401).json({ message: "Session empty, Login again " });
+        return res.status(401).json({ message: "Session empty, Login again" });
     }
-    const user = yield models_user_1.default.findOne({ _id: req.session.userId });
-    if (!user)
+    const admin = yield models_admin_1.default.findOne({ _id: req.session.userId, active: true });
+    if (!admin) {
         return res.status(404).json({ message: "User sessionID not found" });
-    req.userId = user._id.toString();
+    }
+    // Perbaikan logika role
+    if (admin.role !== "admin" && admin.role !== "superAdmin") {
+        return res.status(403).json({ msg: "Access Prohibited!! " });
+    }
+    req.role = admin.role;
     next();
 });
-exports.verifyID = verifyID;
+exports.verifyAdmin = verifyAdmin;

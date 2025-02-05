@@ -14,11 +14,15 @@ SiteMinderRouter.get("/get-minder", SetMinderController.GetAllPrice);
 SiteMinderRouter.get("/get-minder-year", SetMinderController.GetAllPriceByYear);
 SiteMinderRouter.get("/get-available", SetMinderController.GetAllRoomWithAvailable);
 SiteMinderRouter.get("/get-unavailable", SetMinderController.GetAllRoomWithUnAvailable);
-SiteMinderRouter.get("/get-transaction", SetMinderController.GetAllTransactionFromYearAndMonth);
+SiteMinderRouter.get("/get-transaction-year-month", SetMinderController.GetAllTransactionFromYearAndMonth);
+SiteMinderRouter.get("/get-all-transaction", SetMinderController.GetAllTransaction);
 SiteMinderRouter.get("/del-transaction", SetMinderController.DeletedTransaction);
 SiteMinderRouter.get("/set-price-weekday", SetMinderController.SetPriceWeekDay);
 SiteMinderRouter.get("/set-price-weekend", SetMinderController.SetPriceWeekend);
 SiteMinderRouter.get("/set-price-holiday", SetMinderController.SetPriceForHolidays);
+SiteMinderRouter.put("/edit-date-transaction", SetMinderController.UpdateTransactionDate);
+SiteMinderRouter.put("/update-stock-room", SetMinderController.UpdateStockRooms);
+SiteMinderRouter.put("/set-price-custom", SetMinderController.SetPriceForCustomDate);
 
 
 

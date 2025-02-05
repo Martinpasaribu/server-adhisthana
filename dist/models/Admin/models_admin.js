@@ -33,90 +33,48 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TransactionModel = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-const TransactionSchema = new mongoose_1.Schema({
-    bookingId: {
+const AdminSchema = new mongoose_1.Schema({
+    title: {
         type: String,
-        trim: true,
-    },
-    userId: {
-        type: String,
-        // required: [true, "userId cannot be empty"],
-        trim: true,
+        required: [true, "name cannot be empty"],
+        trim: true
     },
     name: {
         type: String,
-        // required: [true, "userId cannot be empty"],
-        trim: true,
+        // required: [true, "name cannot be empty"],
+        trim: true
     },
-    email: {
+    role: {
         type: String,
-        // required: [true, "userId cannot be empty"],
+        enum: ["admin", "superAdmin"], // Sesuaikan dengan role yang diperlukan
+        required: true,
         trim: true,
     },
-    phone: {
-        type: Number, // Tidak perlu trim di tipe Number
-    },
-    status: {
-        type: String,
-        trim: true,
-    },
-    reservation: {
+    active: {
         type: Boolean,
-        trim: true,
+        // required: [true, "active cannot be empty"],
+        trim: true
     },
-    payment_type: {
+    password: {
         type: String,
-        trim: true,
-    },
-    va_numbers: [{
-            va_number: { type: String },
-            bank: { type: String }
-        }],
-    bank: { type: String, trim: true },
-    card_type: { type: String, trim: true },
-    grossAmount: {
-        type: Number, // Tidak perlu trim di tipe Number
-    },
-    checkIn: {
-        type: String,
-        trim: true,
-    },
-    checkOut: {
-        type: String,
-        trim: true,
-    },
-    products: [
-        {
-            roomId: { type: String, trim: true },
-            name: { type: String, trim: true },
-            price: { type: Number }, // Tidak perlu trim di tipe Number
-            priceTotal: { type: Number }, // Tidak perlu trim di tipe Number
-            quantity: { type: Number }, // Tidak perlu trim di tipe Number
-        },
-    ],
-    snap_token: {
-        type: String,
-        trim: true,
-    },
-    paymentUrl: {
-        type: String,
-        trim: true,
+        // required: [true, "password cannot be empty"],
+        trim: true
     },
     createAt: {
-        type: Number,
-        default: Date.now,
+        type: Date,
+        default: Date.now
     },
-    creatorId: {
+    refresh_token: {
         type: String,
-        required: false,
+        required: false
     },
     isDeleted: {
         type: Boolean,
-        default: false,
+        default: false
     },
 }, {
     timestamps: true,
 });
-exports.TransactionModel = mongoose_1.default.model('Transaction', TransactionSchema, 'Transaction');
+const AdminModel = mongoose_1.default.model('Admin', AdminSchema, 'Admin');
+exports.default = AdminModel;

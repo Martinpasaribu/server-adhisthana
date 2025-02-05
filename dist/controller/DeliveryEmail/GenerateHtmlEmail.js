@@ -18,6 +18,8 @@ const path_1 = __importDefault(require("path"));
 const models_transaksi_1 = require("../../models/Transaction/models_transaksi");
 const FormatDate = (dates) => {
     const date = new Date(dates);
+    // Tambahkan 7 jam untuk konversi ke WIB (UTC+7)
+    date.setHours(date.getUTCHours() + 7);
     const formattedDateTime = date.toLocaleString("id-ID", {
         year: "numeric",
         month: "long",
@@ -25,7 +27,7 @@ const FormatDate = (dates) => {
         hour: "2-digit",
         minute: "2-digit",
     });
-    return formattedDateTime;
+    return formattedDateTime.replace(",", " Pukul"); // Ubah format
 };
 const getEmailTemplate = (_a) => __awaiter(void 0, [_a], void 0, function* ({ ticketNumber, paymentStatus, }) {
     var _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;

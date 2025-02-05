@@ -12,7 +12,7 @@ export const verifyID = async (req:any, res:any, next:any) => {
     
     const user = await UserModel.findOne({_id : req.session.userId});
 
-    if(!user) return res.status(404).json({message: "User sessionID tidak ditemukan"});
+    if(!user) return res.status(404).json({message: "User sessionID not found"});
     req.userId = user._id.toString();
     
     next();    

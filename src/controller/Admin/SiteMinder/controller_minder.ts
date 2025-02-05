@@ -109,7 +109,57 @@ export class SetMinderController {
               });
           }
         }
+
+        static async SetPriceForCustomDate(req: Request, res: Response) {
+          try {
+              const { roomId, price, dates } = req.body;
       
+              // Validasi input
+              if (!roomId || price == null) {
+                  return res.status(400).json({
+                      message: 'Room ID Or Price are required',
+                  });
+              }
+
+              if (dates.length === 0) {
+                  return res.status(404).json({
+                      message: 'No found Date custom',
+                  });
+              }
+      
+              const dateArray = Array.isArray(dates) ? dates : [dates]; // Pastikan selalu array
+
+              // Siapkan operasi bulk untuk pembaruan harga
+              const bulkOperations = dateArray.map((date : any) => ({
+                  updateOne: {
+                      filter: { roomId, date },
+                      update: { $set: { price } },
+                      upsert: true, // Jika data belum ada, tambahkan
+                  },
+              }));
+      
+              // Jalankan operasi bulk
+              if (bulkOperations.length > 0) {
+                  await SiteMinderModel.bulkWrite(bulkOperations);
+              }
+      
+              res.status(200).json({
+                  requestId: uuidv4(),
+                  data: null,
+                  message: `Prices ${roomId} updated for Custom date`,
+                  success: true,
+              });
+          } catch (error) {
+              res.status(500).json({
+                  requestId: uuidv4(),
+                  data: null,
+                  message: (error as Error).message,
+                  success: false,
+              });
+          }
+        }
+      
+
         static async SetPriceWeekDay(req: Request, res: Response) {
           try {
               const { year, id, price } = req.query;
@@ -529,7 +579,7 @@ export class SetMinderController {
             const endDate = new Date(startDate); 
             endDate.setMonth(endDate.getMonth() + 1); // Tambah 1 bulan
             endDate.setDate(0); // Set ke hari terakhir bulan sebelumnya (misal, 31 Januari)
-        
+            endDate.setUTCHours(23, 59, 59, 999);
             console.log("Query range:", startDate.toISOString(), " - ", endDate.toISOString());
         
 
@@ -545,7 +595,7 @@ export class SetMinderController {
               { transactionId: 1, _id: 0 }
             );
             
-            console.log('data availble room :', AvailableRoom);
+            // console.log('data availble room :', AvailableRoom);
             
             // Ambil hanya transactionId dari AvailableRoom
             const transactionIds = AvailableRoom.map(room => room.transactionId);
@@ -563,7 +613,7 @@ export class SetMinderController {
             // Query untuk TransactionModel (ambil semua data)
             const transactions = await TransactionModel.find(filterQuery);
             
-            console.log('data availble transactions :', transactions);
+            // console.log('data availble transactions :', transactions);
 
 
             // Kirim hasil response
@@ -572,6 +622,44 @@ export class SetMinderController {
               data: transactions,
               message: `Transaction ${year}-${monthStr}`,
               message2: `Query range:", ${startDate.toISOString()},  - , ${endDate.toISOString()}`,
+              success: true
+            });
+        
+          } catch (error) {
+            res.status(500).json({ message: "Failed to fetch transactions", error });
+          }
+        }
+
+        static async GetAllTransaction(req: Request, res: Response) {
+
+          try {
+        
+            const AvailableRoom = await ShortAvailableModel.find(
+              {
+                status: "PAID", isDeleted: false
+              },
+              { transactionId: 1, _id: 0 }
+            );
+            
+            // Ambil hanya transactionId dari AvailableRoom
+            const transactionIds = AvailableRoom.map(room => room.transactionId);
+            
+            const filterQuery = {
+              status: "PAID",
+              isDeleted: false,
+              bookingId: { $in: transactionIds } // Mencocokkan bookingId dengan transactionId
+            };
+            
+            // Query untuk TransactionModel (ambil semua data)
+            const transactions = await TransactionModel.find(filterQuery);
+            
+            // console.log('data availble transactions :', transactions);
+
+
+            // Kirim hasil response
+            res.status(200).json({
+              requestId: uuidv4(),
+              data: transactions,
               success: true
             });
         
@@ -644,5 +732,119 @@ export class SetMinderController {
           }
 
         }
+
+        static async UpdateTransactionDate(req: Request, res: Response){
+
+          const {id_TRX ,Edit_Date} = req.body;
+          
+          const SetcheckIn = Edit_Date[0];
+          const SetcheckOut = Edit_Date[Edit_Date.length - 1];
+
+          // Konversi ke format ISO 8601
+          const checkIn = new Date(`${SetcheckIn}T08:00:00.000Z`).toISOString();
+          const checkOut = new Date(`${SetcheckOut}T05:00:00.000Z`).toISOString();
+
+          // new Date() akan otomatis mengonversi string ISO 8601 menjadi objek Date di JavaScript.
+          // Jika Mongoose mendeteksi bahwa field dalam skema bertipe Date, maka MongoDB akan menyimpannya dalam format ISO 8601 seperti berikut:
+
+          try {
+
+            // Jalankan dua update secara paralel menggunakan Promise.all() agar lebih cepat
+            const [ShortAvailable, Transaction] = await Promise.all([
+                ShortAvailableModel.findOneAndUpdate(
+                    { transactionId: id_TRX, isDeleted: false },
+                    { checkIn, checkOut },
+                    { new: true, runValidators: true }
+                ),
+                TransactionModel.findOneAndUpdate(
+                    { bookingId: id_TRX, isDeleted: false },
+                    { checkIn, checkOut },
+                    { new: true, runValidators: true }
+                )
+            ]);
+
+            // Cek apakah data ditemukan
+            if (!ShortAvailable || !Transaction) {
+                return res.status(404).json({
+                    requestId: uuidv4(),
+                    data: null,
+                    message: !ShortAvailable ? "Data ShortAvailable tidak ditemukan." : "Transaction tidak ditemukan.",
+                    success: false
+                });
+            }
+
+
+            res.status(201).json(
+                {
+                    requestId: uuidv4(), 
+                    data: [],
+                    // message: `Data yang akan diset ${checkIn}, dan ${checkOut}`,
+                    message: `Data ${id_TRX}, has update`,
+                    success: true
+                }
+            );
+
+
+          } catch (error) {
+            
+            res.status(400).json(
+                {
+                    requestId: uuidv4(), 
+                    data: null,
+                    message:  (error as Error).message,
+                    success: false
+                }
+            );
+
+          }
+
+        }
+       
+
+        static async UpdateStockRooms(req: Request, res: Response) {
+          try {
+            const { roomId, available } = req.body;
         
+            if (!mongoose.Types.ObjectId.isValid(roomId)) {
+              return res.status(400).json({
+                requestId: uuidv4(),
+                data: null,
+                message: "Invalid roomId",
+                success: false,
+              });
+            }
+        
+            const _id = new mongoose.Types.ObjectId(roomId);
+        
+            // Lakukan update dengan opsi new: true agar mendapatkan data terbaru
+            const UpdateRoomsStock = await RoomModel.findOneAndUpdate(
+              { _id, isDeleted: false },
+              { available },
+              { new: true } // Mengembalikan data terbaru
+            );
+        
+            if (!UpdateRoomsStock) {
+              return res.status(404).json({
+                requestId: uuidv4(),
+                data: null,
+                message: "Room not found",
+                success: false,
+              });
+            }
+        
+            res.status(200).json({
+              requestId: uuidv4(),
+              data: UpdateRoomsStock, // Kembalikan data terbaru
+              message: `Stock ${UpdateRoomsStock.name} has been updated`,
+              success: true,
+            });
+          } catch (error) {
+            res.status(500).json({
+              requestId: uuidv4(),
+              data: null,
+              message: (error as Error).message,
+              success: false,
+            });
+          }
+        }
 }

@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SetMinderController = void 0;
+const mongoose_1 = __importDefault(require("mongoose"));
 const uuid_1 = require("uuid");
 const models_room_1 = __importDefault(require("../../../models/Room/models_room"));
 const constant_1 = require("../../../utils/constant");
@@ -87,6 +88,51 @@ class SetMinderController {
                     requestId: (0, uuid_1.v4)(),
                     data: null,
                     message: `Prices updated for national holidays`,
+                    success: true,
+                });
+            }
+            catch (error) {
+                res.status(500).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: null,
+                    message: error.message,
+                    success: false,
+                });
+            }
+        });
+    }
+    static SetPriceForCustomDate(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { roomId, price, dates } = req.body;
+                // Validasi input
+                if (!roomId || price == null) {
+                    return res.status(400).json({
+                        message: 'Room ID Or Price are required',
+                    });
+                }
+                if (dates.length === 0) {
+                    return res.status(404).json({
+                        message: 'No found Date custom',
+                    });
+                }
+                const dateArray = Array.isArray(dates) ? dates : [dates]; // Pastikan selalu array
+                // Siapkan operasi bulk untuk pembaruan harga
+                const bulkOperations = dateArray.map((date) => ({
+                    updateOne: {
+                        filter: { roomId, date },
+                        update: { $set: { price } },
+                        upsert: true, // Jika data belum ada, tambahkan
+                    },
+                }));
+                // Jalankan operasi bulk
+                if (bulkOperations.length > 0) {
+                    yield models_SitemMinder_1.SiteMinderModel.bulkWrite(bulkOperations);
+                }
+                res.status(200).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: null,
+                    message: `Prices ${roomId} updated for Custom date`,
                     success: true,
                 });
             }
@@ -439,6 +485,7 @@ class SetMinderController {
                 const endDate = new Date(startDate);
                 endDate.setMonth(endDate.getMonth() + 1); // Tambah 1 bulan
                 endDate.setDate(0); // Set ke hari terakhir bulan sebelumnya (misal, 31 Januari)
+                endDate.setUTCHours(23, 59, 59, 999);
                 console.log("Query range:", startDate.toISOString(), " - ", endDate.toISOString());
                 const AvailableRoom = yield models_ShortAvailable_1.ShortAvailableModel.find({
                     status: "PAID",
@@ -448,7 +495,7 @@ class SetMinderController {
                     },
                     isDeleted: false
                 }, { transactionId: 1, _id: 0 });
-                console.log('data availble room :', AvailableRoom);
+                // console.log('data availble room :', AvailableRoom);
                 // Ambil hanya transactionId dari AvailableRoom
                 const transactionIds = AvailableRoom.map(room => room.transactionId);
                 const filterQuery = {
@@ -462,13 +509,41 @@ class SetMinderController {
                 };
                 // Query untuk TransactionModel (ambil semua data)
                 const transactions = yield models_transaksi_1.TransactionModel.find(filterQuery);
-                console.log('data availble transactions :', transactions);
+                // console.log('data availble transactions :', transactions);
                 // Kirim hasil response
                 res.status(200).json({
                     requestId: (0, uuid_1.v4)(),
                     data: transactions,
                     message: `Transaction ${year}-${monthStr}`,
                     message2: `Query range:", ${startDate.toISOString()},  - , ${endDate.toISOString()}`,
+                    success: true
+                });
+            }
+            catch (error) {
+                res.status(500).json({ message: "Failed to fetch transactions", error });
+            }
+        });
+    }
+    static GetAllTransaction(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const AvailableRoom = yield models_ShortAvailable_1.ShortAvailableModel.find({
+                    status: "PAID", isDeleted: false
+                }, { transactionId: 1, _id: 0 });
+                // Ambil hanya transactionId dari AvailableRoom
+                const transactionIds = AvailableRoom.map(room => room.transactionId);
+                const filterQuery = {
+                    status: "PAID",
+                    isDeleted: false,
+                    bookingId: { $in: transactionIds } // Mencocokkan bookingId dengan transactionId
+                };
+                // Query untuk TransactionModel (ambil semua data)
+                const transactions = yield models_transaksi_1.TransactionModel.find(filterQuery);
+                // console.log('data availble transactions :', transactions);
+                // Kirim hasil response
+                res.status(200).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: transactions,
                     success: true
                 });
             }
@@ -516,6 +591,90 @@ class SetMinderController {
                     data: null,
                     message: error.message,
                     success: false
+                });
+            }
+        });
+    }
+    static UpdateTransactionDate(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { id_TRX, Edit_Date } = req.body;
+            const SetcheckIn = Edit_Date[0];
+            const SetcheckOut = Edit_Date[Edit_Date.length - 1];
+            // Konversi ke format ISO 8601
+            const checkIn = new Date(`${SetcheckIn}T08:00:00.000Z`).toISOString();
+            const checkOut = new Date(`${SetcheckOut}T05:00:00.000Z`).toISOString();
+            // new Date() akan otomatis mengonversi string ISO 8601 menjadi objek Date di JavaScript.
+            // Jika Mongoose mendeteksi bahwa field dalam skema bertipe Date, maka MongoDB akan menyimpannya dalam format ISO 8601 seperti berikut:
+            try {
+                // Jalankan dua update secara paralel menggunakan Promise.all() agar lebih cepat
+                const [ShortAvailable, Transaction] = yield Promise.all([
+                    models_ShortAvailable_1.ShortAvailableModel.findOneAndUpdate({ transactionId: id_TRX, isDeleted: false }, { checkIn, checkOut }, { new: true, runValidators: true }),
+                    models_transaksi_1.TransactionModel.findOneAndUpdate({ bookingId: id_TRX, isDeleted: false }, { checkIn, checkOut }, { new: true, runValidators: true })
+                ]);
+                // Cek apakah data ditemukan
+                if (!ShortAvailable || !Transaction) {
+                    return res.status(404).json({
+                        requestId: (0, uuid_1.v4)(),
+                        data: null,
+                        message: !ShortAvailable ? "Data ShortAvailable tidak ditemukan." : "Transaction tidak ditemukan.",
+                        success: false
+                    });
+                }
+                res.status(201).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: [],
+                    // message: `Data yang akan diset ${checkIn}, dan ${checkOut}`,
+                    message: `Data ${id_TRX}, has update`,
+                    success: true
+                });
+            }
+            catch (error) {
+                res.status(400).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: null,
+                    message: error.message,
+                    success: false
+                });
+            }
+        });
+    }
+    static UpdateStockRooms(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { roomId, available } = req.body;
+                if (!mongoose_1.default.Types.ObjectId.isValid(roomId)) {
+                    return res.status(400).json({
+                        requestId: (0, uuid_1.v4)(),
+                        data: null,
+                        message: "Invalid roomId",
+                        success: false,
+                    });
+                }
+                const _id = new mongoose_1.default.Types.ObjectId(roomId);
+                // Lakukan update dengan opsi new: true agar mendapatkan data terbaru
+                const UpdateRoomsStock = yield models_room_1.default.findOneAndUpdate({ _id, isDeleted: false }, { available }, { new: true } // Mengembalikan data terbaru
+                );
+                if (!UpdateRoomsStock) {
+                    return res.status(404).json({
+                        requestId: (0, uuid_1.v4)(),
+                        data: null,
+                        message: "Room not found",
+                        success: false,
+                    });
+                }
+                res.status(200).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: UpdateRoomsStock, // Kembalikan data terbaru
+                    message: `Stock ${UpdateRoomsStock.name} has been updated`,
+                    success: true,
+                });
+            }
+            catch (error) {
+                res.status(500).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: null,
+                    message: error.message,
+                    success: false,
                 });
             }
         });

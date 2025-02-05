@@ -7,9 +7,12 @@ interface GetEmailTemplateProps {
   paymentStatus: string;
 }
 
-const FormatDate = (dates : any) => {
-
+const FormatDate = (dates: string) => {
   const date = new Date(dates);
+
+  // Tambahkan 7 jam untuk konversi ke WIB (UTC+7)
+  date.setHours(date.getUTCHours() + 7);
+
   const formattedDateTime = date.toLocaleString("id-ID", {
     year: "numeric",
     month: "long",
@@ -18,9 +21,8 @@ const FormatDate = (dates : any) => {
     minute: "2-digit",
   });
 
-  return formattedDateTime;
-
-}
+  return formattedDateTime.replace(",", " Pukul"); // Ubah format
+};
 
 export const getEmailTemplate = async ({
   ticketNumber,

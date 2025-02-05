@@ -19,10 +19,6 @@ BookingRouter.post("/addBooking",verifyID, verifyToken, BookingController.addBoo
 
 
 
-
-
-
-
 // BookingRouter.post("/notification", BookingController.TrxNotif);
 // BookingRouter.get("/getOffers", BookingController.getOffers);
 // BookingRouter.get("/get", BookingController.getOffers);

@@ -17,6 +17,8 @@ import TransactionRouter from "./router/router_transaction";
 import cookieParser from 'cookie-parser';
 import SessionRouter from "./router/router_session";
 import SiteMinderRouter from "./router/router_siteminder";
+import ReservationRouter from "./router/router_reservation";
+import AdminRouter from "./router/router_admin";
 
 
 const app: express.Application = express();
@@ -38,6 +40,7 @@ app.use(express.json());
 // Jika klien mengirim URL-encoded data (misalnya form submission dari aplikasi web), maka express.urlencoded() akan mem-parsingnya.
 // Content-Type: application/x-www-form-urlencoded.
 // ex : name=John&age=30
+
 app.use(express.urlencoded({extended:false}))
 
 
@@ -152,10 +155,12 @@ app.use("/api/v1/contact", ContactRouter)
 app.use("/api/v1/booking", BookingRouter)
 app.use("/api/v1/auth", AuthRouter)
 app.use("/api/v1/user", UserRouter)
+app.use("/api/v1/admin", AdminRouter)
 app.use("/api/v1/short", ShortAvailableRouter)
 app.use("/api/v1/transaction", TransactionRouter)
 app.use("/api/v1/session", SessionRouter)
 app.use("/api/v1/site/minder", SiteMinderRouter)
+app.use("/api/v1/reservation", ReservationRouter)
 
 
 

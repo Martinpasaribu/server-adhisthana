@@ -4,6 +4,7 @@ interface Room {
     roomId: string;
     quantity: number;
     price: number;
+    priceTotal: number;
     name: string;
 }
 
@@ -19,6 +20,7 @@ interface ITran extends Document {
     phone: number,
     bookingId: string;
     status: string;
+    reservation: boolean;
     payment_type: string;
     grossAmount: number;
     userId: string;
@@ -62,6 +64,10 @@ const TransactionSchema: Schema = new Schema(
             type: String,
             trim: true,
         },
+        reservation: {
+            type: Boolean,
+            trim: true,
+        },
         payment_type: {
             type: String,
             trim: true,
@@ -93,6 +99,7 @@ const TransactionSchema: Schema = new Schema(
                 roomId: { type: String, trim: true },
                 name: { type: String, trim: true },
                 price: { type: Number }, // Tidak perlu trim di tipe Number
+                priceTotal: { type: Number }, // Tidak perlu trim di tipe Number
                 quantity: { type: Number }, // Tidak perlu trim di tipe Number
             },
         ],

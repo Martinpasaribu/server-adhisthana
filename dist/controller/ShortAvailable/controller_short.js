@@ -195,7 +195,7 @@ class ShortAvailableController {
             try {
                 const { checkIn, checkOut } = req.body;
                 if (!checkIn || !checkOut) {
-                    return res.status(400).json({ message: "Tanggal check-in dan check-out diperlukan." });
+                    return res.status(400).json({ message: "Check-in and check-out dates are required." });
                 }
                 // Konversi tanggal ke UTC
                 const checkInDate = new Date(checkIn);
@@ -210,14 +210,14 @@ class ShortAvailableController {
                 // console.log('test in :', checkIn, 'convert :', dateMinderStart);
                 // console.log('test out :', checkOut, 'convert :', dateMinderEnd);
                 if (checkInDate >= checkOutDate) {
-                    return res.status(400).json({ message: "Tanggal check-out harus lebih besar dari tanggal check-in." });
+                    return res.status(400).json({ message: "The check-out date must be greater than the check-in date." });
                 }
                 const siteMinders = yield models_SitemMinder_1.SiteMinderModel.find({
                     isDeleted: false,
                     date: { $gte: dateMinderStart, $lte: dateMinderEnd },
                 });
                 if (!siteMinders || siteMinders.length === 0) {
-                    return res.status(404).json({ message: "Tidak ada data SiteMinder yang ditemukan untuk tanggal tersebut." });
+                    return res.status(404).json({ message: "No SiteMinder data found for that date." });
                 }
                 // Filter Room yang Available
                 const availableRooms = yield (0, FilterAvailableRoom_1.FilterAvailable)(checkInDate, checkOutDate);

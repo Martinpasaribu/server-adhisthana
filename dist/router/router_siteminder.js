@@ -12,9 +12,13 @@ SiteMinderRouter.get("/get-minder", controller_minder_1.SetMinderController.GetA
 SiteMinderRouter.get("/get-minder-year", controller_minder_1.SetMinderController.GetAllPriceByYear);
 SiteMinderRouter.get("/get-available", controller_minder_1.SetMinderController.GetAllRoomWithAvailable);
 SiteMinderRouter.get("/get-unavailable", controller_minder_1.SetMinderController.GetAllRoomWithUnAvailable);
-SiteMinderRouter.get("/get-transaction", controller_minder_1.SetMinderController.GetAllTransactionFromYearAndMonth);
+SiteMinderRouter.get("/get-transaction-year-month", controller_minder_1.SetMinderController.GetAllTransactionFromYearAndMonth);
+SiteMinderRouter.get("/get-all-transaction", controller_minder_1.SetMinderController.GetAllTransaction);
 SiteMinderRouter.get("/del-transaction", controller_minder_1.SetMinderController.DeletedTransaction);
 SiteMinderRouter.get("/set-price-weekday", controller_minder_1.SetMinderController.SetPriceWeekDay);
 SiteMinderRouter.get("/set-price-weekend", controller_minder_1.SetMinderController.SetPriceWeekend);
 SiteMinderRouter.get("/set-price-holiday", controller_minder_1.SetMinderController.SetPriceForHolidays);
+SiteMinderRouter.put("/edit-date-transaction", controller_minder_1.SetMinderController.UpdateTransactionDate);
+SiteMinderRouter.put("/update-stock-room", controller_minder_1.SetMinderController.UpdateStockRooms);
+SiteMinderRouter.put("/set-price-custom", controller_minder_1.SetMinderController.SetPriceForCustomDate);
 exports.default = SiteMinderRouter;

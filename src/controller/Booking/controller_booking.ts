@@ -121,6 +121,7 @@ export class BookingController {
                             name: room.name,
                           };
                         }),
+
                         // Tambahkan rincian pajak sebagai item tambahan
                         // {
                         //   id: 'TAX-12%',
@@ -132,9 +133,9 @@ export class BookingController {
                         //   quantity: 1,
                         //   name: 'Tax (12%)',
                         // },
+
                       ]
                       
-
 
                 };
      
@@ -236,7 +237,6 @@ export class BookingController {
 
         }
         
-
 
         // static async getOffers(req: Request, res: Response) {
         //     const { checkin, checkout } = req.query;

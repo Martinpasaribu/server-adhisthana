@@ -177,7 +177,7 @@ class RoomController {
         });
     }
     ;
-    static getIdToSiteMinder(req, res) {
+    static getAllRoom(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 let data;
@@ -185,7 +185,8 @@ class RoomController {
                     isDeleted: false,
                 }, {
                     name: true,
-                    _id: true
+                    _id: true,
+                    available: true
                 });
                 res.status(201).json({
                     requestId: (0, uuid_1.v4)(),

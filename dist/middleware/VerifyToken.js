@@ -11,13 +11,13 @@ const verifyToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
     if (token == null)
-        return res.status(401).json({ message: 'Sesi Anda tidak ada' });
+        return res.status(401).json({ message: 'Your session does not exist' });
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken)
-        return res.status(403).json({ message: "Cookies Anda tidak ada" });
+        return res.status(403).json({ message: "Your cookies are missing" });
     jsonwebtoken_1.default.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
         if (err)
-            return res.status(401).json({ message: 'Verifikasi token gagal' });
+            return res.status(401).json({ message: 'Token verification failed' });
         req.email = decoded.email;
         next();
     });

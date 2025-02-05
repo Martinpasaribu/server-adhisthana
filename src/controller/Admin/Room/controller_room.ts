@@ -219,7 +219,7 @@ export class RoomController {
             }
         };
 
-        static async getIdToSiteMinder(req: Request, res: Response) {
+        static async getAllRoom(req: Request, res: Response) {
 
             try {
 
@@ -234,7 +234,8 @@ export class RoomController {
 
                     {
                         name: true,
-                        _id:true
+                        _id:true,
+                        available: true
                     }
                 );
                 
