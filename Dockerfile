@@ -1,5 +1,5 @@
 # Menggunakan image Node.js untuk backend
-FROM node:16-alpine
+FROM node:18-alpine
 
 # Set working directory di dalam container
 WORKDIR /app
@@ -12,6 +12,9 @@ RUN npm install
 
 # Menyalin seluruh file proyek ke container
 COPY . .
+
+#Build aplikasi Typescript
+RUN npm run build
 
 # Mengekspos port yang digunakan oleh backend
 EXPOSE 5000
