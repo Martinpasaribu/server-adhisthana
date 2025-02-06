@@ -25,7 +25,7 @@ export class AdminUserController {
 
         try {
 
-            if( !title || name || password || status || role){
+            if( !title || !name || !password || !status || !role){
                 return  res.status(400).json({
                     requestId: uuidv4(), 
                     message: `All Field can't be empty`,

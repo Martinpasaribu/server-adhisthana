@@ -19,5 +19,5 @@ RUN npm run build
 # Mengekspos port yang digunakan oleh backend
 EXPOSE 5000
 
-# Menjalankan aplikasi
-CMD ["npm", "start"]
+# Jalankan aplikasi
+CMD ["node", "dist/index.js"]

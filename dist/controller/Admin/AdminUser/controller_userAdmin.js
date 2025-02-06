@@ -34,7 +34,7 @@ class AdminUserController {
         return __awaiter(this, void 0, void 0, function* () {
             const { title, name, password, status, role } = req.body;
             try {
-                if (!title || name || password || status || role) {
+                if (!title || !name || !password || !status || !role) {
                     return res.status(400).json({
                         requestId: (0, uuid_1.v4)(),
                         message: `All Field can't be empty`,

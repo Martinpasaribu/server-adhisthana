@@ -35,7 +35,7 @@ const router_admin_1 = __importDefault(require("./router/router_admin"));
 const app = (0, express_1.default)();
 dotenv_1.default.config();
 app.use((0, cors_1.default)({
-    origin: ["http://localhost:3000", "http://localhost:3001", "https://adhistahan.vercel.app"],
+    origin: ["http://localhost:3000", "http://localhost:3001", "https://adhistahan.vercel.app", "https://adhisthanavillas.com", "https://uji-client-adhistahana.vercel.app", "https://api.adhisthanavillas.com"],
     methods: ["POST", "GET", "PATCH", "DELETE", 'PUT', "OPTIONS"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -55,7 +55,8 @@ const store = new MongoDBStoreKU({
 store.on('error', function (error) {
     console.log(error);
 });
-app.set('trust proxy', 1);
+// app.set('trust proxy', 1)
+app.set('trust proxy', true);
 app.use((0, express_session_1.default)({
     secret: process.env.SESS_SECRET,
     resave: false,
@@ -89,10 +90,6 @@ app.get('/', (req, res) => {
 app.use((req, res, next) => {
     console.log('Cookies:', req.headers.cookie || 'No cookies received');
     console.log('Session ID:', req.sessionID);
-    next();
-});
-app.use((req, res, next) => {
-    res.setHeader('Set-Cookie', 'test_cookie=test_value; Path=/; Secure; HttpOnly; SameSite=None');
     next();
 });
 app.use((req, res, next) => {

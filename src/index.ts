@@ -26,7 +26,7 @@ const app: express.Application = express();
 dotenv.config()
 
 app.use(cors({
-    origin: ["http://localhost:3000","http://localhost:3001","https://adhistahan.vercel.app"],
+    origin: ["http://localhost:3000","http://localhost:3001","https://adhistahan.vercel.app","https://adhisthanavillas.com","https://uji-client-adhistahana.vercel.app","https://api.adhisthanavillas.com"],
     methods: ["POST", "GET", "PATCH", "DELETE", 'PUT', "OPTIONS"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -55,8 +55,8 @@ app.use(express.urlencoded({extended:false}))
     console.log(error);
 });
 
-app.set('trust proxy', 1)
-
+// app.set('trust proxy', 1)
+app.set('trust proxy', true);
 
 app.use(session({
     secret: process.env.SESS_SECRET as string,
@@ -143,10 +143,6 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use((req, res, next) => {
-    res.setHeader('Set-Cookie', 'test_cookie=test_value; Path=/; Secure; HttpOnly; SameSite=None');
-    next();
-});
 
 
 app.use("/api/v1/room", RoomRouter)
