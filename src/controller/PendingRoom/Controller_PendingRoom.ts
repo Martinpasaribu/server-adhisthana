@@ -54,7 +54,7 @@ export class PendingRoomController {
         }
     
 
-        static async FilterForUpdateBookingWithPending (rooms : any, dateIn : any, dateOut : any,  req: Request, res: Response) {
+        static async FilterForUpdateBookingWithPending (rooms : any, dateIn : any, dateOut : any) {
  
             const start = new Date(dateIn);
             const end = new Date(dateOut);
@@ -122,7 +122,7 @@ export class PendingRoomController {
             }
         };
 
-        static async FilterForUpdateVilaWithPending (rooms : any, dateIn : any, dateOut : any,  req: Request, res: Response) {
+        static async FilterForUpdateVilaWithPending (rooms : any, dateIn : any, dateOut : any) {
  
             const start = new Date(dateIn);
             const end = new Date(dateOut);

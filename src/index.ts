@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from 'cors';
+import helmet from "helmet";
 import session from 'express-session';
 import MongoDBStore from 'connect-mongodb-session';
 import './controller/PendingRoom/Cron_job'
@@ -19,6 +20,7 @@ import SessionRouter from "./router/router_session";
 import SiteMinderRouter from "./router/router_siteminder";
 import ReservationRouter from "./router/router_reservation";
 import AdminRouter from "./router/router_admin";
+import DashboardRouter from "./router/router_dashboard";
 
 
 const app: express.Application = express();
@@ -67,16 +69,16 @@ app.use(session({
 
         //  ==========  Development  ============
 
-        // secure: false,
-        // httpOnly: true,      
-        // maxAge: 1000 * 60 * 60 * 24, // 1 hari
+        secure: false,
+        httpOnly: true,      
+        maxAge: 1000 * 60 * 60 * 24, // 1 hari
         
         // ===========  Chrome , edge , fireFox Production  ==============
 
-        secure: true,
-        sameSite: 'none',
-        httpOnly: true, 
-        maxAge: 1000 * 60 * 60 * 24, 
+        // secure: process.env.NODE_ENV === 'production',
+        // sameSite: 'none',
+        // httpOnly: true, 
+        // maxAge: 1000 * 60 * 60 * 24, 
 
 
         // ===========  Safari Production ==============
@@ -131,6 +133,8 @@ app.get('/', (req, res) => {
     res.send('Welcome to the Server Main Aras Service!');
 });
 
+// : Melindungi dari XSS, Clickjacking, dan Sniffing
+app.use(helmet());
 
 app.use((req, res, next) => {
     console.log('Cookies:', req.headers.cookie || 'No cookies received');
@@ -157,6 +161,7 @@ app.use("/api/v1/transaction", TransactionRouter)
 app.use("/api/v1/session", SessionRouter)
 app.use("/api/v1/site/minder", SiteMinderRouter)
 app.use("/api/v1/reservation", ReservationRouter)
+app.use("/api/v1/dashboard", DashboardRouter)
 
 
 

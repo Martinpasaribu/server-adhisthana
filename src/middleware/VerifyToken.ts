@@ -16,7 +16,9 @@ export const verifyToken = (req:any, res:any, next:any) => {
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET as string, (err : any, decoded : any) => {
         if (err) return res.status(401).json({ message: 'Token verification failed' });
         
-        req.email = decoded.email;          
+        req.email = decoded.email?decoded.email:0;          
+        req.username = decoded.username?decoded.username:0;   
+               
         next();
     });
 }

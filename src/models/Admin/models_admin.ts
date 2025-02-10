@@ -4,9 +4,10 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 interface IAdmin extends Document {
     title : string;
-    name : string;
+    username : string;
     password: string;
     role : string;
+    status: string;
     active : boolean;
     refresh_token: string;
     createAt : number;
@@ -22,7 +23,7 @@ const AdminSchema: Schema = new Schema(
             required: [true, "name cannot be empty"],
             trim: true
         },
-        name: {
+        username: {
             type: String,
             // required: [true, "name cannot be empty"],
             trim: true
@@ -30,6 +31,12 @@ const AdminSchema: Schema = new Schema(
         role: {
             type: String,
             enum: ["admin", "superAdmin"], // Sesuaikan dengan role yang diperlukan
+            required: true,
+            trim: true,
+        },        
+        status: {
+            type: String,
+            enum: ["block", "verify","pending"], // Sesuaikan dengan role yang diperlukan
             required: true,
             trim: true,
         },        

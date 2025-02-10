@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateStatusBaseOnMidtransResponse = void 0;
 const crypto_1 = __importDefault(require("crypto"));
 const models_transaksi_1 = require("../../models/Transaction/models_transaksi");
-const constant_1 = require("../../utils/constant");
+const constant_1 = require("../../constant");
 const controller_short_1 = require("../ShortAvailable/controller_short");
 const Controller_PendingRoom_1 = require("../PendingRoom/Controller_PendingRoom");
 const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY;

@@ -40,7 +40,7 @@ const AdminSchema = new mongoose_1.Schema({
         required: [true, "name cannot be empty"],
         trim: true
     },
-    name: {
+    username: {
         type: String,
         // required: [true, "name cannot be empty"],
         trim: true
@@ -48,6 +48,12 @@ const AdminSchema = new mongoose_1.Schema({
     role: {
         type: String,
         enum: ["admin", "superAdmin"], // Sesuaikan dengan role yang diperlukan
+        required: true,
+        trim: true,
+    },
+    status: {
+        type: String,
+        enum: ["block", "verify", "pending"], // Sesuaikan dengan role yang diperlukan
         required: true,
         trim: true,
     },

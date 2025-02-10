@@ -16,7 +16,7 @@ exports.SetMinderController = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const uuid_1 = require("uuid");
 const models_room_1 = __importDefault(require("../../../models/Room/models_room"));
-const constant_1 = require("../../../utils/constant");
+const constant_1 = require("../../../constant");
 const models_SitemMinder_1 = require("../../../models/SiteMinder/models_SitemMinder");
 const models_ShortAvailable_1 = require("../../../models/ShortAvailable/models_ShortAvailable");
 const log_1 = require("../../../log");
@@ -121,7 +121,8 @@ class SetMinderController {
                 const bulkOperations = dateArray.map((date) => ({
                     updateOne: {
                         filter: { roomId, date },
-                        update: { $set: { price } },
+                        update: { $set: { price }
+                        },
                         upsert: true, // Jika data belum ada, tambahkan
                     },
                 }));
@@ -528,12 +529,13 @@ class SetMinderController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const AvailableRoom = yield models_ShortAvailable_1.ShortAvailableModel.find({
-                    status: "PAID", isDeleted: false
+                    status: { $in: [constant_1.PAID, constant_1.PAID_ADMIN] },
+                    isDeleted: false
                 }, { transactionId: 1, _id: 0 });
                 // Ambil hanya transactionId dari AvailableRoom
                 const transactionIds = AvailableRoom.map(room => room.transactionId);
                 const filterQuery = {
-                    status: "PAID",
+                    status: { $in: [constant_1.PAID, constant_1.PAID_ADMIN] },
                     isDeleted: false,
                     bookingId: { $in: transactionIds } // Mencocokkan bookingId dengan transactionId
                 };

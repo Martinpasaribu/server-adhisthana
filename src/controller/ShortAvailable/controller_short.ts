@@ -258,7 +258,7 @@ export class ShortAvailableController {
                 const unavailableRooms = await FilterUnAvailable(availableRooms)
 
                 // Filter Room yang sudah tersedia namun butuh pengecekan apakah ada room yang masih dipending
-                const availableRoomsWithoutPending = await PendingRoomController.FilterForUpdateVilaWithPending(availableRooms,checkInDate,checkOutDate, req,res)
+                const availableRoomsWithoutPending = await PendingRoomController.FilterForUpdateVilaWithPending(availableRooms,checkInDate,checkOutDate)
                 
                 // Filter Room dengan harga yang sudah singkron dengan siteMinder
                 const setPriceDayList = await SetPriceDayList(availableRoomsWithoutPending?.WithoutPending,siteMinders, Day)

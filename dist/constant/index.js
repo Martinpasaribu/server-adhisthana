@@ -1,19 +1,22 @@
-import dotenv from "dotenv";
-dotenv.config()
-
-
-export const PENDING_PAYMENT = 'PENDING_PAYMENT';
-export const PAID = 'PAID';
-export const CANCELED = 'CANCELED';
-export const EXPIRE = 'EXPIRE';
-
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.NationalHolidays = exports.PAYMENT_ADMIN = exports.PAID_ADMIN = exports.EXPIRE = exports.CANCELED = exports.PAID = exports.PENDING_PAYMENT = void 0;
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
+exports.PENDING_PAYMENT = 'PENDING_PAYMENT';
+exports.PAID = 'PAID';
+exports.CANCELED = 'CANCELED';
+exports.EXPIRE = 'EXPIRE';
+exports.PAID_ADMIN = 'PAID_ADMIN';
+exports.PAYMENT_ADMIN = 'PAYMENT_ADMIN';
 // export const MIDTRANS_SEVER_KEY = process.env.MID
 // export const MIDTRANS_APP_URL = process.env.MID
 // export const FRONT_END_URL = process.env.MID
-
 //  tipe eksplisit ke NationalHolidays untuk memberi tahu TypeScript bahwa itu adalah objek dengan kunci string:
-export const NationalHolidays: Record<string, { description: string[]; holiday: boolean; summary: string[] }> = 
-{
+exports.NationalHolidays = {
     "2025-01-01": {
         "description": [
             "Hari libur nasional"
@@ -293,5 +296,4 @@ export const NationalHolidays: Record<string, { description: string[]; holiday: 
             "Malam Tahun Baru"
         ]
     },
-
-}
+};

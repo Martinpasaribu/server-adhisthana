@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TransactionController = void 0;
 const uuid_1 = require("uuid");
-const constant_1 = require("../../utils/constant");
+const constant_1 = require("../../constant");
 const models_transaksi_1 = require("../../models/Transaction/models_transaksi");
 const Update_Status_1 = require("./Update_Status");
 const Controller_PendingRoom_1 = require("../PendingRoom/Controller_PendingRoom");

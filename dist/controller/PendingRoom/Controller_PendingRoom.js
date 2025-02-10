@@ -53,7 +53,7 @@ class PendingRoomController {
             }
         });
     }
-    static FilterForUpdateBookingWithPending(rooms, dateIn, dateOut, req, res) {
+    static FilterForUpdateBookingWithPending(rooms, dateIn, dateOut) {
         return __awaiter(this, void 0, void 0, function* () {
             const start = new Date(dateIn);
             const end = new Date(dateOut);
@@ -103,7 +103,7 @@ class PendingRoomController {
         });
     }
     ;
-    static FilterForUpdateVilaWithPending(rooms, dateIn, dateOut, req, res) {
+    static FilterForUpdateVilaWithPending(rooms, dateIn, dateOut) {
         return __awaiter(this, void 0, void 0, function* () {
             const start = new Date(dateIn);
             const end = new Date(dateOut);

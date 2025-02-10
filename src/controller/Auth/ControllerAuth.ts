@@ -2,14 +2,15 @@ import bcrypt from "bcrypt"
 import jwt from 'jsonwebtoken';
 import dotenv from "dotenv";
 import { jwtDecode } from 'jwt-decode';
-
+import argon2 from "argon2";
 import axios, { AxiosError } from 'axios';
 import { v4 as uuidv4 } from 'uuid'; 
 import UserModel from "../../models/User/models_user";
 import { BookingModel } from "../../models/Booking/models_booking";
 import { TransactionModel } from "../../models/Transaction/models_transaksi";
 import { ShortAvailableModel } from "../../models/ShortAvailable/models_ShortAvailable";
-
+import AdminModel from "../../models/Admin/models_admin";
+import { Request, Response } from 'express';
 
 dotenv.config();
 
@@ -189,10 +190,8 @@ export class AuthController {
             error: error.message,
           });
         }
-      }
+    }
       
-
-    
     static async Me  (req : any, res : any) {
 
         try {
@@ -348,4 +347,182 @@ export class AuthController {
             });
         }
     };
+
+    static async LoginAdmin(req: any, res: any) {
+        try {
+          const { username, password, ConfirmPassword, recaptchaToken } = req.body;
+    
+          // 1. Verifikasi reCAPTCHA dengan score yang lebih tinggi
+          const recaptchaSecret = process.env.RECAPTCHA_SECRET_KEY;
+          const recaptchaResponse = await axios.get('https://www.google.com/recaptcha/api/siteverify', {
+            params: { secret: recaptchaSecret, response: recaptchaToken },
+          });
+    
+          const recaptchaData = recaptchaResponse.data;
+          if (!recaptchaData.success || recaptchaData.score < 0.7) {
+            return res.status(400).json({ message: 'reCAPTCHA verification failed. Please try again.' });
+          }
+    
+          // 2. Cari Admin berdasarkan email atau username
+          const admin = await AdminModel.findOne({ username: username });
+    
+          if (!admin) return res.status(404).json({ message: 'User not found' });
+    
+          // 3. Periksa status akun admin
+          const statusMessages: Record<string, string> = {
+            block: 'User InActive',
+            Pending: 'User Is Pending',
+          };
+    
+          if (admin.status in statusMessages) {
+            return res.status(403).json({ message: statusMessages[admin.status] });
+          }
+    
+          // 4. Cek password harus ada
+          if (!admin.password) {
+            return res.status(500).json({ message: 'Set Password New', status: false });
+          }
+    
+          // 5. Bandingkan password sebelum hashing
+          if (password !== ConfirmPassword) {
+            return res.status(400).json({ message: 'Password and Confirm Password do not match', status: false });
+          }
+    
+          // 6. Verifikasi password dengan hashing
+        //   const match = await bcrypt.compare(password, admin.password);
+
+        ///argon2 lebih tahan terhadap serangan GPU brute-force.
+        const match = await argon2.verify(admin.password, req.body.password);
+
+          if (!match) {
+            return res.status(400).json({ message: 'Wrong password' });
+          }
+    
+          // 7. Buat JWT Token
+          const userId = admin._id;
+          const userRole = admin.role; // Tambahkan role untuk keamanan tambahan
+          const usernameAdmin = admin.username;
+          req.session.userId = userId;
+
+          const accessToken = jwt.sign(
+            { userId, usernameAdmin, role: userRole }, 
+            process.env.ACCESS_TOKEN_SECRET as string, 
+            { expiresIn: '15m' } // Ubah menjadi 15 menit
+          );
+    
+          const refreshToken = jwt.sign(
+            { userId, usernameAdmin, role: userRole }, 
+            process.env.REFRESH_TOKEN_SECRET as string, 
+            { expiresIn: '7d' } // Refresh token berlaku selama 7 hari
+          );
+    
+          // 8. Simpan Refresh Token di Database
+          await AdminModel.findOneAndUpdate(
+            { _id: userId }, 
+            { refresh_token: refreshToken }, 
+            { new: true, runValidators: true }
+          );
+    
+          // 9. Simpan refreshToken di Cookie dengan Keamanan Tinggi
+          res.cookie('refreshToken', refreshToken, { 
+            httpOnly: true,  // Amankan dari JavaScript
+            secure:  process.env.NODE_ENV === 'production',    // Hanya bisa digunakan di HTTPS
+            sameSite: 'strict', // Cegah CSRF Attack
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 hari
+          });
+    
+          const decodedRefreshToken: any = jwtDecode(refreshToken);
+          const expiresIn = decodedRefreshToken.exp;
+    
+          // 10. Response ke Client
+          res.json({
+            requestId: uuidv4(),
+            data: {
+              accessToken,
+              expiresIn,
+            },
+            message: 'Successfully Logged In',
+            success: true
+          });
+    
+        } catch (error) {
+            const axiosError = error as AxiosError;
+            const errorResponseData = axiosError.response ? axiosError.response.status : null;
+
+            console.error('Error during login:', error); 
+
+            res.status(500).json({
+                requestId: uuidv4(), 
+                message: "An error occurred during login",
+                error: axiosError.message,
+                error2: errorResponseData,
+                stack: axiosError.stack,
+                success: false
+            });
+        }
+    }
+
+    static async LogoutAdmin(req: any, res: any) {
+        try {
+          const refreshToken = req.cookies.refreshToken;
+      
+          // Jika tidak ada refresh token di cookie, langsung kirim status 204 (No Content)
+          if (!refreshToken) {
+            return res.status(404).json({
+                message: "RefreshToken not found",
+                success: false,
+              });
+          }
+      
+          // Cari user berdasarkan refresh token
+          const user = await AdminModel.findOne({ refresh_token: refreshToken });
+      
+          if (!user) {
+          
+            return res.status(404).json({
+                message: "User not found",
+                success: false,
+              });
+          }
+      
+          const userId = user._id;
+      
+          // Update refresh token menjadi null untuk user tersebut
+          await AdminModel.findOneAndUpdate(
+            { _id: userId },
+            { refresh_token: null }
+          );
+      
+          // Hapus cookie refreshToken
+          res.clearCookie('refreshToken');
+      
+          // Hancurkan sesi
+          req.session.destroy((err: any) => {
+            if (err) {
+              // Jika terjadi error saat menghancurkan sesi
+              return res.status(500).json({
+                message: "Could not log out",
+                success: false,
+              });
+            }
+      
+            // Kirim respons logout berhasil
+            res.status(200).json({
+              message: "Success logout",
+              data: {
+                pesan: "Logout berhasil",
+              },
+              success: true,
+            });
+          });
+
+        } catch (error : any) {
+          // Tangani error lainnya
+          res.status(500).json({
+            message: "An error occurred during logout",
+            success: false,
+            error: error.message,
+          });
+        }
+    }
 }

@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const cors_1 = __importDefault(require("cors"));
+const helmet_1 = __importDefault(require("helmet"));
 const express_session_1 = __importDefault(require("express-session"));
 const connect_mongodb_session_1 = __importDefault(require("connect-mongodb-session"));
 require("./controller/PendingRoom/Cron_job");
@@ -32,6 +33,7 @@ const router_session_1 = __importDefault(require("./router/router_session"));
 const router_siteminder_1 = __importDefault(require("./router/router_siteminder"));
 const router_reservation_1 = __importDefault(require("./router/router_reservation"));
 const router_admin_1 = __importDefault(require("./router/router_admin"));
+const router_dashboard_1 = __importDefault(require("./router/router_dashboard"));
 const app = (0, express_1.default)();
 dotenv_1.default.config();
 app.use((0, cors_1.default)({
@@ -64,14 +66,14 @@ app.use((0, express_session_1.default)({
     store: store,
     cookie: {
         //  ==========  Development  ============
-        // secure: false,
-        // httpOnly: true,      
-        // maxAge: 1000 * 60 * 60 * 24, // 1 hari
-        // ===========  Chrome , edge , fireFox Production  ==============
-        secure: true,
-        sameSite: 'none',
+        secure: false,
         httpOnly: true,
-        maxAge: 1000 * 60 * 60 * 24,
+        maxAge: 1000 * 60 * 60 * 24, // 1 hari
+        // ===========  Chrome , edge , fireFox Production  ==============
+        // secure: process.env.NODE_ENV === 'production',
+        // sameSite: 'none',
+        // httpOnly: true, 
+        // maxAge: 1000 * 60 * 60 * 24, 
         // ===========  Safari Production ==============
         // secure: true,           // Menggunakan HTTPS wajib
         // sameSite: 'none',       // Dibutuhkan untuk cookie lintas domain
@@ -87,6 +89,8 @@ app.use((0, express_session_1.default)({
 app.get('/', (req, res) => {
     res.send('Welcome to the Server Main Aras Service!');
 });
+// : Melindungi dari XSS, Clickjacking, dan Sniffing
+app.use((0, helmet_1.default)());
 app.use((req, res, next) => {
     console.log('Cookies:', req.headers.cookie || 'No cookies received');
     console.log('Session ID:', req.sessionID);
@@ -108,6 +112,7 @@ app.use("/api/v1/transaction", router_transaction_1.default);
 app.use("/api/v1/session", router_session_1.default);
 app.use("/api/v1/site/minder", router_siteminder_1.default);
 app.use("/api/v1/reservation", router_reservation_1.default);
+app.use("/api/v1/dashboard", router_dashboard_1.default);
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // await connectToDatabase();

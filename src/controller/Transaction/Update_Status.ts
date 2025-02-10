@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import { TransactionModel } from '../../models/Transaction/models_transaksi';
-import { CANCELED, PAID, PENDING_PAYMENT } from '../../utils/constant';
+import { CANCELED, PAID, PENDING_PAYMENT } from '../../constant';
 import { RoomController } from '../Admin/Room/controller_room';
 import { ShortAvailableController } from '../ShortAvailable/controller_short';
 import { PendingRoomController } from '../PendingRoom/Controller_PendingRoom';

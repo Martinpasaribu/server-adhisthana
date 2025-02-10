@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import RoomModel from '../../../models/Room/models_room';
 
-import { NationalHolidays } from '../../../utils/constant'
+import { NationalHolidays, PAID, PAID_ADMIN } from '../../../constant'
 import { ShortAvailableController } from '../../ShortAvailable/controller_short';
 import { SiteMinderModel } from '../../../models/SiteMinder/models_SitemMinder';
 import { ShortAvailableModel } from '../../../models/ShortAvailable/models_ShortAvailable';
@@ -133,7 +133,8 @@ export class SetMinderController {
               const bulkOperations = dateArray.map((date : any) => ({
                   updateOne: {
                       filter: { roomId, date },
-                      update: { $set: { price } },
+                      update: { $set: { price } 
+                  },
                       upsert: true, // Jika data belum ada, tambahkan
                   },
               }));
@@ -636,7 +637,8 @@ export class SetMinderController {
         
             const AvailableRoom = await ShortAvailableModel.find(
               {
-                status: "PAID", isDeleted: false
+                status:  { $in: [PAID, PAID_ADMIN] },
+                isDeleted: false
               },
               { transactionId: 1, _id: 0 }
             );
@@ -645,7 +647,7 @@ export class SetMinderController {
             const transactionIds = AvailableRoom.map(room => room.transactionId);
             
             const filterQuery = {
-              status: "PAID",
+              status: { $in: [PAID, PAID_ADMIN] },
               isDeleted: false,
               bookingId: { $in: transactionIds } // Mencocokkan bookingId dengan transactionId
             };

@@ -5,8 +5,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const controller_reservation_1 = require("../controller/Admin/Reservation/controller_reservation");
-const VerifyAdmin_1 = require("../middleware/VerifyAdmin");
+const VerifyAdminId_1 = require("../middleware/VerifyAdminId");
 const ReservationRouter = express_1.default.Router();
 // semantic meaning
-ReservationRouter.post("/add-transaction", VerifyAdmin_1.verifyAdmin, controller_reservation_1.ReservationController.AddTransaction);
+ReservationRouter.post("/add-transaction", VerifyAdminId_1.verifyAdmin, controller_reservation_1.ReservationController.AddTransaction);
+ReservationRouter.get("/get-transaction", VerifyAdminId_1.verifyAdmin, controller_reservation_1.ReservationController.GetAllTransactionReservation);
+ReservationRouter.put("/pay-transaction/:TransactionId", VerifyAdminId_1.verifyAdmin, controller_reservation_1.ReservationController.SetPayment);
 exports.default = ReservationRouter;

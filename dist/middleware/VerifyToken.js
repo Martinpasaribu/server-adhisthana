@@ -18,7 +18,8 @@ const verifyToken = (req, res, next) => {
     jsonwebtoken_1.default.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
         if (err)
             return res.status(401).json({ message: 'Token verification failed' });
-        req.email = decoded.email;
+        req.email = decoded.email ? decoded.email : 0;
+        req.username = decoded.username ? decoded.username : 0;
         next();
     });
 };

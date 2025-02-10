@@ -14,23 +14,32 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ReservationController = void 0;
 const uuid_1 = require("uuid");
-const models_ShortAvailable_1 = require("../../../models/ShortAvailable/models_ShortAvailable");
 const crypto_1 = __importDefault(require("crypto"));
 const models_transaksi_1 = require("../../../models/Transaction/models_transaksi");
 const Index_1 = require("./components/Index");
+const FilterWithRoomPending_1 = require("./components/FilterWithRoomPending");
+const Controller_PendingRoom_1 = require("../../PendingRoom/Controller_PendingRoom");
+const controller_short_1 = require("../../ShortAvailable/controller_short");
+const constant_1 = require("../../../constant");
+const models_booking_1 = require("../../../models/Booking/models_booking");
 class ReservationController {
     static GetAllTransactionReservation(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const AvailableRoom = yield models_ShortAvailable_1.ShortAvailableModel.find({
-                    status: "PAID", isDeleted: false
-                }, { transactionId: 1, _id: 0 });
-                // Ambil hanya transactionId dari AvailableRoom
-                const transactionIds = AvailableRoom.map(room => room.transactionId);
+                // const AvailableRoom = await ShortAvailableModel.find(
+                //   {
+                //     status: { $in: ["PAID", "PAYMENT_ADMIN"] },
+                //     isDeleted: false
+                //   },
+                //   { bookingId: 1, _id: 0 }
+                // );
+                // // Ambil hanya transactionId dari AvailableRoom
+                // const transactionIds = AvailableRoom.map(room => room.bookingId);
                 const filterQuery = {
-                    status: "PAID",
+                    status: { $in: [constant_1.PAYMENT_ADMIN, constant_1.PAID_ADMIN] },
+                    reservation: true,
                     isDeleted: false,
-                    bookingId: { $in: transactionIds } // Mencocokkan bookingId dengan transactionId
+                    // bookingId: { $in: transactionIds } // Mencocokkan bookingId dengan transactionId
                 };
                 // Query untuk TransactionModel (ambil semua data)
                 const transactions = yield models_transaksi_1.TransactionModel.find(filterQuery);
@@ -61,9 +70,13 @@ class ReservationController {
                         success: false
                     });
                 }
+                // Cek Roompending sebelum membuat reservation transaction 
+                const ReservationReadyToBeSaved = yield FilterWithRoomPending_1.ReservationService.createReservation({ products, checkIn, checkOut });
+                if (ReservationReadyToBeSaved.WithoutPending === 0) {
+                }
                 // Set Up Data Lain
                 const bookingId = 'TRX-' + crypto_1.default.randomBytes(5).toString('hex');
-                const status = "PAYMENT_PENDING";
+                const status = constant_1.PAYMENT_ADMIN;
                 // Daftarkan terlebih dahulu usernya
                 const IsHaveAccount = yield (0, Index_1.CekUser)(email);
                 let userId;
@@ -81,21 +94,111 @@ class ReservationController {
                     phone,
                     grossAmount,
                     reservation,
-                    products,
+                    products: ReservationReadyToBeSaved.WithoutPending,
                     night,
                     checkIn,
                     checkOut
                 });
-                // ✅ Simpan ke database
+                // ✅ Simpan ke database Transaction
                 const savedTransaction = yield newTransaction.save();
+                // ✅ Buat objek baru berdasarkan schema
+                const newBooking = new models_booking_1.BookingModel({
+                    oderId: bookingId,
+                    userId: IsHaveAccount !== null && IsHaveAccount !== void 0 ? IsHaveAccount : userId,
+                    status,
+                    title,
+                    name,
+                    email,
+                    phone,
+                    amountTotal: grossAmount,
+                    reservation,
+                    room: ReservationReadyToBeSaved.WithoutPending,
+                    night,
+                    checkIn,
+                    checkOut
+                });
+                // ✅ Simpan ke database Booking
+                const savedBooking = yield newBooking.save();
+                // SetUp Room yang akan masuk dalam Room Pending
+                yield Controller_PendingRoom_1.PendingRoomController.SetPending(ReservationReadyToBeSaved.WithoutPending, bookingId, IsHaveAccount !== null && IsHaveAccount !== void 0 ? IsHaveAccount : userId, checkIn, checkOut, req, res);
                 // ✅ Berikan respon sukses
                 return res.status(201).json({
                     requestId: (0, uuid_1.v4)(),
                     data: {
                         acknowledged: true,
-                        insertedId: savedTransaction._id
+                        insertedTransactionId: savedTransaction._id,
+                        insertedBoopkingId: savedBooking._id
                     },
                     message: "Successfully add transaction to reservation.",
+                    success: true
+                });
+            }
+            catch (error) {
+                console.error("Error creating transaction:", error);
+                return res.status(500).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: null,
+                    message: error.message || "Internal Server Error",
+                    success: false
+                });
+            }
+        });
+    }
+    static SetPayment(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                // Destructure req.body
+                const { TransactionId } = req.params;
+                // ✅ Validasi data sebelum disimpan
+                if (!TransactionId) {
+                    return res.status(400).json({
+                        requestId: (0, uuid_1.v4)(),
+                        data: null,
+                        message: "required TransactionId!",
+                        success: false
+                    });
+                }
+                const BookingReservation = yield models_transaksi_1.TransactionModel.find({ bookingId: TransactionId, isDeleted: false, reservation: true });
+                if (!BookingReservation) {
+                    return res.status(400).json({
+                        requestId: (0, uuid_1.v4)(),
+                        data: null,
+                        message: "Transaction no found !",
+                        success: false
+                    });
+                }
+                const IsTransaction = yield models_transaksi_1.TransactionModel.findOneAndUpdate({ bookingId: TransactionId, isDeleted: false, status: constant_1.PAYMENT_ADMIN, reservation: true }, {
+                    status: constant_1.PAID_ADMIN
+                });
+                if (!IsTransaction) {
+                    return res.status(400).json({
+                        requestId: (0, uuid_1.v4)(),
+                        data: null,
+                        message: "Set Transaction no found !",
+                        success: false
+                    });
+                }
+                console.log(`Transaction ${IsTransaction.name} has Pay`);
+                yield controller_short_1.ShortAvailableController.addBookedRoomForAvailable({
+                    bookingId: TransactionId,
+                    userId: IsTransaction.userId,
+                    status: constant_1.PAID,
+                    checkIn: IsTransaction.checkIn,
+                    checkOut: IsTransaction.checkOut,
+                    products: IsTransaction.products.map((product) => ({
+                        roomId: product.roomId,
+                        price: product.price,
+                        quantity: product.quantity,
+                        name: product.name,
+                    })),
+                }, res);
+                // ✅ Berikan respon sukses
+                return res.status(201).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: {
+                        acknowledged: true
+                    },
+                    message: `Successfully payment transaction : ${TransactionId}`,
                     success: true
                 });
             }

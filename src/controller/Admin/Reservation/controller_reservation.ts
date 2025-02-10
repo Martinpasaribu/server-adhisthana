@@ -7,6 +7,11 @@ import { ShortAvailableModel } from '../../../models/ShortAvailable/models_Short
 import crypto from 'crypto';
 import { TransactionModel } from '../../../models/Transaction/models_transaksi';
 import { CekUser, Register } from './components/Index';
+import { ReservationService } from './components/FilterWithRoomPending';
+import { PendingRoomController } from '../../PendingRoom/Controller_PendingRoom';
+import { ShortAvailableController } from '../../ShortAvailable/controller_short';
+import { PAID, PAID_ADMIN, PAYMENT_ADMIN } from '../../../constant';
+import { BookingModel } from '../../../models/Booking/models_booking';
 
 
 export class ReservationController {
@@ -15,20 +20,22 @@ export class ReservationController {
 
           try {
         
-            const AvailableRoom = await ShortAvailableModel.find(
-              {
-                status: "PAID", isDeleted: false
-              },
-              { transactionId: 1, _id: 0 }
-            );
+            // const AvailableRoom = await ShortAvailableModel.find(
+            //   {
+            //     status: { $in: ["PAID", "PAYMENT_ADMIN"] },
+            //     isDeleted: false
+            //   },
+            //   { bookingId: 1, _id: 0 }
+            // );
             
-            // Ambil hanya transactionId dari AvailableRoom
-            const transactionIds = AvailableRoom.map(room => room.transactionId);
+            // // Ambil hanya transactionId dari AvailableRoom
+            // const transactionIds = AvailableRoom.map(room => room.bookingId);
             
             const filterQuery = {
-              status: "PAID",
+              status: { $in: [PAYMENT_ADMIN, PAID_ADMIN] },
+              reservation:true,
               isDeleted: false,
-              bookingId: { $in: transactionIds } // Mencocokkan bookingId dengan transactionId
+              // bookingId: { $in: transactionIds } // Mencocokkan bookingId dengan transactionId
             };
             
             // Query untuk TransactionModel (ambil semua data)
@@ -75,10 +82,17 @@ export class ReservationController {
                   });
               }
 
+              // Cek Roompending sebelum membuat reservation transaction 
+
+              const ReservationReadyToBeSaved = await ReservationService.createReservation({products, checkIn, checkOut })
+
+              if(ReservationReadyToBeSaved.WithoutPending === 0){
+
+              }
               // Set Up Data Lain
 
               const bookingId = 'TRX-' + crypto.randomBytes(5).toString('hex');
-              const status = "PAYMENT_PENDING"
+              const status = PAYMENT_ADMIN
 
 
 
@@ -104,21 +118,45 @@ export class ReservationController {
                   phone,
                   grossAmount,
                   reservation,
-                  products,
+                  products: ReservationReadyToBeSaved.WithoutPending,
                   night,
                   checkIn,
                   checkOut
               });
 
-              // ✅ Simpan ke database
+              // ✅ Simpan ke database Transaction
               const savedTransaction = await newTransaction.save();
+
+              // ✅ Buat objek baru berdasarkan schema
+              const newBooking = new BookingModel({
+                  oderId : bookingId,
+                  userId : IsHaveAccount ?? userId,
+                  status,
+                  title,
+                  name,
+                  email,
+                  phone,
+                  amountTotal :grossAmount,
+                  reservation,
+                  room: ReservationReadyToBeSaved.WithoutPending,
+                  night,
+                  checkIn,
+                  checkOut
+              });
+
+              // ✅ Simpan ke database Booking
+              const savedBooking = await newBooking.save();
+
+              // SetUp Room yang akan masuk dalam Room Pending
+              await PendingRoomController.SetPending(ReservationReadyToBeSaved.WithoutPending,bookingId, IsHaveAccount ?? userId, checkIn, checkOut, req, res )
 
               // ✅ Berikan respon sukses
               return res.status(201).json({
                   requestId: uuidv4(),
                   data: {
                       acknowledged: true,
-                      insertedId: savedTransaction._id
+                      insertedTransactionId: savedTransaction._id,
+                      insertedBoopkingId: savedBooking._id
                   },
                   message: "Successfully add transaction to reservation.",
                   success: true
@@ -134,6 +172,94 @@ export class ReservationController {
                   success: false
               });
           }
-      }
+        }
+
+        static async SetPayment(req: Request, res: Response) {
+          try {
+              // Destructure req.body
+              const {
+                TransactionId
+              } = req.params;
+
+              // ✅ Validasi data sebelum disimpan
+              if (!TransactionId) {
+
+                  return res.status(400).json({
+                      requestId: uuidv4(),
+                      data: null,
+                      message: "required TransactionId!",
+                      success: false
+                  });
+              }
+
+
+              const BookingReservation = await TransactionModel.find(
+                { bookingId:TransactionId,  isDeleted : false, reservation: true}
+              )
+
+              
+              if (!BookingReservation){
+                    return res.status(400).json({
+                      requestId: uuidv4(),
+                      data: null,
+                      message: "Transaction no found !",
+                      success: false
+                  });
+              }
+
+              const IsTransaction = await TransactionModel.findOneAndUpdate(
+                {bookingId:TransactionId, isDeleted : false, status : PAYMENT_ADMIN, reservation: true},
+                {
+                  status: PAID_ADMIN
+                }
+              )
+
+              if (!IsTransaction){
+                    return res.status(400).json({
+                      requestId: uuidv4(),
+                      data: null,
+                      message: "Set Transaction no found !",
+                      success: false
+                  });
+              }
+
+              console.log(`Transaction ${IsTransaction.name} has Pay`)
+
+              await ShortAvailableController.addBookedRoomForAvailable({
+                  bookingId: TransactionId,
+                  userId: IsTransaction.userId, 
+                  status: PAID,
+                  checkIn: IsTransaction.checkIn,
+                  checkOut: IsTransaction.checkOut,  
+                  products: IsTransaction.products.map((product: { roomId: string; price: number; quantity: number; name: string }) => ({
+                      roomId: product.roomId,
+                      price: product.price,
+                      quantity: product.quantity,
+                      name: product.name,
+                  })),
+              }, res);
+
+
+              // ✅ Berikan respon sukses
+              return res.status(201).json({
+                  requestId: uuidv4(),
+                  data: {
+                      acknowledged: true
+                  },
+                  message: `Successfully payment transaction : ${TransactionId}`,
+                  success: true
+              });
+
+          } catch (error) {
+              console.error("Error creating transaction:", error);
+
+              return res.status(500).json({
+                  requestId: uuidv4(),
+                  data: null,
+                  message: (error as Error).message || "Internal Server Error",
+                  success: false
+              });
+          }
+        }
 
 }
