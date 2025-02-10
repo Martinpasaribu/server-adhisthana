@@ -81,20 +81,15 @@ export class AuthController {
                 { refresh_token: refreshToken }, // Update refresh_token
                 { new: true, runValidators: true } // Opsional: agar dokumen yang diperbarui dikembalikan
             );
-            
+          
 
-            // res.cookie('refreshToken', refreshToken, {
-            //     httpOnly: true,
-            //     secure: true,
-            //     maxAge: 24 * 60 * 60 * 1000, 
-            // });
-
-            res.cookie('refreshToken', refreshToken, { 
-            secure: true,
-            sameSite: 'none',
-            httpOnly: false, 
-                maxAge: 24 * 60 * 60 * 1000 
-            });
+          //  Simpan refreshToken di Cookie dengan Keamanan Tinggi
+          res.cookie('refreshToken', refreshToken, { 
+            httpOnly: true,  // Amankan dari JavaScript
+            secure:  process.env.NODE_ENV === 'production',    // Hanya bisa digunakan di HTTPS
+            sameSite: 'strict', // Cegah CSRF Attack
+            maxAge:  24 * 60 * 60 * 1000 // 7 hari
+          });
 
             const decodedRefreshToken = jwtDecode(refreshToken);
             const expiresIn = decodedRefreshToken.exp;
