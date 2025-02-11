@@ -36,11 +36,11 @@ export class AuthController {
 
             const recaptchaData = recaptchaResponse.data;
 
+
             // Periksa status reCAPTCHA
             if (!recaptchaData.success || recaptchaData.score < 0.5) {
                 return res.status(400).json({ message: "reCAPTCHA verification failed. Please try again." });
             }
-
 
             const user = await UserModel.findOne({ email: req.body.email });
 
@@ -236,6 +236,63 @@ export class AuthController {
             
         }
     }
+    
+
+    static async CheckRefreshToken  (req : any, res : any) {
+
+      try {
+          console.log("Cookies:", req.cookies);
+
+          const refreshToken = req.cookies.refreshToken;
+          
+          if (!refreshToken) {
+
+            return res.status(403).json(
+              { 
+                data : false,
+                message: "Session cookies empty" 
+              }
+            );
+              
+          }
+  
+          // Cari user berdasarkan refresh token
+          const user = await UserModel.findOne({ refresh_token: refreshToken });
+  
+          if (!user) {
+              return res.status(403).json(
+                { 
+                  data : false,
+                  message: "Invalid refresh token" 
+                }
+              );
+          }
+          
+      
+          res.status(200).json({
+              requestId: uuidv4(),
+              data: true,
+              message: "Your session-Id exists",
+              success: true
+          });
+          
+      } catch (error) {
+          
+          const axiosError = error as AxiosError;
+          const errorResponseData = axiosError.response ? axiosError.response.status : null;
+
+          console.error('Refresh Token Error:', error); 
+
+          res.status(500).json({
+              message: "An error occurred during Refresh Token :",
+              error: axiosError.message,
+              error2: errorResponseData,
+              stack: axiosError.stack,
+              success: false
+          });
+          
+      }
+  }
 
 
     static async LoginCheckout (req : any, res :any)  {

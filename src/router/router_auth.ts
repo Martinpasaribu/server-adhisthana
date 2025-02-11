@@ -14,6 +14,7 @@ const AuthRouter: express.Router = express.Router();
 AuthRouter.get("/token", refreshToken)
 AuthRouter.get("/token-admin", refreshTokenAdmin)
 AuthRouter.get("/me", AuthController.Me)
+AuthRouter.get("/cek-refresh-token", AuthController.CheckRefreshToken)
 AuthRouter.post("/login", loginLimiter, AuthController.Login);
 AuthRouter.post("/login-admin", loginLimiter, AuthController.LoginAdmin);
 AuthRouter.post("/login-checkout", AuthController.LoginCheckout);
