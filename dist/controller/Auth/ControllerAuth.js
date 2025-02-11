@@ -71,7 +71,8 @@ class AuthController {
                 res.cookie('refreshToken', refreshToken, {
                     httpOnly: true, // Amankan dari JavaScript
                     secure: process.env.NODE_ENV === 'production', // Hanya bisa digunakan di HTTPS
-                    sameSite: 'strict', // Cegah CSRF Attack
+                    sameSite: 'None',
+                    // sameSite: 'strict', // Cegah CSRF Attack
                     maxAge: 24 * 60 * 60 * 1000 // 7 hari
                 });
                 const decodedRefreshToken = (0, jwt_decode_1.jwtDecode)(refreshToken);
@@ -318,9 +319,9 @@ class AuthController {
                 const userRole = admin.role; // Tambahkan role untuk keamanan tambahan
                 const usernameAdmin = admin.username;
                 req.session.userId = userId;
-                const accessToken = jsonwebtoken_1.default.sign({ userId, usernameAdmin, role: userRole }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' } // Ubah menjadi 15 menit
+                const accessToken = jsonwebtoken_1.default.sign({ userId, usernameAdmin, role: userRole }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '5m' } // Ubah menjadi 15 menit
                 );
-                const refreshToken = jsonwebtoken_1.default.sign({ userId, usernameAdmin, role: userRole }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' } // Refresh token berlaku selama 7 hari
+                const refreshToken = jsonwebtoken_1.default.sign({ userId, usernameAdmin, role: userRole }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1d' } // Refresh token berlaku selama 7 hari
                 );
                 // 8. Simpan Refresh Token di Database
                 yield models_admin_1.default.findOneAndUpdate({ _id: userId }, { refresh_token: refreshToken }, { new: true, runValidators: true });
@@ -328,8 +329,9 @@ class AuthController {
                 res.cookie('refreshToken', refreshToken, {
                     httpOnly: true, // Amankan dari JavaScript
                     secure: process.env.NODE_ENV === 'production', // Hanya bisa digunakan di HTTPS
-                    sameSite: 'strict', // Cegah CSRF Attack
-                    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 hari
+                    sameSite: 'None',
+                    // sameSite: 'strict', // Cegah CSRF Attack
+                    maxAge: 24 * 60 * 60 * 1000 // 7 hari
                 });
                 const decodedRefreshToken = (0, jwt_decode_1.jwtDecode)(refreshToken);
                 const expiresIn = decodedRefreshToken.exp;
