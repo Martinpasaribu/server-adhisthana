@@ -5,8 +5,11 @@ import  UserModel  from "../../models/User/models_user";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import { AxiosError } from 'axios';
+import validator from "validator"; // Install dengan: npm install validator
+
 
 import axios from "axios"; // Pastikan axios sudah terinstal
+import { verifyEmail } from "./Component/ValidationEmail";
 
 
 
@@ -74,6 +77,12 @@ export class UserController {
         // }
         let user
 
+        // 2. Validasi Apakah Email Benar-benar Ada dengan hunter.io
+        const isEmailValid = await verifyEmail(email);
+        if (!isEmailValid) {
+            return res.status(400).json({ message: `Email : ${email} does not exist or is invalid.` });
+        }
+
         if( password && password ){
 
             const salt = await bcrypt.genSalt();
@@ -125,14 +134,24 @@ export class UserController {
     }
 
 
+
     static async ConfirmReset(req: any, res: any) {
-        
-        const { email, recaptchaToken } = req.body; // Tambahkan `recaptchaToken` dari klien
+        const { email, recaptchaToken } = req.body;
 
         try {
-            // 1. Verifikasi reCAPTCHA
+            // 1. Validasi Format Email
+            if (!validator.isEmail(email)) {
+                return res.status(400).json({ message: "Invalid email format." });
+            }
+
+            // 2. Validasi Apakah Email Benar-benar Ada
+            const isEmailValid = await verifyEmail(email);
+            if (!isEmailValid) {
+                return res.status(400).json({ message: `Email : ${email} does not exist or is invalid.` });
+            }
+
+            // 3. Verifikasi reCAPTCHA
             const recaptchaSecret = process.env.RECAPTCHA_SECRET_KEY;
-            
             const recaptchaResponse = await axios.get(
                 `https://www.google.com/recaptcha/api/siteverify`,
                 {
@@ -142,27 +161,23 @@ export class UserController {
                     },
                 }
             );
-            
 
             const recaptchaData = recaptchaResponse.data;
-
-            // Periksa status reCAPTCHA
             if (!recaptchaData.success || recaptchaData.score < 0.5) {
-                return res.status(400).json({ message: "reCAPTCHA verification failed. Please try again." });
+                return res.status(400).json({ message: "reCAPTCHA verification failed." });
             }
 
-            // 2. Cari user berdasarkan email
+            // 4. Cari user berdasarkan email
             const user = await UserModel.findOne({ email: email });
-
             if (!user) {
                 return res.status(404).json({ message: `User with Email ${email} is not registered` });
             }
 
-            // 3. Generate reset token
+            // 5. Generate reset token
             const resetToken = jwt.sign({ email }, process.env.JWT_SECRET as string, { expiresIn: "1h" });
             const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
 
-            // 4. Kirim email
+            // 6. Kirim email
             const transporter = nodemailer.createTransport({
                 service: "gmail",
                 auth: {
@@ -172,21 +187,47 @@ export class UserController {
             });
 
             await transporter.sendMail({
-                from: `"Adhisthana Vila" <${process.env.EMAIL_USER}>`,
+                from: `"Adhisthana Vila" <${process.env.APP_EMAIL}>`,
                 to: email,
                 subject: "Password Reset Request",
                 html: `
-                    <p>Hello,</p>
-                    <p>You have requested to reset your password. Please click the link below to reset your password:</p>
-                    <a href="${resetLink}">Link you reset password</a>
-                    <p>If you did not request this, please ignore this email.</p>
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border-radius: 10px; background-color: #f9f9f9;">
+                    <div style="text-align: center;">
+                        <img src="https://adhistahan.vercel.app/_next/image?url=%2Fassets%2FLogo%2Fadhisthana.png&w=640&q=75" alt="Adhisthana Vila" style="max-width: 150px; margin-bottom: 20px;">
+                    </div>
+                    <div style="background: white; padding: 20px; border-radius: 8px;">
+                        <h2 style="color: #333;">Hello, ${user.title} ${user.name}</h2>
+                        <p style="font-size: 16px; color: #555;">
+                            You have requested to reset your password. Please click the button below to reset it:
+                        </p>
+                        <div style="text-align: center; margin: 20px 0;">
+                            <a href="${resetLink}" style="
+                                display: inline-block;
+                                background-color: #F76A0CFF;
+                                color: white;
+                                padding: 12px 24px;
+                                font-size: 16px;
+                                text-decoration: none;
+                                border-radius: 5px;
+                                font-weight: bold;
+                            ">Reset Password</a>
+                        </div>
+                        <p style="font-size: 14px; color: #888;">
+                            If you did not request this, please ignore this email.
+                        </p>
+                    </div>
+                    <div style="text-align: center; font-size: 12px; color: #999; margin-top: 20px;">
+                        <p>&copy; 2024 Adhisthana Vila. All rights reserved.</p>
+                        <p>Karet Kuningan, Kecamatan Setiabudi, Kota Jakarta Selatan. Indonesia</p>
+                    </div>
+                </div>
                 `,
             });
+            
 
-            // 5. Respon sukses
             res.status(200).json({ message: "Password reset link has been sent to your email." });
         } catch (error) {
-            res.status(500).json({ message: "An error occurred.", error: (error as Error).message });
+            res.status(500).json({ message: "Error when resetting password.", error: (error as Error).message });
         }
     }
 
@@ -229,7 +270,7 @@ export class UserController {
                 return res.status(400).json({ message: "Invalid or expired token." });
             }
 
-            res.status(500).json({ message: "An error occurred.", error: axiosError.message });
+            res.status(500).json({ message: "error when resetting password.", error: axiosError.message });
         }
     }
 

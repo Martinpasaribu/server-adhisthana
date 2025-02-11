@@ -59,7 +59,17 @@ const getEmailTemplate = (_a) => __awaiter(void 0, [_a], void 0, function* ({ ti
             .join("")
         : "<tr><td colspan='3'>No products available</td></tr>";
     const BUTTON_LINK_HTML = `
-      <a href="${CEK_TRANSACTION}" class="button">View Transaction</a>
+      <a href="${CEK_TRANSACTION}" 
+        display: inline-block;
+        background-color: #C0562F;
+        color: white;
+        padding: 12px 24px;
+        font-size: 16px;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+      >View Transaction
+      </a>
     `;
     // Debugging log
     // console.log("DataTransaction:", JSON.stringify(DataTransaction, null, 2));
