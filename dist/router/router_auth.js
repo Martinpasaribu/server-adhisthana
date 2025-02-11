@@ -13,6 +13,7 @@ const AuthRouter = express_1.default.Router();
 AuthRouter.get("/token", RefreshTokens_1.refreshToken);
 AuthRouter.get("/token-admin", RefreshTokens_1.refreshTokenAdmin);
 AuthRouter.get("/me", ControllerAuth_1.AuthController.Me);
+AuthRouter.get("/cek-refresh-token", ControllerAuth_1.AuthController.CheckRefreshToken);
 AuthRouter.post("/login", RateLimit_1.loginLimiter, ControllerAuth_1.AuthController.Login);
 AuthRouter.post("/login-admin", RateLimit_1.loginLimiter, ControllerAuth_1.AuthController.LoginAdmin);
 AuthRouter.post("/login-checkout", ControllerAuth_1.AuthController.LoginCheckout);

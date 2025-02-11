@@ -29,7 +29,11 @@ export const getEmailTemplate = async ({
   paymentStatus,
 }: GetEmailTemplateProps) => {
 
-  const templatePath = path.join(__dirname, '../DeliveryEmail/email-template.html');
+  // const templatePath = path.join(__dirname, 'DeliveryEmail/TemplateHtml/email-template.html');
+
+  const templatePath = path.join(process.cwd(), 'dist/controller/DeliveryEmail/TemplateHtml/email-template.html');
+
+
 
   const DataTransaction = await TransactionModel.find({ bookingId: ticketNumber, isDeleted: false });
 

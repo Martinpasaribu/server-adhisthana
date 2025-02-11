@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ticket Confirmation and Payment Receipt</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      color: #333;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      color: #C0562F;
+      font-size: 18px;
+    }
+
+    h2 {
+      color: #C0562F;
+      font-size: 16px;
+    }
+
+    p {
+      font-size: 14px;
+      color: #6a6a6a;
+      font-weight: bold;
+      line-height: 1.5;
+      margin: 10px 0;
+    }
+
+    .id_transaction {
+      color: #C0562F;
+      font-weight: bold;
+    }
+    .name {
+      font-size: 15px;
+      line-height: 1.5;
+      margin: 40px 0;
+      font-weight: bold;
+      color:#212636;
+    }
+
+    .title {
+      font-size: 15px;
+      text-align: center;
+      margin: 40px 0px 0px 40px;
+    }
+
+    .button {
+      display: inline-block;
+      padding: 12px 20px;
+      margin-top: 20px;
+      background-color: #007bff;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+
+
+    .invoice-details {
+      background-color: #f9f9f9;
+      padding: 12px;
+      margin-top: 20px;
+      margin-bottom: 40px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+
+    .invoice-details table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .invoice-details th, .invoice-details td {
+      padding: 10px;
+      text-align: left;
+      
+    }
+
+    .invoice-details th {
+      background-color: #f1f1f1;
+    }
+
+    .invoice-details td {
+      background-color: #fff;
+    }
+
+    .payment-status {
+      font-weight: bold;
+    }
+
+    .paid {
+      color: green;
+    }
+
+    .pending {
+      color: orange;
+    }
+
+    .failed {
+      color: red;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container ">
+    <img src="https://adhistahan.vercel.app/_next/image?url=%2Fassets%2FLogo%2Fadhisthana.png&w=640&q=75" alt="Company Logo" style="display: block; margin: 0 auto; width: 150px; height: auto;">
+    <h1 class="title">Here's Your Booking Confirmation & Receipt</h1>
+    <p class="name">Hi Name_User ! Thank you for making a booking. The booking for your stay in Adhisthana Villas is confirmed.</p>
+
+    <div class="invoice-details">
+      <h2></h2>
+      <table>
+        <tr>
+          <th>ID Transaction</th>
+          <td class="id_transaction">ID_Transaction</td>
+        </tr>
+        <tr>
+          <th>Order Name</th>
+          <td>Name_User</td>
+        </tr>
+        <tr>
+          <th>Total payment</th>
+          <td>IDR Total_Price</td>
+        </tr>
+        <tr>
+          <th>Status Payment</th>
+          <td class="payment-status Status_Payment">Status_Payment</td>
+        </tr>
+        <tr>
+          <th>Date Transaction</th>
+          <td class="payment-status Status_Payment">Date_transaction</td>
+        </tr>
+      </table>
+    </div>
+
+    <h2>Booking Details</h2>
+    <p>Below are your details booking receipt</p>
+
+    <div class="invoice-details">
+      <table>
+        <tr>
+          <th>Check-in</th>
+          <td>CheckIn</td>
+        </tr>
+        <tr>
+          <th>Check-out</th>
+          <td>CheckOut</td>
+        </tr>
+        <tr>
+          <th>Address</th>
+          <td>Jl. Raya Borobudur, Susukan, Tegalarum, Kec. Borobudur, Kab. Magelang Central Java, Indonesia 56553</td>
+        </tr>
+        <tr>
+          <th>Vila Contact Number</th>
+
+          <td>
+            <p>
+              +62-81111177199
+            </p>
+            <p>
+              info@adhisthanavillas.com
+            </p>
+            
+          </td>
+
+            
+        </tr>
+        <tr>
+          <th>Cancellation Policy</th>
+          <td class="">If you fail to check in, a penalty equivalent to the cancellation fee will be charged. </td>
+        </tr>
+      </table>
+    </div>
+
+    <h2> Price Details</h2>
+    <p>Below are your price details and payment receipt</p>
+
+    <div class="invoice-details">
+      <table>
+        {{PRODUCT_LIST}}
+        <tr>
+          <th>Total</th>
+          <td> </td>
+          <td class="payment-status Status_Payment">IDR Total_Price</td>
+        </tr>
+        <tr>
+          <th>Payment type</th>
+          <td> </td>
+          <td class="payment-status Status_Payment">Payment_Type</td>
+        </tr>
+      </table>
+    </div>
+
+    <p>To view further details or view transactions, click the button below:</p>
+    <!-- <a href="https://yourwebsite.com/tiket/ID_Transaction" class="button">View Transaction</a> -->
+    {{BUTTON_LINK}}
+    <p>.</p>
+    <p>  !	Please do not reply to this email. It was sent from a notification-only email address that cannot accept incoming emails.</p>
+
+    <div style="text-align: center; font-size: 12px; color: #999; margin-top: 25px;">
+        <p>&copy; 2024 Adhisthana Vila. All rights reserved.</p>
+        <p>Karet Kuningan, Kecamatan Setiabudi, Kota Jakarta Selatan. Indonesia</p>
+    </div>
+
+  </div>
+</body>
+</html>

@@ -30,8 +30,9 @@ const FormatDate = (dates) => {
     return formattedDateTime.replace(",", " Pukul"); // Ubah format
 };
 const getEmailTemplate = (_a) => __awaiter(void 0, [_a], void 0, function* ({ ticketNumber, paymentStatus, }) {
+    // const templatePath = path.join(__dirname, 'DeliveryEmail/TemplateHtml/email-template.html');
     var _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
-    const templatePath = path_1.default.join(__dirname, '../DeliveryEmail/email-template.html');
+    const templatePath = path_1.default.join(process.cwd(), 'dist/controller/DeliveryEmail/TemplateHtml/email-template.html');
     const DataTransaction = yield models_transaksi_1.TransactionModel.find({ bookingId: ticketNumber, isDeleted: false });
     if (!DataTransaction || DataTransaction.length === 0) {
         throw new Error("Data Transaction not found");
