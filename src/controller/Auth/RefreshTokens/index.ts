@@ -40,27 +40,6 @@ export  const refreshToken = async (req : any, res : any) => {
                 { expiresIn: "5m" } // **Diperpanjang menjadi 5 menit**
             );
 
-            // **Ganti Refresh Token Lama**
-            const newRefreshToken = jwt.sign(
-                { userId },
-                process.env.REFRESH_TOKEN_SECRET as string,
-                { expiresIn: "1d" } // **Berlaku 1 hari**
-            );
-
-            // Simpan refresh token baru di database
-            await UserModel.updateOne(
-                { _id: userId },
-                { refresh_token: newRefreshToken }
-            );
-
-            // Set refresh token di cookies (lebih aman)
-            res.cookie("refreshToken", newRefreshToken, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === "production", // Hanya aktif di HTTPS
-                sameSite: 'None', 
-                // sameSite: "strict",
-                maxAge: 24 * 60 * 60 * 1000, // 1 hari
-            });
 
             return res.json({ accessToken });
         });
@@ -107,27 +86,27 @@ export  const refreshTokenAdmin = async (req : any, res : any) => {
                 { expiresIn: "25s" } // **Diperpanjang menjadi 15 menit**
             );
 
-            // **Ganti Refresh Token Lama**
-            const newRefreshToken = jwt.sign(
-                { userId },
-                process.env.REFRESH_TOKEN_SECRET as string,
-                { expiresIn: "1d" } // **Berlaku 7 hari**
-            );
+            // // **Ganti Refresh Token Lama**
+            // const newRefreshToken = jwt.sign(
+            //     { userId },
+            //     process.env.REFRESH_TOKEN_SECRET as string,
+            //     { expiresIn: "1d" } // **Berlaku 7 hari**
+            // );
 
-            // Simpan refresh token baru di database
-            await AdminModel.updateOne(
-                { _id: userId },
-                { refresh_token: newRefreshToken }
-            );
+            // // Simpan refresh token baru di database
+            // await AdminModel.updateOne(
+            //     { _id: userId },
+            //     { refresh_token: newRefreshToken }
+            // );
 
-            // Set refresh token di cookies (lebih aman)
-            res.cookie("refreshToken", newRefreshToken, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === "production", // Hanya aktif di HTTPS
-                sameSite: 'None', 
-                // sameSite: "strict",
-                maxAge:  24 * 60 * 60 * 1000, // 7 hari
-            });
+            // // Set refresh token di cookies (lebih aman)
+            // res.cookie("refreshToken", newRefreshToken, {
+            //     httpOnly: true,
+            //     secure: process.env.NODE_ENV === "production", // Hanya aktif di HTTPS
+            //     sameSite: 'None', 
+            //     // sameSite: "strict",
+            //     maxAge:  24 * 60 * 60 * 1000, // 7 hari
+            // });
 
             return res.json({ accessToken });
         });
