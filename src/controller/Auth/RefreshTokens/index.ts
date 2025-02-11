@@ -37,14 +37,14 @@ export  const refreshToken = async (req : any, res : any) => {
             const accessToken = jwt.sign(
                 { userId, name, email },
                 process.env.ACCESS_TOKEN_SECRET as string,
-                { expiresIn: "15m" } // **Diperpanjang menjadi 15 menit**
+                { expiresIn: "5m" } // **Diperpanjang menjadi 5 menit**
             );
 
             // **Ganti Refresh Token Lama**
             const newRefreshToken = jwt.sign(
                 { userId },
                 process.env.REFRESH_TOKEN_SECRET as string,
-                { expiresIn: "7d" } // **Berlaku 7 hari**
+                { expiresIn: "1d" } // **Berlaku 1 hari**
             );
 
             // Simpan refresh token baru di database
@@ -57,8 +57,9 @@ export  const refreshToken = async (req : any, res : any) => {
             res.cookie("refreshToken", newRefreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production", // Hanya aktif di HTTPS
-                sameSite: "strict",
-                maxAge: 7 * 24 * 60 * 60 * 1000, // 7 hari
+                sameSite: 'None', 
+                // sameSite: "strict",
+                maxAge: 24 * 60 * 60 * 1000, // 1 hari
             });
 
             return res.json({ accessToken });
@@ -110,7 +111,7 @@ export  const refreshTokenAdmin = async (req : any, res : any) => {
             const newRefreshToken = jwt.sign(
                 { userId },
                 process.env.REFRESH_TOKEN_SECRET as string,
-                { expiresIn: "7d" } // **Berlaku 7 hari**
+                { expiresIn: "1d" } // **Berlaku 7 hari**
             );
 
             // Simpan refresh token baru di database
@@ -123,8 +124,9 @@ export  const refreshTokenAdmin = async (req : any, res : any) => {
             res.cookie("refreshToken", newRefreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production", // Hanya aktif di HTTPS
-                sameSite: "strict",
-                maxAge: 7 * 24 * 60 * 60 * 1000, // 7 hari
+                sameSite: 'None', 
+                // sameSite: "strict",
+                maxAge:  24 * 60 * 60 * 1000, // 7 hari
             });
 
             return res.json({ accessToken });

@@ -204,7 +204,8 @@ export class UserController {
                             <a href="${resetLink}" style="
                                 display: inline-block;
                                 background-color: #F76A0CFF;
-                                color: white;
+                                color: black;
+                                border-color: black;
                                 padding: 12px 24px;
                                 font-size: 16px;
                                 text-decoration: none;

@@ -87,7 +87,8 @@ export class AuthController {
           res.cookie('refreshToken', refreshToken, { 
             httpOnly: true,  // Amankan dari JavaScript
             secure:  process.env.NODE_ENV === 'production',    // Hanya bisa digunakan di HTTPS
-            sameSite: 'strict', // Cegah CSRF Attack
+            sameSite: 'None', 
+            // sameSite: 'strict', // Cegah CSRF Attack
             maxAge:  24 * 60 * 60 * 1000 // 7 hari
           });
 
@@ -402,13 +403,13 @@ export class AuthController {
           const accessToken = jwt.sign(
             { userId, usernameAdmin, role: userRole }, 
             process.env.ACCESS_TOKEN_SECRET as string, 
-            { expiresIn: '15m' } // Ubah menjadi 15 menit
+            { expiresIn: '5m' } // Ubah menjadi 15 menit
           );
     
           const refreshToken = jwt.sign(
             { userId, usernameAdmin, role: userRole }, 
             process.env.REFRESH_TOKEN_SECRET as string, 
-            { expiresIn: '7d' } // Refresh token berlaku selama 7 hari
+            { expiresIn: '1d' } // Refresh token berlaku selama 7 hari
           );
     
           // 8. Simpan Refresh Token di Database
@@ -422,8 +423,9 @@ export class AuthController {
           res.cookie('refreshToken', refreshToken, { 
             httpOnly: true,  // Amankan dari JavaScript
             secure:  process.env.NODE_ENV === 'production',    // Hanya bisa digunakan di HTTPS
-            sameSite: 'strict', // Cegah CSRF Attack
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 hari
+            sameSite: 'None', 
+            // sameSite: 'strict', // Cegah CSRF Attack
+            maxAge: 24 * 60 * 60 * 1000 // 7 hari
           });
     
           const decodedRefreshToken: any = jwtDecode(refreshToken);
