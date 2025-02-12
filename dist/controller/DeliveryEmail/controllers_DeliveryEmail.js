@@ -50,7 +50,7 @@ class DeliveryEmailController {
                 });
                 // Kirim Email
                 const mailOptions = {
-                    from: `"Adhisthana Villas" <${process.env.EMAIL_USER}>`,
+                    from: `"Adhisthana Villas" <${process.env.APP_EMAIL}>`,
                     to: userEmail,
                     subject: "Here's Your Booking Confirmation & Receipt",
                     html: emailContent,

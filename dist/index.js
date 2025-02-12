@@ -37,7 +37,11 @@ const router_dashboard_1 = __importDefault(require("./router/router_dashboard"))
 const app = (0, express_1.default)();
 dotenv_1.default.config();
 app.use((0, cors_1.default)({
-    origin: ["http://localhost:3000", "http://localhost:3001", "https://adhistahan.vercel.app", "https://adhisthanavillas.com", "https://uji-client-adhistahana.vercel.app", "https://api.adhisthanavillas.com"],
+    origin: [
+        "http://localhost:3000", "http://localhost:3001",
+        "https://adhistahan.vercel.app", "https://adhisthanavillas.com",
+        "https://admin-adhisthana.vercel.app", "https://api.adhisthanavillas.com,"
+    ],
     methods: ["POST", "GET", "PATCH", "DELETE", 'PUT', "OPTIONS"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],

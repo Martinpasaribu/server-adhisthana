@@ -25,7 +25,8 @@ export class InstagramController {
                 await existingData.save();  // Simpan perubahan
 
                 res.status(200).json({
-                    message: 'Data updated successfully',
+                    message: 'Instagram has update',
+                    message2: 'Data updated successfully',
                     data: existingData
                 });
             } else {
@@ -38,13 +39,14 @@ export class InstagramController {
                 await newInstagramData.save();  // Simpan data baru
 
                 res.status(201).json({
-                    message: 'Data created successfully',
+                    message: 'Instagram has update',
+                    messag2: 'Data created successfully',
                     data: newInstagramData
                 });
             }
 
         } catch (error) {
-            console.error('Error in update:', (error as Error).message);
+            console.error('Error in update instagram:', (error as Error).message);
             res.status(500).send('Error fetching Instagram data');
         }
     }

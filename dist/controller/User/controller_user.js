@@ -158,7 +158,7 @@ class UserController {
                     },
                 });
                 yield transporter.sendMail({
-                    from: `"Adhisthana Vila" <${process.env.APP_EMAIL}>`,
+                    from: `"Adhisthana Villas" <${process.env.APP_EMAIL}>`,
                     to: email,
                     subject: "Password Reset Request",
                     html: `

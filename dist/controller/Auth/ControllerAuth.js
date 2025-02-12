@@ -232,6 +232,52 @@ class AuthController {
             }
         });
     }
+    static DeletedSession(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const refreshToken = req.cookies.refreshToken;
+                // Jika tidak ada refresh token di cookie, langsung kirim status 204 (No Content)
+                if (!refreshToken) {
+                    return res.status(404).json({
+                        message: "RefreshToken not found",
+                        success: false,
+                    });
+                }
+                // Cari user berdasarkan refresh token
+                const user = yield models_user_1.default.findOne({ refresh_token: refreshToken });
+                if (!user) {
+                    // Hapus cookie refreshToken
+                    res.clearCookie('refreshToken');
+                }
+                // Hancurkan sesi
+                req.session.destroy((err) => {
+                    if (err) {
+                        // Jika terjadi error saat menghancurkan sesi
+                        return res.status(500).json({
+                            message: "Could not deleted session ",
+                            success: false,
+                        });
+                    }
+                    // Kirim respons logout berhasil
+                    res.status(200).json({
+                        message: "Success Deleted Session and cookies",
+                        data: {
+                            pesan: "Deleted Session berhasil",
+                        },
+                        success: true,
+                    });
+                });
+            }
+            catch (error) {
+                // Tangani error lainnya
+                res.status(500).json({
+                    message: "An error occurred during Deleted Session",
+                    success: false,
+                    error: error.message,
+                });
+            }
+        });
+    }
     static LoginCheckout(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
