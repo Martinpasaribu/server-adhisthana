@@ -22,6 +22,7 @@ import ReservationRouter from "./router/router_reservation";
 import AdminRouter from "./router/router_admin";
 import DashboardRouter from "./router/router_dashboard";
 import AdminBookingRouter from "./router/router_admin_booking";
+import AdminCustomerRouter from "./router/router_admin_customer";
 
 
 const app: express.Application = express();
@@ -171,6 +172,7 @@ app.use("/api/v1/site/minder", SiteMinderRouter)
 app.use("/api/v1/reservation", ReservationRouter)
 app.use("/api/v1/dashboard", DashboardRouter)
 app.use("/api/v1/admin/booking", AdminBookingRouter)
+app.use("/api/v1/admin/customer", AdminCustomerRouter)
 
 
 

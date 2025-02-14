@@ -35,6 +35,7 @@ const router_reservation_1 = __importDefault(require("./router/router_reservatio
 const router_admin_1 = __importDefault(require("./router/router_admin"));
 const router_dashboard_1 = __importDefault(require("./router/router_dashboard"));
 const router_admin_booking_1 = __importDefault(require("./router/router_admin_booking"));
+const router_admin_customer_1 = __importDefault(require("./router/router_admin_customer"));
 const app = (0, express_1.default)();
 dotenv_1.default.config();
 app.use((0, cors_1.default)({
@@ -119,6 +120,7 @@ app.use("/api/v1/site/minder", router_siteminder_1.default);
 app.use("/api/v1/reservation", router_reservation_1.default);
 app.use("/api/v1/dashboard", router_dashboard_1.default);
 app.use("/api/v1/admin/booking", router_admin_booking_1.default);
+app.use("/api/v1/admin/customer", router_admin_customer_1.default);
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // await connectToDatabase();
