@@ -64,6 +64,16 @@ const BookingSchema = new mongoose_1.Schema({
         // required: [true, "checkOut cannot be empty"],
         trim: true
     },
+    verified: {
+        status: {
+            type: Boolean,
+            default: false,
+        },
+        time: {
+            type: Number,
+            default: Date.now, // Otomatis set timestamp saat diverifikasi
+        }
+    },
     adult: {
         type: Number,
         required: false,
@@ -95,6 +105,7 @@ const BookingSchema = new mongoose_1.Schema({
     },
     couponId: {
         type: String,
+        default: 0,
         // required: [true, "couponId cannot be empty"],
         trim: true
     },

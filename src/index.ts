@@ -21,6 +21,7 @@ import SiteMinderRouter from "./router/router_siteminder";
 import ReservationRouter from "./router/router_reservation";
 import AdminRouter from "./router/router_admin";
 import DashboardRouter from "./router/router_dashboard";
+import AdminBookingRouter from "./router/router_admin_booking";
 
 
 const app: express.Application = express();
@@ -76,7 +77,7 @@ app.use(session({
 
         //  ==========  Development  ============
 
-        // secure: process.env.NODE_ENV === 'production',
+        // secure: false,
         // httpOnly: true,      
         // maxAge: 1000 * 60 * 60 * 24, // 1 hari
         
@@ -169,6 +170,7 @@ app.use("/api/v1/session", SessionRouter)
 app.use("/api/v1/site/minder", SiteMinderRouter)
 app.use("/api/v1/reservation", ReservationRouter)
 app.use("/api/v1/dashboard", DashboardRouter)
+app.use("/api/v1/admin/booking", AdminBookingRouter)
 
 
 

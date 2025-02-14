@@ -44,6 +44,7 @@ export class AdminUserController {
                 username: username,
                 role : role,
                 status: status,
+                active: true,
                 password: hashPassword,
         
             });

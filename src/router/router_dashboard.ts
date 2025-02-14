@@ -2,7 +2,7 @@ import express, { Request, Response, NextFunction } from "express";
 import activityLogger from "../middleware/logActivity";
 import { ReservationController } from "../controller/Admin/Reservation/controller_reservation";
 import { verifyAdmin } from "../middleware/VerifyAdminId";
-import { DashboardController } from "../controller/Admin/Dashboard/controllDashboard";
+import { DashboardController } from "../controller/Admin/Dashboard/controller_Dashboard";
 
 const DashboardRouter: express.Router = express.Router();
 

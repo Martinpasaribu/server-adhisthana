@@ -6,6 +6,11 @@ interface Room {
     quantity:number;
 }
 
+interface IVerified {
+    status: boolean;
+    time?: number; // Opsional, jika hanya diisi saat diverifikasi
+}
+
 
 interface IBooking extends Document {
 
@@ -16,7 +21,7 @@ interface IBooking extends Document {
     oderId: string;
     checkIn: string;
     checkOut: string;
-
+    verified: IVerified;
     adult: number;
     night: number;
     children: number;
@@ -66,6 +71,18 @@ const BookingSchema: Schema = new Schema(
             trim: true
         },
 
+        verified: {
+            status: { 
+                type: Boolean, 
+                default: false,  
+            },
+            time: {
+                type: Number,
+                default: Date.now, // Otomatis set timestamp saat diverifikasi
+            }
+        },
+        
+
         adult: {
             type: Number,
             required: false,
@@ -99,6 +116,7 @@ const BookingSchema: Schema = new Schema(
         },
         couponId: {
             type: String,
+            default: 0,  
             // required: [true, "couponId cannot be empty"],
             trim: true
         },

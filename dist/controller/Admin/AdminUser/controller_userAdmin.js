@@ -49,6 +49,7 @@ class AdminUserController {
                     username: username,
                     role: role,
                     status: status,
+                    active: true,
                     password: hashPassword,
                 });
                 res.status(201).json({
