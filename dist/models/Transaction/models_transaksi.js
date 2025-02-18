@@ -62,6 +62,12 @@ const TransactionSchema = new mongoose_1.Schema({
         type: String,
         trim: true,
     },
+    booking_keyId: {
+        type: String,
+        ref: 'Booking',
+        required: [true, "booking_key cannot be empty"],
+        trim: true
+    },
     reservation: {
         type: Boolean,
         trim: true,

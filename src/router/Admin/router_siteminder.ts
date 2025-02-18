@@ -1,6 +1,5 @@
 import express, { Request, Response, NextFunction } from "express";
-import activityLogger from "../middleware/logActivity";
-import { SetMinderController } from "../controller/Admin/SiteMinder/controller_minder";
+import { SetMinderController } from "../../controller/Admin/SiteMinder/controller_minder";
 
 const SiteMinderRouter: express.Router = express.Router();
 

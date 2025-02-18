@@ -140,84 +140,53 @@ export class RoomController {
 
         }
 
-        static async updatePacketAll(req: Request, res: Response, next:NextFunction ) {
 
-            const { id } = req.params; 
-            const updateData = req.body; 
+        
+        static async updateRoomPart(req: Request, res: Response) {
+            const { id } = req.params;
+            const updateData = req.body;
         
             try {
-            
-                const updatedPacket = await RoomModel.findOneAndUpdate(
-                    { _id: id },         
-                    updateData,            
-                    { new: true, runValidators: true } 
-                );
-        
-                if (!updatedPacket) {
-                    return res.status(404).json({
-                        requestId: uuidv4(), 
+                // Pastikan data yang dikirim tidak kosong
+                if (Object.keys(updateData).length === 0) {
+                    return res.status(400).json({
+                        requestId: uuidv4(),
                         success: false,
-                        message: "Packet not found",
+                        message: "No data provided for update",
                     });
                 }
         
-                res.status(200).json({
-                    requestId: uuidv4(), 
-                    success: true,
-                    message: "Successfully updated Packet data",
-                    data: updatedPacket
-                });
-        
-            } catch (error) {
-                res.status(400).json({
-                    requestId: uuidv4(), 
-                    success: false,
-                    message: (error as Error).message,
-                });
-            }
-        };
-        
-        static async updateRoomPart(req: Request, res: Response) {
-
-            const { id } = req.params; 
-            const updateData = req.body; 
-
-            // if (updateData._id) {
-            //     delete updateData._id;
-            // }
-
-            try {
-            
-                const updatedRoom = await RoomModel.findOneAndUpdate(
-                    // new mongoose.Types.ObjectId(id),        
-                    {_id:id},
-                    updateData,            
-                    { new: true, runValidators: true } 
+                const updatedRoom = await RoomModel.findByIdAndUpdate(
+                    { _id: new mongoose.Types.ObjectId(id) },
+                    { $set: updateData }, 
+                    { new: true, runValidators: true }
                 );
         
                 if (!updatedRoom) {
                     return res.status(404).json({
-                        requestId: uuidv4(), 
+                        requestId: uuidv4(),
                         success: false,
                         message: "Room not found",
                     });
                 }
         
                 res.status(200).json({
-                    requestId: uuidv4(), 
+                    requestId: uuidv4(),
                     success: true,
                     message: "Successfully updated Room data",
-                    data: updatedRoom
+                    data: updatedRoom,
                 });
         
             } catch (error) {
                 res.status(400).json({
-                    requestId: uuidv4(), 
+                    requestId: uuidv4(),
                     success: false,
                     message: (error as Error).message,
                 });
             }
-        };
+        }
+        
+        
 
         static async getAllRoom(req: Request, res: Response) {
 
@@ -263,7 +232,42 @@ export class RoomController {
         }
 
 
+        static async updatePacketAll(req: Request, res: Response, next:NextFunction ) {
 
+            const { id } = req.params; 
+            const updateData = req.body; 
+        
+            try {
+            
+                const updatedPacket = await RoomModel.findOneAndUpdate(
+                    { _id: id },         
+                    updateData,            
+                    { new: true, runValidators: true } 
+                );
+        
+                if (!updatedPacket) {
+                    return res.status(404).json({
+                        requestId: uuidv4(), 
+                        success: false,
+                        message: "Packet not found",
+                    });
+                }
+        
+                res.status(200).json({
+                    requestId: uuidv4(), 
+                    success: true,
+                    message: "Successfully updated Packet data",
+                    data: updatedPacket
+                });
+        
+            } catch (error) {
+                res.status(400).json({
+                    requestId: uuidv4(), 
+                    success: false,
+                    message: (error as Error).message,
+                });
+            }
+        };
         
     // static async deletedSoftRoom(req: Request, res: Response) {
 

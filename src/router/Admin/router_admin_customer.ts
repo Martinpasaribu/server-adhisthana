@@ -1,5 +1,5 @@
 import express, { Request, Response, NextFunction } from "express";
-import { AdminCustomerController } from "../controller/Admin/Costumer/controller_customer";
+import { AdminCustomerController } from "../../controller/Admin/Costumer/controller_customer";
 
 const AdminCustomerRouter: express.Router = express.Router();
 

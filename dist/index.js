@@ -19,7 +19,6 @@ const helmet_1 = __importDefault(require("helmet"));
 const express_session_1 = __importDefault(require("express-session"));
 const connect_mongodb_session_1 = __importDefault(require("connect-mongodb-session"));
 require("./controller/PendingRoom/Cron_job");
-const router_room_1 = __importDefault(require("./router/router_room"));
 const router_instagram_1 = __importDefault(require("./router/router_instagram"));
 const router_contact_1 = __importDefault(require("./router/router_contact"));
 const router_booking_1 = __importDefault(require("./router/router_booking"));
@@ -30,12 +29,13 @@ const router_shortAvailable_1 = __importDefault(require("./router/router_shortAv
 const router_transaction_1 = __importDefault(require("./router/router_transaction"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const router_session_1 = __importDefault(require("./router/router_session"));
-const router_siteminder_1 = __importDefault(require("./router/router_siteminder"));
-const router_reservation_1 = __importDefault(require("./router/router_reservation"));
-const router_admin_1 = __importDefault(require("./router/router_admin"));
-const router_dashboard_1 = __importDefault(require("./router/router_dashboard"));
-const router_admin_booking_1 = __importDefault(require("./router/router_admin_booking"));
-const router_admin_customer_1 = __importDefault(require("./router/router_admin_customer"));
+const router_room_1 = __importDefault(require("./router/Admin/router_room"));
+const router_admin_1 = __importDefault(require("./router/Admin/router_admin"));
+const router_siteminder_1 = __importDefault(require("./router/Admin/router_siteminder"));
+const router_reservation_1 = __importDefault(require("./router/Admin/router_reservation"));
+const router_dashboard_1 = __importDefault(require("./router/Admin/router_dashboard"));
+const router_admin_booking_1 = __importDefault(require("./router/Admin/router_admin_booking"));
+const router_admin_customer_1 = __importDefault(require("./router/Admin/router_admin_customer"));
 const app = (0, express_1.default)();
 dotenv_1.default.config();
 app.use((0, cors_1.default)({
@@ -106,21 +106,22 @@ app.use((req, res, next) => {
     res.setHeader('Set-Cookie', 'test_cookie=test_value; Path=/; Secure; HttpOnly; SameSite=None');
     next();
 });
+// Admin
 app.use("/api/v1/room", router_room_1.default);
-app.use("/api/v1/instagram", router_instagram_1.default);
-app.use("/api/v1/contact", router_contact_1.default);
-app.use("/api/v1/booking", router_booking_1.default);
-app.use("/api/v1/auth", router_auth_1.default);
-app.use("/api/v1/user", router_user_1.default);
 app.use("/api/v1/admin", router_admin_1.default);
-app.use("/api/v1/short", router_shortAvailable_1.default);
-app.use("/api/v1/transaction", router_transaction_1.default);
-app.use("/api/v1/session", router_session_1.default);
 app.use("/api/v1/site/minder", router_siteminder_1.default);
 app.use("/api/v1/reservation", router_reservation_1.default);
 app.use("/api/v1/dashboard", router_dashboard_1.default);
 app.use("/api/v1/admin/booking", router_admin_booking_1.default);
 app.use("/api/v1/admin/customer", router_admin_customer_1.default);
+app.use("/api/v1/instagram", router_instagram_1.default);
+app.use("/api/v1/contact", router_contact_1.default);
+app.use("/api/v1/booking", router_booking_1.default);
+app.use("/api/v1/auth", router_auth_1.default);
+app.use("/api/v1/user", router_user_1.default);
+app.use("/api/v1/short", router_shortAvailable_1.default);
+app.use("/api/v1/transaction", router_transaction_1.default);
+app.use("/api/v1/session", router_session_1.default);
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // await connectToDatabase();

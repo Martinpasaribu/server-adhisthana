@@ -217,10 +217,10 @@ export class UserController {
                             If you did not request this, please ignore this email.
                         </p>
                     </div>
-                    <div style="text-align: center; font-size: 12px; color: #999; margin-top: 20px;">
-                        <p>&copy; 2024 Adhisthana Vila. All rights reserved.</p>
-                        <p>Karet Kuningan, Kecamatan Setiabudi, Kota Jakarta Selatan. Indonesia</p>
-                    </div>
+                        <div style="text-align: center; font-size: 12px; color: #999; margin-top: 55px;">
+                            <p>&copy; 2024 Adhisthana Villas. All rights reserved.</p>
+                            <p>Susukan, Tegalarum, Kec. Borobudur, Kabupaten Magelang, Jawa Tengah 56413</p>
+                        </div>
                 </div>
                 `,
             });

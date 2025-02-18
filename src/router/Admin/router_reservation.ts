@@ -1,7 +1,6 @@
 import express, { Request, Response, NextFunction } from "express";
-import activityLogger from "../middleware/logActivity";
-import { ReservationController } from "../controller/Admin/Reservation/controller_reservation";
-import { verifyAdmin } from "../middleware/VerifyAdminId";
+import { ReservationController } from "../../controller/Admin/Reservation/controller_reservation";
+import { verifyAdmin } from "../../middleware/VerifyAdminId";
 
 const ReservationRouter: express.Router = express.Router();
 

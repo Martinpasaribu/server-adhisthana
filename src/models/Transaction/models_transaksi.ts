@@ -19,6 +19,7 @@ interface ITran extends Document {
     email: string;
     phone: number,
     bookingId: string;
+    booking_keyId: string;
     status: string;
     reservation: boolean;
     payment_type: string;
@@ -63,6 +64,13 @@ const TransactionSchema: Schema = new Schema(
         status: {
             type: String,
             trim: true,
+        },
+        
+        booking_keyId: {
+            type: String,
+            ref:'Booking',
+            required: [true, "booking_key cannot be empty"],
+            trim: true
         },
         reservation: {
             type: Boolean,

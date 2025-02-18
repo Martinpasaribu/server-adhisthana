@@ -6,7 +6,7 @@ import session from 'express-session';
 import MongoDBStore from 'connect-mongodb-session';
 import './controller/PendingRoom/Cron_job'
 import { connectToDatabase } from "./config/mongodbLocal";
-import RoomRouter from "./router/router_room";
+
 import InstagramRouter from "./router/router_instagram";
 import ContactRouter from "./router/router_contact";
 import BookingRouter from "./router/router_booking";
@@ -17,12 +17,14 @@ import ShortAvailableRouter from "./router/router_shortAvailable";
 import TransactionRouter from "./router/router_transaction";
 import cookieParser from 'cookie-parser';
 import SessionRouter from "./router/router_session";
-import SiteMinderRouter from "./router/router_siteminder";
-import ReservationRouter from "./router/router_reservation";
-import AdminRouter from "./router/router_admin";
-import DashboardRouter from "./router/router_dashboard";
-import AdminBookingRouter from "./router/router_admin_booking";
-import AdminCustomerRouter from "./router/router_admin_customer";
+import RoomRouter from "./router/Admin/router_room";
+import AdminRouter from "./router/Admin/router_admin";
+import SiteMinderRouter from "./router/Admin/router_siteminder";
+import ReservationRouter from "./router/Admin/router_reservation";
+import DashboardRouter from "./router/Admin/router_dashboard";
+import AdminBookingRouter from "./router/Admin/router_admin_booking";
+import AdminCustomerRouter from "./router/Admin/router_admin_customer";
+
 
 
 const app: express.Application = express();
@@ -78,11 +80,14 @@ app.use(session({
 
         //  ==========  Development  ============
 
+
         // secure: false,
         // httpOnly: true,      
         // maxAge: 1000 * 60 * 60 * 24, // 1 hari
+
         
         // ===========  Chrome , edge , fireFox Production  ==============
+
 
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'none',
@@ -157,22 +162,23 @@ app.use((req, res, next) => {
 });
 
 
-
+// Admin
 app.use("/api/v1/room", RoomRouter)
-app.use("/api/v1/instagram", InstagramRouter)
-app.use("/api/v1/contact", ContactRouter)
-app.use("/api/v1/booking", BookingRouter)
-app.use("/api/v1/auth", AuthRouter)
-app.use("/api/v1/user", UserRouter)
 app.use("/api/v1/admin", AdminRouter)
-app.use("/api/v1/short", ShortAvailableRouter)
-app.use("/api/v1/transaction", TransactionRouter)
-app.use("/api/v1/session", SessionRouter)
 app.use("/api/v1/site/minder", SiteMinderRouter)
 app.use("/api/v1/reservation", ReservationRouter)
 app.use("/api/v1/dashboard", DashboardRouter)
 app.use("/api/v1/admin/booking", AdminBookingRouter)
 app.use("/api/v1/admin/customer", AdminCustomerRouter)
+
+app.use("/api/v1/instagram", InstagramRouter)
+app.use("/api/v1/contact", ContactRouter)
+app.use("/api/v1/booking", BookingRouter)
+app.use("/api/v1/auth", AuthRouter)
+app.use("/api/v1/user", UserRouter)
+app.use("/api/v1/short", ShortAvailableRouter)
+app.use("/api/v1/transaction", TransactionRouter)
+app.use("/api/v1/session", SessionRouter)
 
 
 

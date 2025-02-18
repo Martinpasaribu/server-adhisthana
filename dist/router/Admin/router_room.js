@@ -13,12 +13,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const index_1 = require("./ImageKit/index");
-const controller_room_1 = require("../controller/Admin/Room/controller_room");
-const index_2 = require("./ImageKit/index");
+const ImageKit_1 = require("../ImageKit");
+const controller_room_1 = require("../../controller/Admin/Room/controller_room");
 const RoomRouter = express_1.default.Router();
 // RoomRouter.use(activityLogger);
-RoomRouter.post("/addRoom", index_2.upload, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+RoomRouter.post("/addRoom", ImageKit_1.upload, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     console.log('Hasil req by addRoom:', req.files);
     // Cek apakah file ada dalam req.files
     if (!req.files) {
@@ -35,9 +34,9 @@ RoomRouter.post("/addRoom", index_2.upload, (req, res, next) => __awaiter(void 0
     }
     try {
         // Mengunggah gambar dan menunggu hasilnya
-        const uploadedImageUrls = yield Promise.all(imageFile.map(index_1.uploadImage));
-        const uploadedImagePosterUrls = yield Promise.all(imagePoster.map(index_1.uploadImage));
-        const uploadedImageShortUrls = yield Promise.all(imageShort.map(index_1.uploadImage));
+        const uploadedImageUrls = yield Promise.all(imageFile.map(ImageKit_1.uploadImage));
+        const uploadedImagePosterUrls = yield Promise.all(imagePoster.map(ImageKit_1.uploadImage));
+        const uploadedImageShortUrls = yield Promise.all(imageShort.map(ImageKit_1.uploadImage));
         // Masukkan URL gambar yang diunggah ke dalam req.body
         if (uploadedImagePosterUrls.length > 0) {
             req.body.imagePoster = uploadedImagePosterUrls[0]; // Ambil URL poster pertama

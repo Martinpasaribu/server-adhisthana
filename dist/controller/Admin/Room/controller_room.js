@@ -112,6 +112,71 @@ class RoomController {
             }
         });
     }
+    static updateRoomPart(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { id } = req.params;
+            const updateData = req.body;
+            try {
+                // Pastikan data yang dikirim tidak kosong
+                if (Object.keys(updateData).length === 0) {
+                    return res.status(400).json({
+                        requestId: (0, uuid_1.v4)(),
+                        success: false,
+                        message: "No data provided for update",
+                    });
+                }
+                const updatedRoom = yield models_room_1.default.findByIdAndUpdate({ _id: new mongoose_1.default.Types.ObjectId(id) }, { $set: updateData }, { new: true, runValidators: true });
+                if (!updatedRoom) {
+                    return res.status(404).json({
+                        requestId: (0, uuid_1.v4)(),
+                        success: false,
+                        message: "Room not found",
+                    });
+                }
+                res.status(200).json({
+                    requestId: (0, uuid_1.v4)(),
+                    success: true,
+                    message: "Successfully updated Room data",
+                    data: updatedRoom,
+                });
+            }
+            catch (error) {
+                res.status(400).json({
+                    requestId: (0, uuid_1.v4)(),
+                    success: false,
+                    message: error.message,
+                });
+            }
+        });
+    }
+    static getAllRoom(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                let data;
+                data = yield models_room_1.default.find({
+                    isDeleted: false,
+                }, {
+                    name: true,
+                    _id: true,
+                    available: true
+                });
+                res.status(201).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: data,
+                    message: "Successfully Fetch Data Room.",
+                    success: true
+                });
+            }
+            catch (error) {
+                res.status(400).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: null,
+                    message: error.message,
+                    success: false
+                });
+            }
+        });
+    }
     static updatePacketAll(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             const { id } = req.params;
@@ -142,68 +207,5 @@ class RoomController {
         });
     }
     ;
-    static updateRoomPart(req, res) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const { id } = req.params;
-            const updateData = req.body;
-            // if (updateData._id) {
-            //     delete updateData._id;
-            // }
-            try {
-                const updatedRoom = yield models_room_1.default.findOneAndUpdate(
-                // new mongoose.Types.ObjectId(id),        
-                { _id: id }, updateData, { new: true, runValidators: true });
-                if (!updatedRoom) {
-                    return res.status(404).json({
-                        requestId: (0, uuid_1.v4)(),
-                        success: false,
-                        message: "Room not found",
-                    });
-                }
-                res.status(200).json({
-                    requestId: (0, uuid_1.v4)(),
-                    success: true,
-                    message: "Successfully updated Room data",
-                    data: updatedRoom
-                });
-            }
-            catch (error) {
-                res.status(400).json({
-                    requestId: (0, uuid_1.v4)(),
-                    success: false,
-                    message: error.message,
-                });
-            }
-        });
-    }
-    ;
-    static getAllRoom(req, res) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                let data;
-                data = yield models_room_1.default.find({
-                    isDeleted: false,
-                }, {
-                    name: true,
-                    _id: true,
-                    available: true
-                });
-                res.status(201).json({
-                    requestId: (0, uuid_1.v4)(),
-                    data: data,
-                    message: "Successfully Fetch Data Room.",
-                    success: true
-                });
-            }
-            catch (error) {
-                res.status(400).json({
-                    requestId: (0, uuid_1.v4)(),
-                    data: null,
-                    message: error.message,
-                    success: false
-                });
-            }
-        });
-    }
 }
 exports.RoomController = RoomController;

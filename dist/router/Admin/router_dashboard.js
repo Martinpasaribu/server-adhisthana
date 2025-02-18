@@ -4,9 +4,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const controller_reservation_1 = require("../controller/Admin/Reservation/controller_reservation");
-const VerifyAdminId_1 = require("../middleware/VerifyAdminId");
-const controller_Dashboard_1 = require("../controller/Admin/Dashboard/controller_Dashboard");
+const controller_Dashboard_1 = require("../../controller/Admin/Dashboard/controller_Dashboard");
+const VerifyAdminId_1 = require("../../middleware/VerifyAdminId");
+const controller_reservation_1 = require("../../controller/Admin/Reservation/controller_reservation");
 const DashboardRouter = express_1.default.Router();
 // semantic meaning
 DashboardRouter.get("/get-total-room", VerifyAdminId_1.verifyAdmin, controller_Dashboard_1.DashboardController.TotalProduct);

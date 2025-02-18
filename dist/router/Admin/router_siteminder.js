@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const controller_minder_1 = require("../controller/Admin/SiteMinder/controller_minder");
+const controller_minder_1 = require("../../controller/Admin/SiteMinder/controller_minder");
 const SiteMinderRouter = express_1.default.Router();
 // semantic meaning
 SiteMinderRouter.post("/set-minder", controller_minder_1.SetMinderController.SetUpPrice);

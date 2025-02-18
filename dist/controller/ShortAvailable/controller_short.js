@@ -139,6 +139,16 @@ class ShortAvailableController {
     static addBookedRoomForAvailable(data, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                // Cek apakah data dengan transactionId & userId sudah ada
+                const existingAvailable = yield models_ShortAvailable_1.ShortAvailableModel.findOne({
+                    transactionId: data.transactionId,
+                    userId: data.userId,
+                    "products.roomId": { $in: data.products.map((p) => p.roomId) }
+                });
+                // Jika data sudah ada, kembalikan null agar fungsi pemanggil tahu tidak perlu menyimpan
+                if (existingAvailable) {
+                    return null;
+                }
                 // Membuat instance baru dengan data dari parameter
                 const newAvailable = new models_ShortAvailable_1.ShortAvailableModel({
                     transactionId: data.transactionId,
@@ -146,24 +156,18 @@ class ShortAvailableController {
                     status: data.status,
                     checkIn: data.checkIn,
                     checkOut: data.checkOut,
-                    products: data.products.map((products) => ({
-                        roomId: products.roomId,
-                        price: products.price,
-                        quantity: products.quantity,
-                        name: products.name
+                    products: data.products.map((product) => ({
+                        roomId: product.roomId,
+                        price: product.price,
+                        quantity: product.quantity,
+                        name: product.name
                     }))
                 });
-                // Menyimpan data ke database
+                // Simpan ke database
                 const savedShort = yield newAvailable.save();
-                // // Mengirimkan respon sukses
-                //   return {
-                //     success: true,
-                //     message: "Successfully added room.",
-                //     data: {
-                //         acknowledged: true,
-                //         insertedId: savedShort._id,
-                //     },
-                // };
+                // Kembalikan data yang sudah disimpan
+                // return savedShort;
+                console.log("Successfully to save short Available :", savedShort);
             }
             catch (error) {
                 // Menangani kesalahan dan mengirimkan respon gagal

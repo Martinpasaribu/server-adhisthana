@@ -1,5 +1,5 @@
 import express, { Request, Response, NextFunction } from "express";
-import { AdminBookingController } from "../controller/Admin/Booking/controller_Booking";
+import { AdminBookingController } from "../../controller/Admin/Booking/controller_Booking";
 
 const AdminBookingRouter: express.Router = express.Router();
 

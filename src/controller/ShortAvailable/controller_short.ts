@@ -152,32 +152,41 @@ export class ShortAvailableController {
         // In Use Controller Booking status update
         static async addBookedRoomForAvailable(data: any, res: Response) {
             try {
-              // Membuat instance baru dengan data dari parameter
-              const newAvailable = new ShortAvailableModel({
+
+                // Cek apakah data dengan transactionId & userId sudah ada
+                const existingAvailable = await ShortAvailableModel.findOne({
                     transactionId: data.transactionId,
-                    userId: data.userId, 
+                    userId: data.userId,
+                    "products.roomId": { $in: data.products.map((p: any) => p.roomId) }
+                });
+
+
+                // Jika data sudah ada, kembalikan null agar fungsi pemanggil tahu tidak perlu menyimpan
+                if (existingAvailable) {
+                    return null;
+                }
+
+                // Membuat instance baru dengan data dari parameter
+                const newAvailable = new ShortAvailableModel({
+                    transactionId: data.transactionId,
+                    userId: data.userId,
                     status: data.status,
-                    checkIn: data.checkIn, 
-                    checkOut: data.checkOut, 
-                    products: data.products.map((products : { roomId: string; price: number, quantity:number, name:string}) => ({
-                        roomId: products.roomId,
-                        price: products.price,
-                        quantity: products.quantity,
-                        name: products.name
-                  }))
-                })      
-              // Menyimpan data ke database
-              const savedShort = await newAvailable.save();
-        
-              // // Mengirimkan respon sukses
-            //   return {
-            //     success: true,
-            //     message: "Successfully added room.",
-            //     data: {
-            //         acknowledged: true,
-            //         insertedId: savedShort._id,
-            //     },
-            // };
+                    checkIn: data.checkIn,
+                    checkOut: data.checkOut,
+                    products: data.products.map((product: { roomId: string; price: number; quantity: number; name: string }) => ({
+                        roomId: product.roomId,
+                        price: product.price,
+                        quantity: product.quantity,
+                        name: product.name
+                    }))
+                });
+
+                // Simpan ke database
+                const savedShort = await newAvailable.save();
+
+                // Kembalikan data yang sudah disimpan
+                // return savedShort;
+                console.log("Successfully to save short Available :",savedShort );
 
             } catch (error) {
               // Menangani kesalahan dan mengirimkan respon gagal
