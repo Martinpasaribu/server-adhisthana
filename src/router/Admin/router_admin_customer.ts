@@ -10,6 +10,7 @@ const AdminCustomerRouter: express.Router = express.Router();
 
 AdminCustomerRouter.get("/get-message", AdminCustomerController.GetMessage)
 AdminCustomerRouter.put("/set-verified/:TransactionId", AdminCustomerController.SetVerified)
+AdminCustomerRouter.put("/deleted-message/:MessageId", AdminCustomerController.DeletedMessage)
 
 
 export default AdminCustomerRouter;

@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdminBookingController = void 0;
 const uuid_1 = require("uuid");
+const models_transaksi_1 = require("../../../models/Transaction/models_transaksi");
 const models_booking_1 = require("../../../models/Booking/models_booking");
 class AdminBookingController {
     static GetAllBooking(req, res) {
@@ -83,6 +84,51 @@ class AdminBookingController {
             }
             catch (error) {
                 console.error("Error verifying Booking:", error);
+                return res.status(500).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: null,
+                    message: error.message || "Internal Server Error",
+                    success: false
+                });
+            }
+        });
+    }
+    static GetTransactionById(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { TransactionId } = req.params;
+                // ✅ Validasi jika TransactionId tidak ada
+                if (!TransactionId) {
+                    return res.status(400).json({
+                        requestId: (0, uuid_1.v4)(),
+                        data: null,
+                        message: "TransactionId is required!",
+                        success: false
+                    });
+                }
+                // ✅ Cari booking berdasarkan TransactionId
+                const Transaction = yield models_transaksi_1.TransactionModel.findOne({
+                    booking_keyId: TransactionId,
+                    isDeleted: false
+                });
+                if (!Transaction) {
+                    return res.status(404).json({
+                        requestId: (0, uuid_1.v4)(),
+                        data: null,
+                        message: "Transaction not found!",
+                        success: false
+                    });
+                }
+                console.log(`Transaction ${Transaction.name} has been get`);
+                return res.status(200).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: Transaction,
+                    message: `Successfully get transaction detail: ${Transaction.name}`,
+                    success: true
+                });
+            }
+            catch (error) {
+                console.error("Error get Transaction:", error);
                 return res.status(500).json({
                     requestId: (0, uuid_1.v4)(),
                     data: null,

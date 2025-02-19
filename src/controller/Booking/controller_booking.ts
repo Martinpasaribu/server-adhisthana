@@ -23,8 +23,8 @@ export class BookingController {
         static async addBooking(req: Request, res: Response) {
 
 
-            const UserId = req.userId;
-            const BookingReq = req.body;
+                const UserId = req.userId;
+                const BookingReq = req.body;
 
             try {
 
@@ -145,10 +145,36 @@ export class BookingController {
 
                 const midtransResponse = await snap.createTransaction(midtransPayload);
               
-            
+                // Save booking (transaction) to your database
+                const booking_id = await transactionService.createBooking({
+                    name : BookingReq.name,
+                    email : BookingReq.email,
+                    phone : BookingReq.phone,
+                    orderId: bookingId,
+                    checkIn: BookingReq.checkIn,
+                    checkOut: BookingReq.checkOut,
+                    adult: BookingReq.adult,
+                    children: BookingReq.children,
+                    amountTotal: grossAmount,
+                    amountBefDisc: BookingReq.amountBefDisc || grossAmount, // Assuming discount might apply
+                    couponId: BookingReq.couponId || null, // Optional coupon ID
+                    userId: UserId ?? BookingReq.email,
+                    creatorId: uuidv4(), // Replace with actual creator ID if available
+                    rooms: roomDetails.map(room => {
+                        const roomBooking = BookingReq.room.find(
+                            (r: { roomId: any }) => r.roomId.toString() === room._id.toString()
+                        );
+                        return {
+                            roomId: room._id,
+                            quantity: roomBooking.quantity,
+                            price: roomBooking?.price, 
+                        };
+                    }),
+                })
                 
                 const transaction = await transactionService.createTransaction({
                     bookingId,
+                    booking_keyId:booking_id,
                     name : BookingReq.name,
                     email : BookingReq.email,
                     phone : BookingReq.phone,
@@ -180,32 +206,7 @@ export class BookingController {
                 });
                 
 
-                // Save booking (transaction) to your database
-                const bookingData = await transactionService.createBooking({
-                    name : BookingReq.name,
-                    email : BookingReq.email,
-                    phone : BookingReq.phone,
-                    orderId: bookingId,
-                    checkIn: BookingReq.checkIn,
-                    checkOut: BookingReq.checkOut,
-                    adult: BookingReq.adult,
-                    children: BookingReq.children,
-                    amountTotal: grossAmount,
-                    amountBefDisc: BookingReq.amountBefDisc || grossAmount, // Assuming discount might apply
-                    couponId: BookingReq.couponId || null, // Optional coupon ID
-                    userId: UserId ?? BookingReq.email,
-                    creatorId: uuidv4(), // Replace with actual creator ID if available
-                    rooms: roomDetails.map(room => {
-                        const roomBooking = BookingReq.room.find(
-                            (r: { roomId: any }) => r.roomId.toString() === room._id.toString()
-                        );
-                        return {
-                            roomId: room._id,
-                            quantity: roomBooking.quantity,
-                            price: roomBooking?.price, 
-                        };
-                    }),
-                })
+
 
 
                 res.status(201).json({

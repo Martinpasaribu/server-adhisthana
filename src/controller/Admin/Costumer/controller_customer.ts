@@ -103,4 +103,58 @@ export class AdminCustomerController {
           }
         }
 
+        static async DeletedMessage(req: Request, res: Response) {
+          try {
+            const { MessageId } = req.params;
+      
+            // ✅ Validasi jika MessageId tidak ada
+            if (!MessageId) {
+              return res.status(400).json({
+                requestId: uuidv4(),
+                data: null,
+                message: "MessageId is required!",
+                success: false
+              });
+            }
+      
+            // ✅ Cari booking berdasarkan MessageId
+            const MessageData = await ContactModel.findOneAndUpdate( 
+              { _id : MessageId, isDeleted: false },
+              { isDeleted: true },
+              { new: true } // Mengembalikan data yang diperbarui
+            );
+
+
+            if (!MessageData) {
+              return res.status(404).json({
+                requestId: uuidv4(),
+                data: null,
+                message: "MessageData not found!",
+                success: false
+              });
+            }
+
+            console.log(`MessageData ${MessageData} has been get`);
+      
+            
+            return res.status(200).json({
+              requestId: uuidv4(),
+              data: { acknowledged: true },
+              message: `Successfully get MessageData: ${MessageId}`,
+              success: true
+            });
+      
+          } catch (error) {
+            console.error("Error get MessageData:", error);
+      
+            return res.status(500).json({
+              requestId: uuidv4(),
+              data: null,
+              message: (error as Error).message || "Internal Server Error",
+              success: false
+            });
+          }
+        }
+
+        
 }

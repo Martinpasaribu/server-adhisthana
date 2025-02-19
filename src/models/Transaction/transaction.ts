@@ -4,6 +4,7 @@ export interface createTransaction {
     email:string;
     phone: number,
     bookingId:string;
+    booking_keyId:string;
     status:string;
     grossAmount:number;
     

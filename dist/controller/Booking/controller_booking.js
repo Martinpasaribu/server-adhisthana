@@ -111,8 +111,33 @@ class BookingController {
                 // console.log('hasil midtransPayload : ', midtransPayload);
                 // console.log('hasil payload BookingReq : ', BookingReq);
                 const midtransResponse = yield midtransConfig_1.snap.createTransaction(midtransPayload);
+                // Save booking (transaction) to your database
+                const booking_id = yield TransactionService_1.transactionService.createBooking({
+                    name: BookingReq.name,
+                    email: BookingReq.email,
+                    phone: BookingReq.phone,
+                    orderId: bookingId,
+                    checkIn: BookingReq.checkIn,
+                    checkOut: BookingReq.checkOut,
+                    adult: BookingReq.adult,
+                    children: BookingReq.children,
+                    amountTotal: grossAmount,
+                    amountBefDisc: BookingReq.amountBefDisc || grossAmount, // Assuming discount might apply
+                    couponId: BookingReq.couponId || null, // Optional coupon ID
+                    userId: UserId !== null && UserId !== void 0 ? UserId : BookingReq.email,
+                    creatorId: (0, uuid_1.v4)(), // Replace with actual creator ID if available
+                    rooms: roomDetails.map(room => {
+                        const roomBooking = BookingReq.room.find((r) => r.roomId.toString() === room._id.toString());
+                        return {
+                            roomId: room._id,
+                            quantity: roomBooking.quantity,
+                            price: roomBooking === null || roomBooking === void 0 ? void 0 : roomBooking.price,
+                        };
+                    }),
+                });
                 const transaction = yield TransactionService_1.transactionService.createTransaction({
                     bookingId,
+                    booking_keyId: booking_id,
                     name: BookingReq.name,
                     email: BookingReq.email,
                     phone: BookingReq.phone,
@@ -137,30 +162,6 @@ class BookingController {
                     va_numbers: midtransResponse.va_numbers,
                     bank: midtransResponse.bank,
                     card_type: midtransResponse.card_type,
-                });
-                // Save booking (transaction) to your database
-                const bookingData = yield TransactionService_1.transactionService.createBooking({
-                    name: BookingReq.name,
-                    email: BookingReq.email,
-                    phone: BookingReq.phone,
-                    orderId: bookingId,
-                    checkIn: BookingReq.checkIn,
-                    checkOut: BookingReq.checkOut,
-                    adult: BookingReq.adult,
-                    children: BookingReq.children,
-                    amountTotal: grossAmount,
-                    amountBefDisc: BookingReq.amountBefDisc || grossAmount, // Assuming discount might apply
-                    couponId: BookingReq.couponId || null, // Optional coupon ID
-                    userId: UserId !== null && UserId !== void 0 ? UserId : BookingReq.email,
-                    creatorId: (0, uuid_1.v4)(), // Replace with actual creator ID if available
-                    rooms: roomDetails.map(room => {
-                        const roomBooking = BookingReq.room.find((r) => r.roomId.toString() === room._id.toString());
-                        return {
-                            roomId: room._id,
-                            quantity: roomBooking.quantity,
-                            price: roomBooking === null || roomBooking === void 0 ? void 0 : roomBooking.price,
-                        };
-                    }),
                 });
                 res.status(201).json({
                     status: 'success',

@@ -15,12 +15,13 @@ const models_transaksi_1 = require("../../models/Transaction/models_transaksi");
 class TransactionService {
     // Fungsi untuk membuat Data Transaksi 
     createTransaction(_a) {
-        return __awaiter(this, arguments, void 0, function* ({ bookingId, name, email, phone, status, grossAmount, userId, checkIn, checkOut, products, snap_token, paymentUrl, payment_type, bank, card_type, va_numbers, }) {
+        return __awaiter(this, arguments, void 0, function* ({ bookingId, booking_keyId, name, email, phone, status, grossAmount, userId, checkIn, checkOut, products, snap_token, paymentUrl, payment_type, bank, card_type, va_numbers, }) {
             const transaction = {
                 name,
                 email,
                 phone,
                 bookingId,
+                booking_keyId,
                 status,
                 grossAmount,
                 userId,
@@ -76,7 +77,7 @@ class TransactionService {
                 };
                 // Simpan data booking ke database
                 const createdBooking = yield models_booking_1.BookingModel.create(bookingData);
-                return createdBooking;
+                return createdBooking._id;
             }
             catch (error) {
                 console.error('Error creating booking:', error);

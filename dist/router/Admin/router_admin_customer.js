@@ -9,4 +9,5 @@ const AdminCustomerRouter = express_1.default.Router();
 // semantic meaning
 AdminCustomerRouter.get("/get-message", controller_customer_1.AdminCustomerController.GetMessage);
 AdminCustomerRouter.put("/set-verified/:TransactionId", controller_customer_1.AdminCustomerController.SetVerified);
+AdminCustomerRouter.put("/deleted-message/:MessageId", controller_customer_1.AdminCustomerController.DeletedMessage);
 exports.default = AdminCustomerRouter;
