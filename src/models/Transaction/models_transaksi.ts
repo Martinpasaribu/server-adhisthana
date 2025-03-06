@@ -69,7 +69,7 @@ const TransactionSchema: Schema = new Schema(
         booking_keyId: {
             type: String,
             ref:'Booking',
-            required: [true, "booking_key cannot be empty"],
+            // required: [true, "booking_key cannot be empty"],
             trim: true
         },
         reservation: {

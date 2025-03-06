@@ -14,7 +14,7 @@ export async function getDataInstagramPosting() {
   
     try {
       const response = await axios.get(
-        `https://graph.facebook.com/v18.0/${INSTAGRAM_USER_ID}/media`,
+        `https://graph.instagram.com/me/media?${INSTAGRAM_USER_ID}/media`,
         {
           params: {
             fields: 'id,caption,media_type,media_url,permalink',
@@ -40,7 +40,7 @@ export async function getDataInstagramPosting() {
   
     try {
       const response = await axios.get(
-        `https://graph.facebook.com/v18.0/${INSTAGRAM_USER_ID}`,
+        `https://graph.instagram.com/me?${INSTAGRAM_USER_ID}/media`,
         {
           params: {
             fields: 'id,username,media_count,followers_count,follows_count,biography,website,profile_picture_url',
