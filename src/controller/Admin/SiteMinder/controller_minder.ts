@@ -11,6 +11,7 @@ import { SiteMinderModel } from '../../../models/SiteMinder/models_SitemMinder';
 import { ShortAvailableModel } from '../../../models/ShortAvailable/models_ShortAvailable';
 import { Logging } from '../../../log';
 import { TransactionModel } from '../../../models/Transaction/models_transaksi';
+import { generateDateRange } from './components/GenerateDateRange';
 
 
 export class SetMinderController {
@@ -113,43 +114,59 @@ export class SetMinderController {
         static async SetPriceForCustomDate(req: Request, res: Response) {
           try {
               const { roomId, price, dates } = req.body;
-      
+  
               // Validasi input
               if (!roomId || price == null) {
                   return res.status(400).json({
                       message: 'Room ID Or Price are required',
                   });
               }
-
-              if (dates.length === 0) {
+  
+              if (!dates || dates.length === 0) {
                   return res.status(404).json({
                       message: 'No found Date custom',
                   });
               }
-      
-              const dateArray = Array.isArray(dates) ? dates : [dates]; // Pastikan selalu array
-
-              // Siapkan operasi bulk untuk pembaruan harga
-              const bulkOperations = dateArray.map((date : any) => ({
+  
+              let dateArray: string[] = [];
+  
+              if (Array.isArray(dates)) {
+                  if (dates.length === 2) {
+                      // Kalau dates berisi 2 item (anggap startDate dan endDate), generate range.
+                      const [startDate, endDate] = dates;
+                      dateArray = generateDateRange(startDate, endDate);
+                  } else {
+                      // Kalau array lebih dari 2, anggap itu list tanggal manual.
+                      dateArray = dates;
+                  }
+              } else {
+                  // Kalau cuma 1 tanggal (string), masukkan ke array.
+                  dateArray = [dates];
+              }
+  
+              // Siapkan bulk operations
+              const bulkOperations = dateArray.map((date) => ({
                   updateOne: {
                       filter: { roomId, date },
-                      update: { $set: { price } 
-                  },
-                      upsert: true, // Jika data belum ada, tambahkan
+                      update: { $set: { price } },
+                      upsert: true,
                   },
               }));
-      
-              // Jalankan operasi bulk
+  
+              console.log("Bulk operations:", JSON.stringify(bulkOperations, null, 2));
+  
+              // Jalankan bulkWrite
               if (bulkOperations.length > 0) {
                   await SiteMinderModel.bulkWrite(bulkOperations);
               }
-      
+  
               res.status(200).json({
                   requestId: uuidv4(),
                   data: null,
-                  message: `Prices ${roomId} updated for Custom date`,
+                  message: `Prices for room ${roomId} updated for selected dates.`,
                   success: true,
               });
+  
           } catch (error) {
               res.status(500).json({
                   requestId: uuidv4(),
@@ -158,8 +175,7 @@ export class SetMinderController {
                   success: false,
               });
           }
-        }
-      
+      }
 
         static async SetPriceWeekDay(req: Request, res: Response) {
           try {

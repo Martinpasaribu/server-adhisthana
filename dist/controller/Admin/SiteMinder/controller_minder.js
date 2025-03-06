@@ -21,6 +21,7 @@ const models_SitemMinder_1 = require("../../../models/SiteMinder/models_SitemMin
 const models_ShortAvailable_1 = require("../../../models/ShortAvailable/models_ShortAvailable");
 const log_1 = require("../../../log");
 const models_transaksi_1 = require("../../../models/Transaction/models_transaksi");
+const GenerateDateRange_1 = require("./components/GenerateDateRange");
 class SetMinderController {
     static SetUpPrice(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -111,29 +112,44 @@ class SetMinderController {
                         message: 'Room ID Or Price are required',
                     });
                 }
-                if (dates.length === 0) {
+                if (!dates || dates.length === 0) {
                     return res.status(404).json({
                         message: 'No found Date custom',
                     });
                 }
-                const dateArray = Array.isArray(dates) ? dates : [dates]; // Pastikan selalu array
-                // Siapkan operasi bulk untuk pembaruan harga
+                let dateArray = [];
+                if (Array.isArray(dates)) {
+                    if (dates.length === 2) {
+                        // Kalau dates berisi 2 item (anggap startDate dan endDate), generate range.
+                        const [startDate, endDate] = dates;
+                        dateArray = (0, GenerateDateRange_1.generateDateRange)(startDate, endDate);
+                    }
+                    else {
+                        // Kalau array lebih dari 2, anggap itu list tanggal manual.
+                        dateArray = dates;
+                    }
+                }
+                else {
+                    // Kalau cuma 1 tanggal (string), masukkan ke array.
+                    dateArray = [dates];
+                }
+                // Siapkan bulk operations
                 const bulkOperations = dateArray.map((date) => ({
                     updateOne: {
                         filter: { roomId, date },
-                        update: { $set: { price }
-                        },
-                        upsert: true, // Jika data belum ada, tambahkan
+                        update: { $set: { price } },
+                        upsert: true,
                     },
                 }));
-                // Jalankan operasi bulk
+                console.log("Bulk operations:", JSON.stringify(bulkOperations, null, 2));
+                // Jalankan bulkWrite
                 if (bulkOperations.length > 0) {
                     yield models_SitemMinder_1.SiteMinderModel.bulkWrite(bulkOperations);
                 }
                 res.status(200).json({
                     requestId: (0, uuid_1.v4)(),
                     data: null,
-                    message: `Prices ${roomId} updated for Custom date`,
+                    message: `Prices for room ${roomId} updated for selected dates.`,
                     success: true,
                 });
             }
