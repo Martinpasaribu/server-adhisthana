@@ -60,7 +60,7 @@ class ReservationController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 // Destructure req.body
-                const { title, name, email, phone, grossAmount, reservation, products, night, checkIn, checkOut } = req.body;
+                const { booking_keyId, title, name, email, phone, grossAmount, reservation, products, night, checkIn, checkOut } = req.body;
                 // ✅ Validasi data sebelum disimpan
                 if (!title || !name || !email || !phone || !grossAmount || !checkIn || !checkOut) {
                     return res.status(400).json({
@@ -86,6 +86,7 @@ class ReservationController {
                 // ✅ Buat objek baru berdasarkan schema
                 const newTransaction = new models_transaksi_1.TransactionModel({
                     bookingId,
+                    booking_keyId,
                     userId: IsHaveAccount !== null && IsHaveAccount !== void 0 ? IsHaveAccount : userId,
                     status,
                     title,

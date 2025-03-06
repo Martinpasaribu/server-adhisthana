@@ -60,6 +60,7 @@ export class ReservationController {
           try {
               // Destructure req.body
               const {
+                  booking_keyId,
                   title, 
                   name, 
                   email, 
@@ -109,7 +110,9 @@ export class ReservationController {
 
               // ✅ Buat objek baru berdasarkan schema
               const newTransaction = new TransactionModel({
+
                   bookingId,
+                  booking_keyId,
                   userId : IsHaveAccount ?? userId,
                   status,
                   title,

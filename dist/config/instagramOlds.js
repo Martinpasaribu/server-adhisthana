@@ -23,7 +23,7 @@ function getDataInstagramPosting() {
         const ACCESS_TOKEN = process.env.INSTAGRAM_ACCESS_TOKEN;
         const INSTAGRAM_USER_ID = process.env.INSTAGRAM_USER_ID;
         try {
-            const response = yield axios_1.default.get(`https://graph.facebook.com/v18.0/${INSTAGRAM_USER_ID}/media`, {
+            const response = yield axios_1.default.get(`https://graph.instagram.com/me/media?${INSTAGRAM_USER_ID}/media`, {
                 params: {
                     fields: 'id,caption,media_type,media_url,permalink',
                     access_token: ACCESS_TOKEN,
@@ -43,7 +43,7 @@ function getDataInstagramProfile() {
         const INSTAGRAM_USER_ID = process.env.INSTAGRAM_USER_ID;
         console.log("acces token now : ", process.env.INSTAGRAM_ACCESS_TOKEN);
         try {
-            const response = yield axios_1.default.get(`https://graph.facebook.com/v18.0/${INSTAGRAM_USER_ID}`, {
+            const response = yield axios_1.default.get(`https://graph.instagram.com/me?${INSTAGRAM_USER_ID}/media`, {
                 params: {
                     fields: 'id,username,media_count,followers_count,follows_count,biography,website,profile_picture_url',
                     access_token: ACCESS_TOKEN,
