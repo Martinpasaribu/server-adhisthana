@@ -15,20 +15,22 @@ export class AdminBookingController {
 
           try {
            
-            const filterQuery = {
-              isDeleted: false,
-            };
-            
-            // Query untuk TransactionModel (ambil semua data)
-            const booking = await BookingModel.find(filterQuery);
-            
-            // console.log('data availble transactions :', transactions);
 
+          const bookings = await BookingModel.find();
+
+          const result = await Promise.all(bookings.map(async (booking) => {
+              const transaction = await TransactionModel.findOne({ booking_keyId: booking._id });
+          
+              return {
+                  ...booking.toObject(),
+                  transactionStatus: transaction ? transaction.status : 'Suspended'
+              };
+          }));
 
             // Kirim hasil response
             res.status(200).json({
               requestId: uuidv4(),
-              data: booking,
+              data: result,
               success: true
             });
         

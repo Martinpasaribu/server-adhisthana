@@ -17,16 +17,15 @@ class AdminBookingController {
     static GetAllBooking(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const filterQuery = {
-                    isDeleted: false,
-                };
-                // Query untuk TransactionModel (ambil semua data)
-                const booking = yield models_booking_1.BookingModel.find(filterQuery);
-                // console.log('data availble transactions :', transactions);
+                const bookings = yield models_booking_1.BookingModel.find();
+                const result = yield Promise.all(bookings.map((booking) => __awaiter(this, void 0, void 0, function* () {
+                    const transaction = yield models_transaksi_1.TransactionModel.findOne({ booking_keyId: booking._id });
+                    return Object.assign(Object.assign({}, booking.toObject()), { transactionStatus: transaction ? transaction.status : 'Suspended' });
+                })));
                 // Kirim hasil response
                 res.status(200).json({
                     requestId: (0, uuid_1.v4)(),
-                    data: booking,
+                    data: result,
                     success: true
                 });
             }

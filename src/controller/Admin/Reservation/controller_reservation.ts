@@ -231,7 +231,7 @@ export class ReservationController {
               console.log(`Transaction ${IsTransaction.name} has Pay`)
 
               await ShortAvailableController.addBookedRoomForAvailable({
-                  bookingId: TransactionId,
+                  transactionId: TransactionId,
                   userId: IsTransaction.userId, 
                   status: PAID,
                   checkIn: IsTransaction.checkIn,

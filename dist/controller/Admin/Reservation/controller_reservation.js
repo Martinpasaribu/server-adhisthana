@@ -182,7 +182,7 @@ class ReservationController {
                 }
                 console.log(`Transaction ${IsTransaction.name} has Pay`);
                 yield controller_short_1.ShortAvailableController.addBookedRoomForAvailable({
-                    bookingId: TransactionId,
+                    transactionId: TransactionId,
                     userId: IsTransaction.userId,
                     status: constant_1.PAID,
                     checkIn: IsTransaction.checkIn,
