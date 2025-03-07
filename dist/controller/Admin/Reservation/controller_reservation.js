@@ -60,7 +60,7 @@ class ReservationController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 // Destructure req.body
-                const { booking_keyId, title, name, email, phone, grossAmount, reservation, products, night, checkIn, checkOut } = req.body;
+                const { title, name, email, phone, grossAmount, reservation, products, night, checkIn, checkOut } = req.body;
                 // ✅ Validasi data sebelum disimpan
                 if (!title || !name || !email || !phone || !grossAmount || !checkIn || !checkOut) {
                     return res.status(400).json({
@@ -84,25 +84,6 @@ class ReservationController {
                     userId = yield (0, Index_1.Register)(title, name, email, phone);
                 }
                 // ✅ Buat objek baru berdasarkan schema
-                const newTransaction = new models_transaksi_1.TransactionModel({
-                    bookingId,
-                    booking_keyId,
-                    userId: IsHaveAccount !== null && IsHaveAccount !== void 0 ? IsHaveAccount : userId,
-                    status,
-                    title,
-                    name,
-                    email,
-                    phone,
-                    grossAmount,
-                    reservation,
-                    products: ReservationReadyToBeSaved.WithoutPending,
-                    night,
-                    checkIn,
-                    checkOut
-                });
-                // ✅ Simpan ke database Transaction
-                const savedTransaction = yield newTransaction.save();
-                // ✅ Buat objek baru berdasarkan schema
                 const newBooking = new models_booking_1.BookingModel({
                     oderId: bookingId,
                     userId: IsHaveAccount !== null && IsHaveAccount !== void 0 ? IsHaveAccount : userId,
@@ -120,6 +101,26 @@ class ReservationController {
                 });
                 // ✅ Simpan ke database Booking
                 const savedBooking = yield newBooking.save();
+                console.log(" add transaction with reservation : ", savedBooking);
+                // ✅ Buat objek baru berdasarkan schema
+                const newTransaction = new models_transaksi_1.TransactionModel({
+                    booking_keyId: savedBooking._id,
+                    bookingId,
+                    userId: IsHaveAccount !== null && IsHaveAccount !== void 0 ? IsHaveAccount : userId,
+                    status,
+                    title,
+                    name,
+                    email,
+                    phone,
+                    grossAmount,
+                    reservation,
+                    products: ReservationReadyToBeSaved.WithoutPending,
+                    night,
+                    checkIn,
+                    checkOut
+                });
+                // ✅ Simpan ke database Transaction
+                const savedTransaction = yield newTransaction.save();
                 // SetUp Room yang akan masuk dalam Room Pending
                 yield Controller_PendingRoom_1.PendingRoomController.SetPending(ReservationReadyToBeSaved.WithoutPending, bookingId, IsHaveAccount !== null && IsHaveAccount !== void 0 ? IsHaveAccount : userId, checkIn, checkOut, req, res);
                 // ✅ Berikan respon sukses

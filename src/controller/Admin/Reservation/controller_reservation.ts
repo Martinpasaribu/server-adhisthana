@@ -60,7 +60,6 @@ export class ReservationController {
           try {
               // Destructure req.body
               const {
-                  booking_keyId,
                   title, 
                   name, 
                   email, 
@@ -109,28 +108,6 @@ export class ReservationController {
 
 
               // ✅ Buat objek baru berdasarkan schema
-              const newTransaction = new TransactionModel({
-
-                  bookingId,
-                  booking_keyId,
-                  userId : IsHaveAccount ?? userId,
-                  status,
-                  title,
-                  name,
-                  email,
-                  phone,
-                  grossAmount,
-                  reservation,
-                  products: ReservationReadyToBeSaved.WithoutPending,
-                  night,
-                  checkIn,
-                  checkOut
-              });
-
-              // ✅ Simpan ke database Transaction
-              const savedTransaction = await newTransaction.save();
-
-              // ✅ Buat objek baru berdasarkan schema
               const newBooking = new BookingModel({
                   oderId : bookingId,
                   userId : IsHaveAccount ?? userId,
@@ -149,6 +126,31 @@ export class ReservationController {
 
               // ✅ Simpan ke database Booking
               const savedBooking = await newBooking.save();
+
+
+              console.log(" add transaction with reservation : ", savedBooking)
+
+              // ✅ Buat objek baru berdasarkan schema
+              const newTransaction = new TransactionModel({
+                booking_keyId: savedBooking._id,
+                bookingId,
+                userId : IsHaveAccount ?? userId,
+                status,
+                title,
+                name,
+                email,
+                phone,
+                grossAmount,
+                reservation,
+                products: ReservationReadyToBeSaved.WithoutPending,
+                night,
+                checkIn,
+                checkOut
+              });
+
+              // ✅ Simpan ke database Transaction
+              const savedTransaction = await newTransaction.save();
+
 
               // SetUp Room yang akan masuk dalam Room Pending
               await PendingRoomController.SetPending(ReservationReadyToBeSaved.WithoutPending,bookingId, IsHaveAccount ?? userId, checkIn, checkOut, req, res )
