@@ -8,11 +8,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdminCustomerController = void 0;
+const mongoose_1 = __importDefault(require("mongoose"));
 const uuid_1 = require("uuid");
 const models_booking_1 = require("../../../models/Booking/models_booking");
 const models_contact_1 = require("../../../models/Contact/models_contact");
+const models_user_1 = __importDefault(require("../../../models/User/models_user"));
 class AdminCustomerController {
     static GetMessage(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -131,6 +136,68 @@ class AdminCustomerController {
                     requestId: (0, uuid_1.v4)(),
                     data: null,
                     message: error.message || "Internal Server Error",
+                    success: false
+                });
+            }
+        });
+    }
+    static UpdateCustomer(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { id } = req.params;
+            const updateData = req.body;
+            try {
+                // Pastikan data yang dikirim tidak kosong
+                if (Object.keys(updateData).length === 0) {
+                    return res.status(400).json({
+                        requestId: (0, uuid_1.v4)(),
+                        success: false,
+                        message: "No data provided for update",
+                    });
+                }
+                const updateCustomer = yield models_user_1.default.findOneAndUpdate({ _id: new mongoose_1.default.Types.ObjectId(id) }, { $set: updateData }, { new: true, runValidators: true });
+                if (!updateCustomer) {
+                    return res.status(404).json({
+                        requestId: (0, uuid_1.v4)(),
+                        success: false,
+                        message: "Customer not found",
+                    });
+                }
+                res.status(200).json({
+                    requestId: (0, uuid_1.v4)(),
+                    success: true,
+                    message: "Successfully updated Customer data",
+                    data: updateCustomer,
+                });
+            }
+            catch (error) {
+                res.status(400).json({
+                    requestId: (0, uuid_1.v4)(),
+                    success: false,
+                    message: error.message,
+                });
+            }
+        });
+    }
+    static GetCustomerByParams(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let data;
+            const { id } = req.params;
+            try {
+                new mongoose_1.default.Types.ObjectId(id),
+                    data = yield models_user_1.default.find({ _id: id, isDeleted: false });
+                res.status(201).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: data,
+                    message: "Successfully Fetch Data Customer by Params.",
+                    success: true
+                });
+            }
+            catch (error) {
+                res.status(400).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: null,
+                    message: error.message,
+                    RoomId: `Customer id : ${id}`,
                     success: false
                 });
             }

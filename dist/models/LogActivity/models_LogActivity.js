@@ -33,54 +33,24 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ActivityLogModel = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-const AdminSchema = new mongoose_1.Schema({
-    title: {
-        type: String,
-        required: [true, "name cannot be empty"],
-        trim: true
-    },
-    username: {
-        type: String,
-        // required: [true, "name cannot be empty"],
-        trim: true
-    },
-    role: {
-        type: String,
-        enum: ["admin", "coSuperAdmin", "superAdmin"], // Sesuaikan dengan role yang diperlukan
-        required: true,
-        trim: true,
-    },
-    status: {
-        type: String,
-        enum: ["block", "verify", "pending"], // Sesuaikan dengan role yang diperlukan
-        required: true,
-        trim: true,
-    },
-    active: {
-        type: Boolean,
-        // required: [true, "active cannot be empty"],
-        trim: true
-    },
-    password: {
-        type: String,
-        // required: [true, "password cannot be empty"],
-        trim: true
-    },
-    createAt: {
-        type: Date,
-        default: Date.now
-    },
-    refresh_token: {
-        type: String,
-        required: false
-    },
+const ActivityLogSchema = new mongoose_1.Schema({
+    adminId: { type: mongoose_1.Schema.Types.ObjectId, ref: "Admin", required: true },
+    action: { type: String, required: true },
+    type: { type: String }, // Data yang dimodifikasi (opsional)
+    target: { type: String }, // Data yang dimodifikasi (opsional)
+    username: { type: String }, // Data yang dimodifikasi (opsional)
+    statement1: { type: String }, // Data yang dimodifikasi (opsional)
+    statement2: { type: String }, // Data yang dimodifikasi (opsional)
+    date: [{ type: String }], // 🔹 Ubah jadi array string, bukan array objek
+    role: { type: String }, // Data yang dimodifikasi (opsional)
+    changedPrices: { type: mongoose_1.Schema.Types.Mixed, default: {} }, // ✅ Simpan sebagai objek fleksibel
+    timestamp: { type: Date, default: Date.now },
+    ipAddress: { type: String }, // IP admin yang melakukan aksi
     isDeleted: {
         type: Boolean,
-        default: false
+        default: false,
     },
-}, {
-    timestamps: true,
 });
-const AdminModel = mongoose_1.default.model('Admin', AdminSchema, 'Admin');
-exports.default = AdminModel;
+exports.ActivityLogModel = mongoose_1.default.model('ActivityLog', ActivityLogSchema, 'ActivityLog');

@@ -7,6 +7,7 @@ const express_1 = __importDefault(require("express"));
 const ControllerAuth_1 = require("../controller/Auth/ControllerAuth");
 const RefreshTokens_1 = require("../controller/Auth/RefreshTokens");
 const RateLimit_1 = require("../middleware/RateLimit");
+const LogAdmin_1 = require("../middleware/LogAdmin");
 const AuthRouter = express_1.default.Router();
 // semantic meaning
 // Auth
@@ -15,8 +16,9 @@ AuthRouter.get("/token-admin", RefreshTokens_1.refreshTokenAdmin);
 AuthRouter.get("/me", ControllerAuth_1.AuthController.Me);
 AuthRouter.get("/cek-refresh-token", ControllerAuth_1.AuthController.CheckRefreshToken);
 AuthRouter.post("/login", RateLimit_1.loginLimiter, ControllerAuth_1.AuthController.Login);
-AuthRouter.post("/login-admin", RateLimit_1.loginLimiter, ControllerAuth_1.AuthController.LoginAdmin);
+// AuthRouter.post("/login-admin", loginLimiter, logActivity("Log-In Admin"), AuthController.LoginAdmin);
+AuthRouter.post("/login-admin", (0, LogAdmin_1.logActivity)("Log-In Admin"), ControllerAuth_1.AuthController.LoginAdmin);
 AuthRouter.post("/login-checkout", ControllerAuth_1.AuthController.LoginCheckout);
 AuthRouter.delete("/logout", ControllerAuth_1.AuthController.Logout);
-AuthRouter.delete("/logout-admin", ControllerAuth_1.AuthController.LogoutAdmin);
+AuthRouter.delete("/logout-admin", (0, LogAdmin_1.logActivity)("Log-Out Admin"), ControllerAuth_1.AuthController.LogoutAdmin);
 exports.default = AuthRouter;

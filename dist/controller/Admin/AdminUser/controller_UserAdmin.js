@@ -69,5 +69,35 @@ class AdminUserController {
             }
         });
     }
+    static CheckMeAdmin(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!req.session.userId) {
+                    return res.status(401).json({ message: "Your session-Id no exists", success: false });
+                }
+                const user = yield models_admin_1.default.findOne({ _id: req.session.userId }, { role: true });
+                if (!user)
+                    return res.status(404).json({ message: "Your session-Id no register", success: false });
+                res.status(200).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: user,
+                    message: "Your session-Id exists",
+                    success: true
+                });
+            }
+            catch (error) {
+                const axiosError = error;
+                const errorResponseData = axiosError.response ? axiosError.response.status : null;
+                console.error('Error during Session-Id:', error);
+                res.status(500).json({
+                    message: "An error occurred during Session-Id:",
+                    error: axiosError.message,
+                    error2: errorResponseData,
+                    stack: axiosError.stack,
+                    success: false
+                });
+            }
+        });
+    }
 }
 exports.AdminUserController = AdminUserController;

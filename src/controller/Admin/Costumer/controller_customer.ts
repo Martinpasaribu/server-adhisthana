@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { BookingModel } from '../../../models/Booking/models_booking';
 import { ContactModel } from '../../../models/Contact/models_contact';
+import UserModel from '../../../models/User/models_user';
 
 
 export class AdminCustomerController {
@@ -156,5 +157,84 @@ export class AdminCustomerController {
           }
         }
 
+        static async UpdateCustomer(req: Request, res: Response) {
+          const { id } = req.params;
+          const updateData = req.body;
+      
+          try {
+              // Pastikan data yang dikirim tidak kosong
+              if (Object.keys(updateData).length === 0) {
+                  return res.status(400).json({
+                      requestId: uuidv4(),
+                      success: false,
+                      message: "No data provided for update",
+                  });
+              }
+      
+              const updateCustomer = await UserModel.findOneAndUpdate(
+                  { _id: new mongoose.Types.ObjectId(id) },
+                  { $set: updateData }, 
+                  { new: true, runValidators: true }
+              );
+      
+              if (!updateCustomer) {
+                  return res.status(404).json({
+                      requestId: uuidv4(),
+                      success: false,
+                      message: "Customer not found",
+                  });
+              }
+      
+              res.status(200).json({
+                  requestId: uuidv4(),
+                  success: true,
+                  message: "Successfully updated Customer data",
+                  data: updateCustomer,
+              });
+      
+          } catch (error) {
+              res.status(400).json({
+                  requestId: uuidv4(),
+                  success: false,
+                  message: (error as Error).message,
+              });
+          }
+      }
+
         
+        static async GetCustomerByParams(req: Request, res: Response) {
+              
+          let data ;
+
+          const { id } = req.params; 
+          
+          try {
+                  
+              new mongoose.Types.ObjectId(id), 
+
+              data = await UserModel.find({ _id : id , isDeleted: false});
+              
+              res.status(201).json(
+                  {
+                      requestId: uuidv4(), 
+                      data: data,
+                      message: "Successfully Fetch Data Customer by Params.",
+                      success: true
+                  }
+              );
+
+          } catch (error) {
+              
+              res.status(400).json(
+                  {
+                      requestId: uuidv4(), 
+                      data: null,
+                      message:  (error as Error).message,
+                      RoomId: `Customer id : ${id}`,
+                      success: false
+                  }
+              );
+          }
+
+      }
 }

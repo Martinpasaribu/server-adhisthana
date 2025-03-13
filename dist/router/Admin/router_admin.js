@@ -8,5 +8,6 @@ const controller_UserAdmin_1 = require("../../controller/Admin/AdminUser/control
 const AdminRouter = express_1.default.Router();
 // semantic meaning
 AdminRouter.get("/cek-user/:email", controller_UserAdmin_1.AdminUserController.getAdmin);
-AdminRouter.post("/register-admin", controller_UserAdmin_1.AdminUserController.RegisterAdmin);
+AdminRouter.get("/cek-me", controller_UserAdmin_1.AdminUserController.CheckMeAdmin);
+AdminRouter.post("/register", controller_UserAdmin_1.AdminUserController.RegisterAdmin);
 exports.default = AdminRouter;

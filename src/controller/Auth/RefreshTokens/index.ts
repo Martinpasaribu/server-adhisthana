@@ -53,7 +53,6 @@ export  const refreshToken = async (req : any, res : any) => {
 
 export  const refreshTokenAdmin = async (req : any, res : any) => {
 
-
     try {
         console.log("Cookies:", req.cookies);
         const refreshToken = req.cookies.refreshToken;
@@ -86,27 +85,6 @@ export  const refreshTokenAdmin = async (req : any, res : any) => {
                 { expiresIn: "25s" } // **Diperpanjang menjadi 15 menit**
             );
 
-            // // **Ganti Refresh Token Lama**
-            // const newRefreshToken = jwt.sign(
-            //     { userId },
-            //     process.env.REFRESH_TOKEN_SECRET as string,
-            //     { expiresIn: "1d" } // **Berlaku 7 hari**
-            // );
-
-            // // Simpan refresh token baru di database
-            // await AdminModel.updateOne(
-            //     { _id: userId },
-            //     { refresh_token: newRefreshToken }
-            // );
-
-            // // Set refresh token di cookies (lebih aman)
-            // res.cookie("refreshToken", newRefreshToken, {
-            //     httpOnly: true,
-            //     secure: process.env.NODE_ENV === "production", // Hanya aktif di HTTPS
-            //     sameSite: 'None', 
-            //     // sameSite: "strict",
-            //     maxAge:  24 * 60 * 60 * 1000, // 7 hari
-            // });
 
             return res.json({ accessToken });
         });
@@ -117,6 +95,72 @@ export  const refreshTokenAdmin = async (req : any, res : any) => {
     }
 
 }
+
+// export  const refreshTokenAdmin = async (req : any, res : any) => {
+
+//     try {
+//         console.log("Cookies:", req.cookies);
+//         const refreshToken = req.cookies.refreshToken;
+        
+//         if (!refreshToken) {
+//             return res.status(401).json({ message: "Session cookies empty" });
+//         }
+
+//         // Cari user berdasarkan refresh token
+//         const admin = await AdminModel.findOne({ refresh_token: refreshToken });
+
+//         if (!admin) {
+//             return res.status(403).json({ message: "Invalid refresh token" });
+//         }
+
+//         // Verifikasi refresh token
+//         jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET as string, async (err: any) => {
+//             if (err) {
+//                 return res.status(403).json({ message: "Refresh token not verified" });
+//             }
+
+//             // Buat access token baru
+//             const userId = admin._id;
+//             const username = admin.username;
+//             const role = admin.role;
+
+//             const accessToken = jwt.sign(
+//                 { userId, username, role },
+//                 process.env.ACCESS_TOKEN_SECRET as string,
+//                 { expiresIn: "25s" } // **Diperpanjang menjadi 15 menit**
+//             );
+
+//             // // **Ganti Refresh Token Lama**
+//             // const newRefreshToken = jwt.sign(
+//             //     { userId },
+//             //     process.env.REFRESH_TOKEN_SECRET as string,
+//             //     { expiresIn: "1d" } // **Berlaku 7 hari**
+//             // );
+
+//             // // Simpan refresh token baru di database
+//             // await AdminModel.updateOne(
+//             //     { _id: userId },
+//             //     { refresh_token: newRefreshToken }
+//             // );
+
+//             // // Set refresh token di cookies (lebih aman)
+//             // res.cookie("refreshToken", newRefreshToken, {
+//             //     httpOnly: true,
+//             //     secure: process.env.NODE_ENV === "production", // Hanya aktif di HTTPS
+//             //     sameSite: 'None', 
+//             //     // sameSite: "strict",
+//             //     maxAge:  24 * 60 * 60 * 1000, // 7 hari
+//             // });
+
+//             return res.json({ accessToken, role });
+//         });
+
+//     } catch (error) {
+//         console.error("Refresh Token Error:", error);
+//         return res.status(500).json({ message: "Internal Server Error" });
+//     }
+
+// }
 
 
 // export  const refreshToken = async (req : any, res : any) => {

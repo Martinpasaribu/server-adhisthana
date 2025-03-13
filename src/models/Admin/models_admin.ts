@@ -30,7 +30,7 @@ const AdminSchema: Schema = new Schema(
         },
         role: {
             type: String,
-            enum: ["admin", "superAdmin"], // Sesuaikan dengan role yang diperlukan
+            enum: ["admin","coSuperAdmin", "superAdmin"], // Sesuaikan dengan role yang diperlukan
             required: true,
             trim: true,
         },        

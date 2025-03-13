@@ -15,11 +15,13 @@ export const verifyAdmin = async (req: any, res: any, next: any) => {
     }
 
     // Perbaikan logika role
-    if (admin.role !== "admin" && admin.role !== "superAdmin") {
+    if (admin.role !== "admin" && admin.role !== "superAdmin" && admin.role !== "coSuperAdmin") {
         return res.status(403).json({ msg: "Access Prohibited!! " });
     }
 
     req.role = admin.role;
+    req.userAdmin = admin.username;
+    
     next();
 };
 

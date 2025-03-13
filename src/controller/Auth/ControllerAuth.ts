@@ -11,6 +11,7 @@ import { TransactionModel } from "../../models/Transaction/models_transaksi";
 import { ShortAvailableModel } from "../../models/ShortAvailable/models_ShortAvailable";
 import AdminModel from "../../models/Admin/models_admin";
 import { Request, Response } from 'express';
+import { ActivityLogModel } from "../../models/LogActivity/models_LogActivity";
 
 dotenv.config();
 
@@ -514,12 +515,20 @@ export class AuthController {
             { expiresIn: '5m' } // Ubah menjadi 15 menit
           );
     
+          
           const refreshToken = jwt.sign(
             { userId, usernameAdmin, role: userRole }, 
             process.env.REFRESH_TOKEN_SECRET as string, 
             { expiresIn: '1d' } // Refresh token berlaku selama 7 hari
           );
     
+          // // Simpan log aktivitas login
+          // await ActivityLogModel.create({
+          //   adminId: admin._id,
+          //   action: "Login",
+          //   ipAddress: req.ip || req.socket.remoteAddress,
+          // });
+
           // 8. Simpan Refresh Token di Database
           await AdminModel.findOneAndUpdate(
             { _id: userId }, 
@@ -568,6 +577,7 @@ export class AuthController {
     }
 
     static async LogoutAdmin(req: any, res: any) {
+
         try {
           const refreshToken = req.cookies.refreshToken;
       
@@ -603,6 +613,7 @@ export class AuthController {
       
           // Hancurkan sesi
           req.session.destroy((err: any) => {
+
             if (err) {
               // Jika terjadi error saat menghancurkan sesi
               return res.status(500).json({
@@ -619,7 +630,16 @@ export class AuthController {
               },
               success: true,
             });
+
+            
           });
+
+          // await ActivityLogModel.create({
+          //   adminId: user._id,
+          //   action: "Logout",
+          //   ipAddress: req.ip || req.socket.remoteAddress,
+          // });
+          
 
         } catch (error : any) {
           // Tangani error lainnya

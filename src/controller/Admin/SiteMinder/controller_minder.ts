@@ -12,6 +12,7 @@ import { ShortAvailableModel } from '../../../models/ShortAvailable/models_Short
 import { Logging } from '../../../log';
 import { TransactionModel } from '../../../models/Transaction/models_transaksi';
 import { generateDateRange } from './components/GenerateDateRange';
+import { ActivityLogModel } from '../../../models/LogActivity/models_LogActivity';
 
 
 export class SetMinderController {
@@ -160,6 +161,7 @@ export class SetMinderController {
                   await SiteMinderModel.bulkWrite(bulkOperations);
               }
   
+
               res.status(200).json({
                   requestId: uuidv4(),
                   data: null,

@@ -36,6 +36,7 @@ const router_reservation_1 = __importDefault(require("./router/Admin/router_rese
 const router_dashboard_1 = __importDefault(require("./router/Admin/router_dashboard"));
 const router_admin_booking_1 = __importDefault(require("./router/Admin/router_admin_booking"));
 const router_admin_customer_1 = __importDefault(require("./router/Admin/router_admin_customer"));
+const router_logging_1 = __importDefault(require("./router/Admin/router_logging"));
 const app = (0, express_1.default)();
 dotenv_1.default.config();
 app.use((0, cors_1.default)({
@@ -114,6 +115,7 @@ app.use("/api/v1/reservation", router_reservation_1.default);
 app.use("/api/v1/dashboard", router_dashboard_1.default);
 app.use("/api/v1/admin/booking", router_admin_booking_1.default);
 app.use("/api/v1/admin/customer", router_admin_customer_1.default);
+app.use("/api/v1/admin/log", router_logging_1.default);
 app.use("/api/v1/instagram", router_instagram_1.default);
 app.use("/api/v1/contact", router_contact_1.default);
 app.use("/api/v1/booking", router_booking_1.default);

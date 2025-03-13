@@ -10,7 +10,8 @@ const AdminRouter: express.Router = express.Router();
 // semantic meaning
 
 AdminRouter.get("/cek-user/:email", AdminUserController.getAdmin)
-AdminRouter.post("/register-admin", AdminUserController.RegisterAdmin)
+AdminRouter.get("/cek-me", AdminUserController.CheckMeAdmin)
+AdminRouter.post("/register", AdminUserController.RegisterAdmin)
 
 
 export default AdminRouter;

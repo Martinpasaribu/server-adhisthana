@@ -1,5 +1,7 @@
 import express, { Request, Response, NextFunction } from "express";
 import { AdminCustomerController } from "../../controller/Admin/Costumer/controller_customer";
+import { logActivity } from "../../middleware/LogAdmin";
+import { verifyAdmin } from "../../middleware/VerifyAdminId";
 
 const AdminCustomerRouter: express.Router = express.Router();
 
@@ -10,7 +12,9 @@ const AdminCustomerRouter: express.Router = express.Router();
 
 AdminCustomerRouter.get("/get-message", AdminCustomerController.GetMessage)
 AdminCustomerRouter.put("/set-verified/:TransactionId", AdminCustomerController.SetVerified)
-AdminCustomerRouter.put("/deleted-message/:MessageId", AdminCustomerController.DeletedMessage)
+AdminCustomerRouter.put("/deleted-message/:MessageId", verifyAdmin , logActivity("Deleted Message") , AdminCustomerController.DeletedMessage)
+AdminCustomerRouter.patch("/update/:id", verifyAdmin , logActivity("Update Customer") , AdminCustomerController.UpdateCustomer)
+AdminCustomerRouter.get("/get/:id", logActivity("Get Customer") , AdminCustomerController.GetCustomerByParams)
 
 
 export default AdminCustomerRouter;

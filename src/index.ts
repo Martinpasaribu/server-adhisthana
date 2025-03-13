@@ -24,6 +24,7 @@ import ReservationRouter from "./router/Admin/router_reservation";
 import DashboardRouter from "./router/Admin/router_dashboard";
 import AdminBookingRouter from "./router/Admin/router_admin_booking";
 import AdminCustomerRouter from "./router/Admin/router_admin_customer";
+import LoggingRouter from "./router/Admin/router_logging";
 
 
 
@@ -172,6 +173,7 @@ app.use("/api/v1/reservation", ReservationRouter)
 app.use("/api/v1/dashboard", DashboardRouter)
 app.use("/api/v1/admin/booking", AdminBookingRouter)
 app.use("/api/v1/admin/customer", AdminCustomerRouter)
+app.use("/api/v1/admin/log", LoggingRouter)
 
 app.use("/api/v1/instagram", InstagramRouter)
 app.use("/api/v1/contact", ContactRouter)

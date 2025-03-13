@@ -409,6 +409,12 @@ class AuthController {
                 );
                 const refreshToken = jsonwebtoken_1.default.sign({ userId, usernameAdmin, role: userRole }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1d' } // Refresh token berlaku selama 7 hari
                 );
+                // // Simpan log aktivitas login
+                // await ActivityLogModel.create({
+                //   adminId: admin._id,
+                //   action: "Login",
+                //   ipAddress: req.ip || req.socket.remoteAddress,
+                // });
                 // 8. Simpan Refresh Token di Database
                 yield models_admin_1.default.findOneAndUpdate({ _id: userId }, { refresh_token: refreshToken }, { new: true, runValidators: true });
                 // 9. Simpan refreshToken di Cookie dengan Keamanan Tinggi
@@ -489,6 +495,11 @@ class AuthController {
                         success: true,
                     });
                 });
+                // await ActivityLogModel.create({
+                //   adminId: user._id,
+                //   action: "Logout",
+                //   ipAddress: req.ip || req.socket.remoteAddress,
+                // });
             }
             catch (error) {
                 // Tangani error lainnya

@@ -24,10 +24,11 @@ const verifyAdmin = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
         return res.status(404).json({ message: "User sessionID not found" });
     }
     // Perbaikan logika role
-    if (admin.role !== "admin" && admin.role !== "superAdmin") {
+    if (admin.role !== "admin" && admin.role !== "superAdmin" && admin.role !== "coSuperAdmin") {
         return res.status(403).json({ msg: "Access Prohibited!! " });
     }
     req.role = admin.role;
+    req.userAdmin = admin.username;
     next();
 });
 exports.verifyAdmin = verifyAdmin;

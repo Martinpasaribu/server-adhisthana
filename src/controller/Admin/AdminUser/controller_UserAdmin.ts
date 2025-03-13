@@ -3,7 +3,7 @@ import argon2 from "argon2";
 import { v4 as uuidv4 } from 'uuid'; 
 import dotenv from "dotenv";
 import AdminModel from "../../../models/Admin/models_admin";
-
+import axios, { AxiosError } from 'axios';
 
 
 dotenv.config()
@@ -72,4 +72,47 @@ export class AdminUserController {
         
     }
 
+
+    static async CheckMeAdmin  (req : any, res : any) {
+
+        try {
+
+            if(!req.session.userId){
+                return res.status(401).json({ message: "Your session-Id no exists", success: false });
+            }
+
+            const user = await AdminModel.findOne(
+                { _id: req.session.userId },
+                { role: true } 
+            );
+            
+
+            if(!user) return res.status(404).json({ message: "Your session-Id no register", success: false });
+
+            
+        
+            res.status(200).json({
+                requestId: uuidv4(),
+                data: user,
+                message: "Your session-Id exists",
+                success: true
+            });
+            
+        } catch (error) {
+            
+            const axiosError = error as AxiosError;
+            const errorResponseData = axiosError.response ? axiosError.response.status : null;
+
+            console.error('Error during Session-Id:', error); 
+
+            res.status(500).json({
+                message: "An error occurred during Session-Id:",
+                error: axiosError.message,
+                error2: errorResponseData,
+                stack: axiosError.stack,
+                success: false
+            });
+            
+        }
+    }
 }
