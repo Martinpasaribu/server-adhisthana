@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { BookingModel } from '../../../models/Booking/models_booking';
 import { ContactModel } from '../../../models/Contact/models_contact';
 import UserModel from '../../../models/User/models_user';
+import { TransactionModel } from '../../../models/Transaction/models_transaksi';
 
 
 export class AdminCustomerController {
@@ -171,17 +172,19 @@ export class AdminCustomerController {
                   });
               }
       
-              const updateCustomer = await UserModel.findOneAndUpdate(
-                  { _id: new mongoose.Types.ObjectId(id) },
-                  { $set: updateData }, 
-                  { new: true, runValidators: true }
-              );
-      
-              if (!updateCustomer) {
+              // Eksekusi semua update secara paralel
+              const [updateCustomer, updateCustomerVBooking, updateCustomerTransaction] = await Promise.all([
+                  UserModel.findOneAndUpdate({ _id: new mongoose.Types.ObjectId(id) }, { $set: updateData }, { new: true, runValidators: true }),
+                  BookingModel.findOneAndUpdate({ userId: new mongoose.Types.ObjectId(id) }, { $set: updateData }, { new: true, runValidators: true }),
+                  TransactionModel.findOneAndUpdate({ userId: new mongoose.Types.ObjectId(id) }, { $set: updateData }, { new: true, runValidators: true })
+              ]);
+
+              // Jika semua gagal
+              if (!updateCustomer && !updateCustomerVBooking && !updateCustomerTransaction) {
                   return res.status(404).json({
                       requestId: uuidv4(),
                       success: false,
-                      message: "Customer not found",
+                      message: "Customer not found in all collections",
                   });
               }
       

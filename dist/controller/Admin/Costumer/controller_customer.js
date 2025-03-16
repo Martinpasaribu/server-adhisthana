@@ -18,6 +18,7 @@ const uuid_1 = require("uuid");
 const models_booking_1 = require("../../../models/Booking/models_booking");
 const models_contact_1 = require("../../../models/Contact/models_contact");
 const models_user_1 = __importDefault(require("../../../models/User/models_user"));
+const models_transaksi_1 = require("../../../models/Transaction/models_transaksi");
 class AdminCustomerController {
     static GetMessage(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -154,12 +155,18 @@ class AdminCustomerController {
                         message: "No data provided for update",
                     });
                 }
-                const updateCustomer = yield models_user_1.default.findOneAndUpdate({ _id: new mongoose_1.default.Types.ObjectId(id) }, { $set: updateData }, { new: true, runValidators: true });
-                if (!updateCustomer) {
+                // Eksekusi semua update secara paralel
+                const [updateCustomer, updateCustomerVBooking, updateCustomerTransaction] = yield Promise.all([
+                    models_user_1.default.findOneAndUpdate({ _id: new mongoose_1.default.Types.ObjectId(id) }, { $set: updateData }, { new: true, runValidators: true }),
+                    models_booking_1.BookingModel.findOneAndUpdate({ userId: new mongoose_1.default.Types.ObjectId(id) }, { $set: updateData }, { new: true, runValidators: true }),
+                    models_transaksi_1.TransactionModel.findOneAndUpdate({ userId: new mongoose_1.default.Types.ObjectId(id) }, { $set: updateData }, { new: true, runValidators: true })
+                ]);
+                // Jika semua gagal
+                if (!updateCustomer && !updateCustomerVBooking && !updateCustomerTransaction) {
                     return res.status(404).json({
                         requestId: (0, uuid_1.v4)(),
                         success: false,
-                        message: "Customer not found",
+                        message: "Customer not found in all collections",
                     });
                 }
                 res.status(200).json({
