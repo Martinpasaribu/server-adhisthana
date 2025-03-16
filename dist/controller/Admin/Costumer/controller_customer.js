@@ -20,6 +20,27 @@ const models_contact_1 = require("../../../models/Contact/models_contact");
 const models_user_1 = __importDefault(require("../../../models/User/models_user"));
 const models_transaksi_1 = require("../../../models/Transaction/models_transaksi");
 class AdminCustomerController {
+    static GetUser(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const filterQuery = {
+                    isDeleted: false,
+                };
+                // Query untuk TransactionModel (ambil semua data)
+                const User = yield models_user_1.default.find(filterQuery);
+                // console.log('data availble transactions :', transactions);
+                // Kirim hasil response
+                res.status(200).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: User,
+                    success: true
+                });
+            }
+            catch (error) {
+                res.status(500).json({ message: "Failed to fetch User", error });
+            }
+        });
+    }
     static GetMessage(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {

@@ -11,6 +11,36 @@ import { TransactionModel } from '../../../models/Transaction/models_transaksi';
 
 export class AdminCustomerController {
 
+        static async GetUser(req: Request, res: Response) {
+
+          try {
+          
+            const filterQuery = {
+              isDeleted: false,
+            };
+            
+            // Query untuk TransactionModel (ambil semua data)
+            const User = await UserModel.find(filterQuery);
+            
+            // console.log('data availble transactions :', transactions);
+
+
+            // Kirim hasil response
+            res.status(200).json({
+              requestId: uuidv4(),
+              data: User,
+              success: true
+            });
+        
+          } catch (error) {
+
+            res.status(500).json({ message: "Failed to fetch User", error });
+
+          }
+
+        }
+
+
         static async GetMessage(req: Request, res: Response) {
 
           try {
