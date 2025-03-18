@@ -16,10 +16,10 @@ export class AdminBookingController {
           try {
            
 
-          const bookings = await BookingModel.find();
+          const bookings = await BookingModel.find({isDeleted:false});
 
           const result = await Promise.all(bookings.map(async (booking) => {
-              const transaction = await TransactionModel.findOne({ booking_keyId: booking._id });
+              const transaction = await TransactionModel.findOne({ booking_keyId: booking._id, isDeleted:false });
           
               return {
                   ...booking.toObject(),
@@ -55,7 +55,7 @@ export class AdminBookingController {
       
             // ✅ Cari booking berdasarkan TransactionId
             const BookingReservation = await BookingModel.findOne({
-              oderId: TransactionId,
+              orderId: TransactionId,
               isDeleted: false
             });
       
@@ -70,7 +70,7 @@ export class AdminBookingController {
       
             // ✅ Update status verified
             const updatedBooking = await BookingModel.findOneAndUpdate(
-              { oderId: TransactionId, isDeleted: false },
+              { orderId: TransactionId, isDeleted: false },
               {
                 verified: { status: true, time: Date.now() }
               },
@@ -97,6 +97,74 @@ export class AdminBookingController {
       
           } catch (error) {
             console.error("Error verifying Booking:", error);
+      
+            return res.status(500).json({
+              requestId: uuidv4(),
+              data: null,
+              message: (error as Error).message || "Internal Server Error",
+              success: false
+            });
+          }
+        }
+
+        static async SetCheckOut(req: Request, res: Response) {
+          try {
+            const { TransactionId } = req.params;
+      
+            // ✅ Validasi jika TransactionId tidak ada
+            if (!TransactionId) {
+              return res.status(400).json({
+                requestId: uuidv4(),
+                data: null,
+                message: "TransactionId is required!",
+                success: false
+              });
+            }
+      
+            // ✅ Cari booking berdasarkan TransactionId
+            const BookingReservation = await BookingModel.findOne({
+              orderId: TransactionId,
+              isDeleted: false
+            });
+      
+            if (!BookingReservation) {
+              return res.status(404).json({
+                requestId: uuidv4(),
+                data: null,
+                message: "Booking not found!",
+                success: false
+              });
+            }
+      
+            // ✅ Update status verified
+            const updatedBooking = await BookingModel.findOneAndUpdate(
+              { orderId: TransactionId, isDeleted: false },
+              {
+                verified: { status: null, time: Date.now() }
+              },
+              { new: true } // Mengembalikan data yang sudah diperbarui
+            );
+      
+            if (!updatedBooking) {
+              return res.status(400).json({
+                requestId: uuidv4(),
+                data: null,
+                message: "Failed to update booking Check-Out status!",
+                success: false
+              });
+            }
+      
+            console.log(`Booking ${updatedBooking.name} has been Check-Out`);
+      
+            return res.status(200).json({
+              requestId: uuidv4(),
+              data: { acknowledged: true },
+              message: `Successfully Check-Out Booking: ${updatedBooking.name}`,
+              success: true
+            });
+      
+          } catch (error) {
+            console.error("Error Check-Out Booking:", error);
       
             return res.status(500).json({
               requestId: uuidv4(),

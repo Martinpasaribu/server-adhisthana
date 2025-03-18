@@ -22,6 +22,7 @@ const models_ShortAvailable_1 = require("../../../models/ShortAvailable/models_S
 const log_1 = require("../../../log");
 const models_transaksi_1 = require("../../../models/Transaction/models_transaksi");
 const GenerateDateRange_1 = require("./components/GenerateDateRange");
+const models_booking_1 = require("../../../models/Booking/models_booking");
 class SetMinderController {
     static SetUpPrice(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -516,7 +517,7 @@ class SetMinderController {
                 // Ambil hanya transactionId dari AvailableRoom
                 const transactionIds = AvailableRoom.map(room => room.transactionId);
                 const filterQuery = {
-                    status: "PAID",
+                    status: { $in: [constant_1.PAID, constant_1.PAID_ADMIN] },
                     checkIn: {
                         $gte: startDate.toISOString(),
                         $lt: endDate.toISOString(),
@@ -599,7 +600,69 @@ class SetMinderController {
                 res.status(201).json({
                     requestId: (0, uuid_1.v4)(),
                     data: [],
-                    message: `Successfully Deleted ID : ${id}  `,
+                    message: `Successfully Deleted ID : ${Transaction.name}  `,
+                    success: true
+                });
+            }
+            catch (error) {
+                res.status(400).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: null,
+                    message: error.message,
+                    success: false
+                });
+            }
+        });
+    }
+    static DeletedBooking(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                let ShortAvailable;
+                let Transaction;
+                let Booking;
+                const { id } = req.query;
+                if (!id) {
+                    return res.status(400).json({
+                        requestId: (0, uuid_1.v4)(),
+                        data: null,
+                        message: "Id is null",
+                        success: false
+                    });
+                }
+                ShortAvailable = yield models_ShortAvailable_1.ShortAvailableModel.findOneAndUpdate({ transactionId: id }, { isDeleted: false }, { new: true, runValidators: true });
+                if (!ShortAvailable) {
+                    return res.status(404).json({
+                        requestId: (0, uuid_1.v4)(),
+                        data: null,
+                        message: "Data ShortAvailable not found.",
+                        success: false
+                    });
+                }
+                yield models_ShortAvailable_1.ShortAvailableModel.updateMany({ transactionId: id }, { isDeleted: true });
+                Transaction = yield models_transaksi_1.TransactionModel.findOneAndUpdate({ bookingId: id }, { isDeleted: false }, { new: true, runValidators: true });
+                if (!Transaction) {
+                    return res.status(404).json({
+                        requestId: (0, uuid_1.v4)(),
+                        data: null,
+                        message: "Transaction not found.",
+                        success: false
+                    });
+                }
+                yield models_transaksi_1.TransactionModel.updateMany({ bookingId: id }, { isDeleted: true });
+                Booking = yield models_booking_1.BookingModel.findOneAndUpdate({ orderId: id }, { isDeleted: false }, { new: true, runValidators: true });
+                if (!Booking) {
+                    return res.status(404).json({
+                        requestId: (0, uuid_1.v4)(),
+                        data: null,
+                        message: "Booking not found.",
+                        success: false
+                    });
+                }
+                yield models_booking_1.BookingModel.updateMany({ orderId: id }, { isDeleted: true });
+                res.status(201).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: [],
+                    message: `Successfully Deleted data : ${Booking.name}  `,
                     success: true
                 });
             }

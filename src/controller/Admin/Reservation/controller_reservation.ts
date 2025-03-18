@@ -12,7 +12,7 @@ import { PendingRoomController } from '../../PendingRoom/Controller_PendingRoom'
 import { ShortAvailableController } from '../../ShortAvailable/controller_short';
 import { PAID, PAID_ADMIN, PAYMENT_ADMIN } from '../../../constant';
 import { BookingModel } from '../../../models/Booking/models_booking';
-
+import { OTAService } from './components/controller_OTA'
 
 export class ReservationController {
 
@@ -65,12 +65,15 @@ export class ReservationController {
                   email, 
                   phone, 
                   grossAmount, 
+                  otaTotal,
                   reservation, 
                   products, 
                   night, 
                   checkIn, 
                   checkOut 
               } = req.body;
+
+              console.log(`Ini data payload room dari reservation: ${JSON.stringify(products, null, 2)}`);
 
               // ✅ Validasi data sebelum disimpan
               if (!title || !name || !email || !phone || !grossAmount || !checkIn || !checkOut) {
@@ -89,6 +92,14 @@ export class ReservationController {
               if(ReservationReadyToBeSaved.WithoutPending === 0){
 
               }
+
+              console.log(`Ini data reservation after filter : ${JSON.stringify(ReservationReadyToBeSaved.WithoutPending, null, 2)}`);
+              
+              // Mix data Product with OTA
+
+              // const ProductClean = await OTAService.Mix_OTA(products,ReservationReadyToBeSaved.WithoutPending)
+
+              // console.log(`Ini data reservation after Mix OTA : ${ProductClean}`);
               // Set Up Data Lain
 
               const bookingId = 'TRX-' + crypto.randomBytes(5).toString('hex');
@@ -109,7 +120,7 @@ export class ReservationController {
 
               // ✅ Buat objek baru berdasarkan schema
               const newBooking = new BookingModel({
-                  oderId : bookingId,
+                  orderId : bookingId,
                   userId : IsHaveAccount ?? userId,
                   status,
                   title,
@@ -117,6 +128,7 @@ export class ReservationController {
                   email,
                   phone,
                   amountTotal :grossAmount,
+                  otaTotal :otaTotal,
                   reservation,
                   room: ReservationReadyToBeSaved.WithoutPending,
                   night,
@@ -141,6 +153,7 @@ export class ReservationController {
                 email,
                 phone,
                 grossAmount,
+                otaTotal,
                 reservation,
                 products: ReservationReadyToBeSaved.WithoutPending,
                 night,
@@ -266,5 +279,7 @@ export class ReservationController {
               });
           }
         }
+
+        
 
 }

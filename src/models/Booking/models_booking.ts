@@ -3,6 +3,9 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 interface Room {
     roomId:string;
+    name:string;
+    priceTotal:number;
+    ota:number;
     quantity:number;
 }
 
@@ -18,14 +21,16 @@ interface IBooking extends Document {
     name: string;
     email: string;
     phone: number;
-    oderId: string;
+    orderId: string;
     checkIn: string;
     checkOut: string;
     verified: IVerified;
+    reservation: boolean;
     adult: number;
     night: number;
     children: number;
     amountTotal: number;
+    otaTotal: number;
     amountBefDisc: number;
    
     couponId: string;
@@ -41,7 +46,7 @@ interface IBooking extends Document {
 const BookingSchema: Schema = new Schema(
     {
 
-        oderId: {
+        orderId: {
             type: String,
             // required: [true, "oderId cannot be empty"],
             trim: true
@@ -81,8 +86,12 @@ const BookingSchema: Schema = new Schema(
                 default: Date.now, // Otomatis set timestamp saat diverifikasi
             }
         },
-        
 
+        reservation: {
+            type: Boolean,
+            trim: true,
+        },
+    
         adult: {
             type: Number,
             required: false,
@@ -108,6 +117,12 @@ const BookingSchema: Schema = new Schema(
             // min: [1, 'amountTotal must more then 0'],
             trim: true
         },
+        otaTotal: {
+            type: Number,
+            required: false,
+            // min: [1, 'amountTotal must more then 0'],
+            trim: true
+        },
         amountBefDisc: {
             type: Number,
             required: false,
@@ -128,6 +143,9 @@ const BookingSchema: Schema = new Schema(
 
         room: [{
             roomId: {type: String},
+            name: {type: String},
+            ota: {type: Number},
+            priceTotal: {type: Number},
             quantity: {type: Number}
         }],
 

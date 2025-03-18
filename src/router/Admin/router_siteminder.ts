@@ -17,6 +17,7 @@ SiteMinderRouter.get("/get-unavailable", SetMinderController.GetAllRoomWithUnAva
 SiteMinderRouter.get("/get-transaction-year-month", SetMinderController.GetAllTransactionFromYearAndMonth);
 SiteMinderRouter.get("/get-all-transaction", SetMinderController.GetAllTransaction);
 SiteMinderRouter.get("/del-transaction", SetMinderController.DeletedTransaction);
+SiteMinderRouter.get("/del-booking", SetMinderController.DeletedBooking);
 SiteMinderRouter.get("/set-price-weekday", SetMinderController.SetPriceWeekDay);
 SiteMinderRouter.get("/set-price-weekend", SetMinderController.SetPriceWeekend);
 SiteMinderRouter.get("/set-price-holiday", SetMinderController.SetPriceForHolidays);

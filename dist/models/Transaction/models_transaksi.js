@@ -85,6 +85,9 @@ const TransactionSchema = new mongoose_1.Schema({
     grossAmount: {
         type: Number, // Tidak perlu trim di tipe Number
     },
+    otaTotal: {
+        type: Number, // Tidak perlu trim di tipe Number
+    },
     checkIn: {
         type: String,
         trim: true,
@@ -100,6 +103,8 @@ const TransactionSchema = new mongoose_1.Schema({
             price: { type: Number }, // Tidak perlu trim di tipe Number
             priceTotal: { type: Number }, // Tidak perlu trim di tipe Number
             quantity: { type: Number }, // Tidak perlu trim di tipe Number
+            ota: { type: Number }, // Tidak perlu trim di tipe Number
+            availableCount: { type: Number }, // Tidak perlu trim di tipe Number
         },
     ],
     snap_token: {

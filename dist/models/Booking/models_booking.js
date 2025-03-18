@@ -36,7 +36,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.BookingModel = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 const BookingSchema = new mongoose_1.Schema({
-    oderId: {
+    orderId: {
         type: String,
         // required: [true, "oderId cannot be empty"],
         trim: true
@@ -74,6 +74,10 @@ const BookingSchema = new mongoose_1.Schema({
             default: Date.now, // Otomatis set timestamp saat diverifikasi
         }
     },
+    reservation: {
+        type: Boolean,
+        trim: true,
+    },
     adult: {
         type: Number,
         required: false,
@@ -92,6 +96,12 @@ const BookingSchema = new mongoose_1.Schema({
         trim: true
     },
     amountTotal: {
+        type: Number,
+        required: false,
+        // min: [1, 'amountTotal must more then 0'],
+        trim: true
+    },
+    otaTotal: {
         type: Number,
         required: false,
         // min: [1, 'amountTotal must more then 0'],
@@ -116,6 +126,9 @@ const BookingSchema = new mongoose_1.Schema({
     },
     room: [{
             roomId: { type: String },
+            name: { type: String },
+            ota: { type: Number },
+            priceTotal: { type: Number },
             quantity: { type: Number }
         }],
     createAt: {

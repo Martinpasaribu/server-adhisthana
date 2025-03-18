@@ -83,7 +83,7 @@ export class AdminCustomerController {
       
             // ✅ Cari booking berdasarkan TransactionId
             const BookingReservation = await BookingModel.findOne({
-              oderId: TransactionId,
+              orderId: TransactionId,
               isDeleted: false
             });
       
@@ -98,7 +98,7 @@ export class AdminCustomerController {
       
             // ✅ Update status verified
             const updatedBooking = await BookingModel.findOneAndUpdate(
-              { oderId: TransactionId, isDeleted: false },
+              { orderId: TransactionId, isDeleted: false },
               {
                 verified: { status: true, time: Date.now() }
               },

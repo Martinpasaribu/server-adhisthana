@@ -3,8 +3,10 @@ import mongoose, { Document, Schema } from 'mongoose';
 interface Room {
     roomId: string;
     quantity: number;
+    ota:number;
     price: number;
     priceTotal: number;
+    availableCount: number;
     name: string;
 }
 
@@ -24,6 +26,7 @@ interface ITran extends Document {
     reservation: boolean;
     payment_type: string;
     grossAmount: number;
+    otaTotal: number;
     userId: string;
     checkIn: string;
     checkOut: string;
@@ -94,6 +97,9 @@ const TransactionSchema: Schema = new Schema(
         grossAmount: {
             type: Number, // Tidak perlu trim di tipe Number
         },
+        otaTotal: {
+            type: Number, // Tidak perlu trim di tipe Number
+        },
         checkIn: {
             type: String,
             trim: true,
@@ -109,6 +115,8 @@ const TransactionSchema: Schema = new Schema(
                 price: { type: Number }, // Tidak perlu trim di tipe Number
                 priceTotal: { type: Number }, // Tidak perlu trim di tipe Number
                 quantity: { type: Number }, // Tidak perlu trim di tipe Number
+                ota: { type: Number }, // Tidak perlu trim di tipe Number
+                availableCount: { type: Number }, // Tidak perlu trim di tipe Number
             },
         ],
         snap_token: {

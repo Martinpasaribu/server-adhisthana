@@ -12,6 +12,7 @@ interface Room {
     roomId: string;
     quantity: number;
     price: number;
+    ota: number;
     priceTotal: number;
     name: string;
 }

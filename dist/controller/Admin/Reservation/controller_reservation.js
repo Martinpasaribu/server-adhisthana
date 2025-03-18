@@ -60,7 +60,8 @@ class ReservationController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 // Destructure req.body
-                const { title, name, email, phone, grossAmount, reservation, products, night, checkIn, checkOut } = req.body;
+                const { title, name, email, phone, grossAmount, otaTotal, reservation, products, night, checkIn, checkOut } = req.body;
+                console.log(`Ini data payload room dari reservation: ${JSON.stringify(products, null, 2)}`);
                 // ✅ Validasi data sebelum disimpan
                 if (!title || !name || !email || !phone || !grossAmount || !checkIn || !checkOut) {
                     return res.status(400).json({
@@ -74,6 +75,10 @@ class ReservationController {
                 const ReservationReadyToBeSaved = yield FilterWithRoomPending_1.ReservationService.createReservation({ products, checkIn, checkOut });
                 if (ReservationReadyToBeSaved.WithoutPending === 0) {
                 }
+                console.log(`Ini data reservation after filter : ${JSON.stringify(ReservationReadyToBeSaved.WithoutPending, null, 2)}`);
+                // Mix data Product with OTA
+                // const ProductClean = await OTAService.Mix_OTA(products,ReservationReadyToBeSaved.WithoutPending)
+                // console.log(`Ini data reservation after Mix OTA : ${ProductClean}`);
                 // Set Up Data Lain
                 const bookingId = 'TRX-' + crypto_1.default.randomBytes(5).toString('hex');
                 const status = constant_1.PAYMENT_ADMIN;
@@ -85,7 +90,7 @@ class ReservationController {
                 }
                 // ✅ Buat objek baru berdasarkan schema
                 const newBooking = new models_booking_1.BookingModel({
-                    oderId: bookingId,
+                    orderId: bookingId,
                     userId: IsHaveAccount !== null && IsHaveAccount !== void 0 ? IsHaveAccount : userId,
                     status,
                     title,
@@ -93,6 +98,7 @@ class ReservationController {
                     email,
                     phone,
                     amountTotal: grossAmount,
+                    otaTotal: otaTotal,
                     reservation,
                     room: ReservationReadyToBeSaved.WithoutPending,
                     night,
@@ -113,6 +119,7 @@ class ReservationController {
                     email,
                     phone,
                     grossAmount,
+                    otaTotal,
                     reservation,
                     products: ReservationReadyToBeSaved.WithoutPending,
                     night,

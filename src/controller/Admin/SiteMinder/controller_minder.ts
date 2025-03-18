@@ -13,6 +13,7 @@ import { Logging } from '../../../log';
 import { TransactionModel } from '../../../models/Transaction/models_transaksi';
 import { generateDateRange } from './components/GenerateDateRange';
 import { ActivityLogModel } from '../../../models/LogActivity/models_LogActivity';
+import { BookingModel } from '../../../models/Booking/models_booking';
 
 
 export class SetMinderController {
@@ -620,7 +621,7 @@ export class SetMinderController {
             const transactionIds = AvailableRoom.map(room => room.transactionId);
             
             const filterQuery = {
-              status: "PAID",
+              status:  { $in: [PAID, PAID_ADMIN] },
               checkIn: {
                 $gte: startDate.toISOString(),
                 $lt: endDate.toISOString(),
@@ -732,7 +733,101 @@ export class SetMinderController {
                 {
                     requestId: uuidv4(), 
                     data: [],
-                    message: `Successfully Deleted ID : ${id}  `,
+                    message: `Successfully Deleted ID : ${Transaction.name}  `,
+                    success: true
+                }
+            );
+
+
+          } catch (error) {
+            
+            res.status(400).json(
+                {
+                    requestId: uuidv4(), 
+                    data: null,
+                    message:  (error as Error).message,
+                    success: false
+                }
+            );
+
+          }
+
+        }
+
+        static async DeletedBooking(req: Request, res: Response){
+
+          try {
+            let ShortAvailable ;
+            let Transaction ;
+            let Booking ;
+
+            const { id } = req.query;
+
+            if(!id){
+
+              return res.status(400).json(
+                  {
+                      requestId: uuidv4(), 
+                      data: null,
+                      message:  "Id is null",
+                      success: false
+                  }
+              );
+
+            }
+            
+            ShortAvailable= await ShortAvailableModel.findOneAndUpdate({transactionId :  id},{ isDeleted: false },{ new: true, runValidators: true });
+          
+            if (!ShortAvailable) {
+                return res.status(404).json({
+                    requestId: uuidv4(),
+                    data: null,
+                    message: "Data ShortAvailable not found.",
+                    success: false
+                });
+            }
+
+             await ShortAvailableModel.updateMany(
+                { transactionId: id },
+                { isDeleted: true }
+              );
+
+            Transaction = await TransactionModel.findOneAndUpdate({bookingId :  id},{ isDeleted: false },{ new: true, runValidators: true });
+          
+            if (!Transaction) {
+                return res.status(404).json({
+                    requestId: uuidv4(),
+                    data: null,
+                    message: "Transaction not found.",
+                    success: false
+                });
+            }
+            await TransactionModel.updateMany(
+              { bookingId: id },
+              { isDeleted: true }
+            );
+
+            Booking = await BookingModel.findOneAndUpdate({orderId :  id},{ isDeleted: false },{ new: true, runValidators: true });
+          
+            if (!Booking) {
+                return res.status(404).json({
+                    requestId: uuidv4(),
+                    data: null,
+                    message: "Booking not found.",
+                    success: false
+                });
+            }
+            await BookingModel.updateMany(
+              { orderId: id },
+              { isDeleted: true }
+            );
+
+
+            res.status(201).json(
+                {
+                    requestId: uuidv4(), 
+                    data: [],
+                    message: `Successfully Deleted data : ${Booking.name}  `,
                     success: true
                 }
             );

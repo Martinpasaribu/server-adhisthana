@@ -77,7 +77,7 @@ class AdminCustomerController {
                 }
                 // ✅ Cari booking berdasarkan TransactionId
                 const BookingReservation = yield models_booking_1.BookingModel.findOne({
-                    oderId: TransactionId,
+                    orderId: TransactionId,
                     isDeleted: false
                 });
                 if (!BookingReservation) {
@@ -89,7 +89,7 @@ class AdminCustomerController {
                     });
                 }
                 // ✅ Update status verified
-                const updatedBooking = yield models_booking_1.BookingModel.findOneAndUpdate({ oderId: TransactionId, isDeleted: false }, {
+                const updatedBooking = yield models_booking_1.BookingModel.findOneAndUpdate({ orderId: TransactionId, isDeleted: false }, {
                     verified: { status: true, time: Date.now() }
                 }, { new: true } // Mengembalikan data yang sudah diperbarui
                 );

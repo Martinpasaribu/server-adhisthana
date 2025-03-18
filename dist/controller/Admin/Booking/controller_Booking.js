@@ -17,9 +17,9 @@ class AdminBookingController {
     static GetAllBooking(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const bookings = yield models_booking_1.BookingModel.find();
+                const bookings = yield models_booking_1.BookingModel.find({ isDeleted: false });
                 const result = yield Promise.all(bookings.map((booking) => __awaiter(this, void 0, void 0, function* () {
-                    const transaction = yield models_transaksi_1.TransactionModel.findOne({ booking_keyId: booking._id });
+                    const transaction = yield models_transaksi_1.TransactionModel.findOne({ booking_keyId: booking._id, isDeleted: false });
                     return Object.assign(Object.assign({}, booking.toObject()), { transactionStatus: transaction ? transaction.status : 'Suspended' });
                 })));
                 // Kirim hasil response
@@ -49,7 +49,7 @@ class AdminBookingController {
                 }
                 // ✅ Cari booking berdasarkan TransactionId
                 const BookingReservation = yield models_booking_1.BookingModel.findOne({
-                    oderId: TransactionId,
+                    orderId: TransactionId,
                     isDeleted: false
                 });
                 if (!BookingReservation) {
@@ -61,7 +61,7 @@ class AdminBookingController {
                     });
                 }
                 // ✅ Update status verified
-                const updatedBooking = yield models_booking_1.BookingModel.findOneAndUpdate({ oderId: TransactionId, isDeleted: false }, {
+                const updatedBooking = yield models_booking_1.BookingModel.findOneAndUpdate({ orderId: TransactionId, isDeleted: false }, {
                     verified: { status: true, time: Date.now() }
                 }, { new: true } // Mengembalikan data yang sudah diperbarui
                 );
@@ -83,6 +83,64 @@ class AdminBookingController {
             }
             catch (error) {
                 console.error("Error verifying Booking:", error);
+                return res.status(500).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: null,
+                    message: error.message || "Internal Server Error",
+                    success: false
+                });
+            }
+        });
+    }
+    static SetCheckOut(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { TransactionId } = req.params;
+                // ✅ Validasi jika TransactionId tidak ada
+                if (!TransactionId) {
+                    return res.status(400).json({
+                        requestId: (0, uuid_1.v4)(),
+                        data: null,
+                        message: "TransactionId is required!",
+                        success: false
+                    });
+                }
+                // ✅ Cari booking berdasarkan TransactionId
+                const BookingReservation = yield models_booking_1.BookingModel.findOne({
+                    orderId: TransactionId,
+                    isDeleted: false
+                });
+                if (!BookingReservation) {
+                    return res.status(404).json({
+                        requestId: (0, uuid_1.v4)(),
+                        data: null,
+                        message: "Booking not found!",
+                        success: false
+                    });
+                }
+                // ✅ Update status verified
+                const updatedBooking = yield models_booking_1.BookingModel.findOneAndUpdate({ orderId: TransactionId, isDeleted: false }, {
+                    verified: { status: null, time: Date.now() }
+                }, { new: true } // Mengembalikan data yang sudah diperbarui
+                );
+                if (!updatedBooking) {
+                    return res.status(400).json({
+                        requestId: (0, uuid_1.v4)(),
+                        data: null,
+                        message: "Failed to update booking Check-Out status!",
+                        success: false
+                    });
+                }
+                console.log(`Booking ${updatedBooking.name} has been Check-Out`);
+                return res.status(200).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: { acknowledged: true },
+                    message: `Successfully Check-Out Booking: ${updatedBooking.name}`,
+                    success: true
+                });
+            }
+            catch (error) {
+                console.error("Error Check-Out Booking:", error);
                 return res.status(500).json({
                     requestId: (0, uuid_1.v4)(),
                     data: null,
