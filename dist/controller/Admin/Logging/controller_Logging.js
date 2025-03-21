@@ -32,17 +32,22 @@ class LoggingController {
     static GetLogsPagination(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                let { page, limit } = req.query;
+                let { key, page, limit } = req.query;
                 const pageNumber = parseInt(page) || 1;
                 const limitNumber = parseInt(limit) || 10;
                 const skip = (pageNumber - 1) * limitNumber;
+                // Buat query dinamis
+                const query = {};
+                if (key && key !== "null" && key !== "undefined") {
+                    query.type = key; // Filter hanya jika key memiliki nilai
+                }
                 // Ambil data log dengan pagination
-                const logs = yield models_LogActivity_1.ActivityLogModel.find()
+                const logs = yield models_LogActivity_1.ActivityLogModel.find(query)
                     .skip(skip)
                     .limit(limitNumber)
-                    .sort({ timestamp: -1 }); // Urutkan dari yang terbaru
-                // Hitung total data
-                const totalLogs = yield models_LogActivity_1.ActivityLogModel.countDocuments();
+                    .sort({ timestamp: -1 });
+                // Hitung total data sesuai query
+                const totalLogs = yield models_LogActivity_1.ActivityLogModel.countDocuments(query);
                 // Kirim hasil response
                 res.status(200).json({
                     requestId: (0, uuid_1.v4)(),
@@ -50,7 +55,7 @@ class LoggingController {
                     totalPages: Math.ceil(totalLogs / limitNumber),
                     totalAllLog: totalLogs,
                     currentPage: pageNumber,
-                    success: true
+                    success: true,
                 });
             }
             catch (error) {

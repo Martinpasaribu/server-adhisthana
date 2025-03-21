@@ -12,6 +12,8 @@ interface Room {
 interface IVerified {
     status: boolean;
     time?: number; // Opsional, jika hanya diisi saat diverifikasi
+    timeIn?: number; // Opsional, jika hanya diisi saat diverifikasi
+    timeOut?: number; // Opsional, jika hanya diisi saat diverifikasi
 }
 
 
@@ -84,6 +86,12 @@ const BookingSchema: Schema = new Schema(
             time: {
                 type: Number,
                 default: Date.now, // Otomatis set timestamp saat diverifikasi
+            },
+            TimeIn: {
+                type: Number,
+            },
+            TimeOut: {
+                type: Number,
             }
         },
 

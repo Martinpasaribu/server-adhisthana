@@ -15,9 +15,23 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.logActivity = void 0;
 const models_LogActivity_1 = require("../models/LogActivity/models_LogActivity");
 const models_admin_1 = __importDefault(require("../models/Admin/models_admin"));
+const models_user_1 = __importDefault(require("../models/User/models_user"));
+const models_booking_1 = require("../models/Booking/models_booking");
+const CekUser = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    let user = yield models_user_1.default.findOne({ _id: id, isDeleted: false }).select("title name email phone");
+    console.log("Update Data user di LOG :", user);
+    return user;
+});
+const CekBooking = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    let booking = yield models_booking_1.BookingModel.findOne({ orderId: id, isDeleted: false }).select("name email phone orderId");
+    console.log("Update Data user di LOG :", booking);
+    return booking;
+});
 const logActivity = (action) => {
     return (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         try {
+            let user = yield CekUser(req.params.id);
+            let booking = yield CekBooking(req.params.TransactionId);
             let adminId = req.body.adminId || req.session.userId;
             const ipAddress = req.ip || req.socket.remoteAddress;
             const routePath = req.originalUrl; // Dapatkan route yang diakses
@@ -66,8 +80,21 @@ const logActivity = (action) => {
                     type = "Customer";
                     target = req.params.MessageId || "-";
                     break;
-                case routePath.startsWith("/api/v1/admin"):
-                    target = req.body.adminName || req.params.id || "Tidak ada Admin Data";
+                case routePath.startsWith("/api/v1/admin/customer/update"):
+                    type = "Customer";
+                    target = user ? (`Name : ${user.name}, Id : ${user._id}`) : "-"; // Mengambil nama user jika ada, jika tidak ada tampilkan "-"
+                    statement1 = `New Data : ${JSON.stringify(req.body, null, 2)}`;
+                    statement2 = `Old Data : ${user}`;
+                    break;
+                case routePath.startsWith("/api/v1/admin/booking/set-verified"):
+                    type = "Booking";
+                    // const user = await CekUser(req.params.TransactionId);
+                    target = booking ? (`Name : ${booking.name}, TRX : ${booking.orderId}`) : "-";
+                    break;
+                case routePath.startsWith("/api/v1/admin/booking/set-checkout"):
+                    type = "Booking";
+                    // const user = await CekUser(req.params.TransactionId);
+                    target = booking ? (`Name : ${booking.name}, TRX : ${booking.orderId}`) : "-";
                     break;
                 case routePath.startsWith("/api/v1/booking"):
                     target = req.body.bookingCode || req.params.id || "Tidak ada Booking Data";

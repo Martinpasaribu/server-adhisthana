@@ -15,7 +15,7 @@ AdminCustomerRouter.get("/get-user", AdminCustomerController.GetUser)
 AdminCustomerRouter.put("/set-verified/:TransactionId", AdminCustomerController.SetVerified)
 AdminCustomerRouter.put("/deleted-message/:MessageId", verifyAdmin , logActivity("Deleted Message") , AdminCustomerController.DeletedMessage)
 AdminCustomerRouter.patch("/update/:id", verifyAdmin , logActivity("Update Customer") , AdminCustomerController.UpdateCustomer)
-AdminCustomerRouter.get("/get/:id", logActivity("Get Customer") , AdminCustomerController.GetCustomerByParams)
+AdminCustomerRouter.get("/get/:id", AdminCustomerController.GetCustomerByParams)
 
 
 export default AdminCustomerRouter;

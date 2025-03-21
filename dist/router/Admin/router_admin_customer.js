@@ -14,5 +14,5 @@ AdminCustomerRouter.get("/get-user", controller_customer_1.AdminCustomerControll
 AdminCustomerRouter.put("/set-verified/:TransactionId", controller_customer_1.AdminCustomerController.SetVerified);
 AdminCustomerRouter.put("/deleted-message/:MessageId", VerifyAdminId_1.verifyAdmin, (0, LogAdmin_1.logActivity)("Deleted Message"), controller_customer_1.AdminCustomerController.DeletedMessage);
 AdminCustomerRouter.patch("/update/:id", VerifyAdminId_1.verifyAdmin, (0, LogAdmin_1.logActivity)("Update Customer"), controller_customer_1.AdminCustomerController.UpdateCustomer);
-AdminCustomerRouter.get("/get/:id", (0, LogAdmin_1.logActivity)("Get Customer"), controller_customer_1.AdminCustomerController.GetCustomerByParams);
+AdminCustomerRouter.get("/get/:id", controller_customer_1.AdminCustomerController.GetCustomerByParams);
 exports.default = AdminCustomerRouter;

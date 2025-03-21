@@ -62,7 +62,7 @@ class AdminBookingController {
                 }
                 // ✅ Update status verified
                 const updatedBooking = yield models_booking_1.BookingModel.findOneAndUpdate({ orderId: TransactionId, isDeleted: false }, {
-                    verified: { status: true, time: Date.now() }
+                    verified: { status: true, timeIn: Date.now() }
                 }, { new: true } // Mengembalikan data yang sudah diperbarui
                 );
                 if (!updatedBooking) {
@@ -120,7 +120,7 @@ class AdminBookingController {
                 }
                 // ✅ Update status verified
                 const updatedBooking = yield models_booking_1.BookingModel.findOneAndUpdate({ orderId: TransactionId, isDeleted: false }, {
-                    verified: { status: null, time: Date.now() }
+                    verified: { status: null, timeOut: Date.now() }
                 }, { new: true } // Mengembalikan data yang sudah diperbarui
                 );
                 if (!updatedBooking) {

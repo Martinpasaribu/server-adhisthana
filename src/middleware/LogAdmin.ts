@@ -1,11 +1,39 @@
 import { Request, Response, NextFunction } from "express";
 import { ActivityLogModel, IChangedPrices } from "../models/LogActivity/models_LogActivity";
 import AdminModel from "../models/Admin/models_admin";
+import UserModel from "../models/User/models_user";
+import { BookingModel } from "../models/Booking/models_booking";
+
+
+
+const CekUser = async (id: any) => {
+
+  let user = await UserModel.findOne({ _id: id, isDeleted: false }).select("title name email phone");  
+  console.log("Update Data user di LOG :", user );
+
+  return user;
+};
+
+const CekBooking= async (id: any) => {
+
+  let booking = await BookingModel.findOne({ orderId: id, isDeleted: false }).select("name email phone orderId");
+  console.log("Update Data user di LOG :", booking );
+
+  return booking;
+};
+
+
+
 
 export const logActivity = (action: string) => {
   return async (req: Request, res: Response, next: NextFunction) => {
+
+    
+
     try {
 
+      let user = await CekUser(req.params.id);
+      let booking = await CekBooking(req.params.TransactionId);
       let adminId = req.body.adminId || req.session.userId; 
       const ipAddress = req.ip || req.socket.remoteAddress;
       const routePath = req.originalUrl; // Dapatkan route yang diakses
@@ -35,9 +63,13 @@ export const logActivity = (action: string) => {
         return next();
       }
 
+
+
       // 🔹 **LOGIKA BERDASARKAN ROUTE**
       switch (true) {
         
+        
+
         case routePath.startsWith("/api/v1/site/minder/set-minder"):
           type = "Management";
           target = req.body.roomId || "-";
@@ -61,15 +93,34 @@ export const logActivity = (action: string) => {
         case routePath.startsWith("/api/v1/admin/customer/deleted-message"):
           type = "Customer"
           target = req.params.MessageId || "-";
+
           break;
 
-        case routePath.startsWith("/api/v1/admin"):
-          target = req.body.adminName || req.params.id || "Tidak ada Admin Data";
+        case routePath.startsWith("/api/v1/admin/customer/update"):
+          type = "Customer"
+          target = user ? (`Name : ${user.name}, Id : ${user._id}`) : "-";  // Mengambil nama user jika ada, jika tidak ada tampilkan "-"
+          statement1 = `New Data : ${JSON.stringify(req.body, null, 2)}`;
+          statement2 = `Old Data : ${user}`
+          break;
+          
+        case routePath.startsWith("/api/v1/admin/booking/set-verified"):
+          type = "Booking"
+          // const user = await CekUser(req.params.TransactionId);
+          target = booking ? (`Name : ${booking.name}, TRX : ${booking.orderId}`) : "-";
+
+          break;
+          
+        case routePath.startsWith("/api/v1/admin/booking/set-checkout"):
+          type = "Booking"
+          // const user = await CekUser(req.params.TransactionId);
+          target = booking ? (`Name : ${booking.name}, TRX : ${booking.orderId}`) : "-";
+
           break;
 
         case routePath.startsWith("/api/v1/booking"):
           target = req.body.bookingCode || req.params.id || "Tidak ada Booking Data";
           break;
+          
 
         case routePath.startsWith("/api/v1/user"):
           target = req.body.username || req.params.id || "Tidak ada User Data";
