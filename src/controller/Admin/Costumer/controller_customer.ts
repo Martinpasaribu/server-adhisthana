@@ -100,7 +100,7 @@ export class AdminCustomerController {
             const updatedBooking = await BookingModel.findOneAndUpdate(
               { orderId: TransactionId, isDeleted: false },
               {
-                verified: { status: true, time: Date.now() }
+                verified: { status: true, timeIn: Date.now() }
               },
               { new: true } // Mengembalikan data yang sudah diperbarui
             );
@@ -119,7 +119,7 @@ export class AdminCustomerController {
             return res.status(200).json({
               requestId: uuidv4(),
               data: { acknowledged: true },
-              message: `Successfully verified Booking: ${TransactionId}`,
+              message: `Successfully verified Booking Not : ${TransactionId}`,
               success: true
             });
       
@@ -188,7 +188,9 @@ export class AdminCustomerController {
           }
         }
 
-        static async UpdateCustomer(req: Request, res: Response) {
+
+
+      static async UpdateCustomer(req: Request, res: Response) {
           const { id } = req.params;
           const updateData = req.body;
       
@@ -235,7 +237,7 @@ export class AdminCustomerController {
       }
 
         
-        static async GetCustomerByParams(req: Request, res: Response) {
+      static async GetCustomerByParams(req: Request, res: Response) {
               
           let data ;
 
@@ -269,5 +271,205 @@ export class AdminCustomerController {
               );
           }
 
+      }
+
+      static async DeletedUser(req: Request, res: Response) {
+        try {
+          const { UserId } = req.params;
+    
+          // ✅ Validasi jika MessageId tidak ada
+          if (!UserId) {
+            return res.status(400).json({
+              requestId: uuidv4(),
+              data: null,
+              message: "UserId is required!",
+              success: false
+            });
+          }
+    
+          // ✅ Cari booking berdasarkan MessageId
+          const UserData = await UserModel.findOneAndUpdate( 
+            { _id : new mongoose.Types.ObjectId(UserId), isDeleted: false },
+            { isDeleted: true },
+            { new: true } // Mengembalikan data yang diperbarui
+          );
+
+
+          if (!UserData) {
+            return res.status(404).json({
+              requestId: uuidv4(),
+              data: null,
+              message: "User Data not found!",
+              success: false
+            });
+          }    
+          
+          return res.status(200).json({
+            requestId: uuidv4(),
+            data: { acknowledged: true },
+            message: `Successfully deleted User: ${UserData.name}`,
+            success: true
+          });
+    
+        } catch (error) {
+          
+          console.error("Error deleted User Data:", error);
+          return res.status(500).json({
+            requestId: uuidv4(),
+            data: null,
+            message: (error as Error).message || "Internal Server Error",
+            success: false
+          });
+        }
+      }
+       
+      static async SetBlock(req: Request, res: Response) {
+        try {
+          const { id } = req.params;
+ 
+          // ✅ Validasi jika TransactionId tidak ada
+          if (!id) {
+
+            return res.status(400).json({
+              requestId: uuidv4(),
+              data: null,
+              message: "ID is required!",
+              success: false
+            });
+
+          }
+
+         
+    
+          // ✅ Cari booking berdasarkan TransactionId
+          const User = await UserModel.findOne({
+
+            _id: new mongoose.Types.ObjectId(id),
+            isDeleted: false
+
+          });
+    
+          if (!User) {
+            return res.status(404).json({
+              requestId: uuidv4(),
+              data: null,
+              message: "User not found!",
+              success: false
+            });
+          }
+    
+          // ✅ Update status verified
+          const blockUser = await UserModel.findOneAndUpdate(
+            { _id: new mongoose.Types.ObjectId(id), isDeleted: false },
+            {
+              block: true
+            },
+            { new: true } // Mengembalikan data yang sudah diperbarui
+          );
+    
+          if (!blockUser) {
+            return res.status(400).json({
+              requestId: uuidv4(),
+              data: null,
+              message: `Failed to block account ${User?.name}`,
+              success: false
+            });
+          }
+    
+          console.log(`Block account ${User?.name}`);
+    
+          return res.status(200).json({
+            requestId: uuidv4(),
+            data: { acknowledged: true },
+            message: `Successfully block account ${User?.name}`,
+            success: true
+          });
+    
+        } catch (error) {
+          console.error("Error block User:", error);
+    
+          return res.status(500).json({
+            requestId: uuidv4(),
+            data: null,
+            message: (error as Error).message || "Internal Server Error",
+            success: false
+          });
+        }
+      }
+
+      static async SetActive(req: Request, res: Response) {
+        try {
+          const { id } = req.params;
+    
+
+          
+          // ✅ Validasi jika TransactionId tidak ada
+          if (!id) {
+
+            return res.status(400).json({
+              requestId: uuidv4(),
+              data: null,
+              message: "ID is required!",
+              success: false
+            });
+            
+          }
+
+         
+    
+          // ✅ Cari booking berdasarkan TransactionId
+          const User = await UserModel.findOne({
+
+            _id: new mongoose.Types.ObjectId(id),
+            isDeleted: false
+
+          });
+    
+          if (!User) {
+            return res.status(404).json({
+              requestId: uuidv4(),
+              data: null,
+              message: "User not found!",
+              success: false
+            });
+          }
+    
+          // ✅ Update status verified
+          const blockUser = await UserModel.findOneAndUpdate(
+            { _id: new mongoose.Types.ObjectId(id), isDeleted: false },
+            {
+              block: false
+            },
+            { new: true } // Mengembalikan data yang sudah diperbarui
+          );
+    
+          if (!blockUser) {
+            return res.status(400).json({
+              requestId: uuidv4(),
+              data: null,
+              message: `Failed to active account ${User?.name}!`,
+              success: false
+            });
+          }
+    
+          console.log(`Booking ${blockUser.name} has been verified`);
+    
+          return res.status(200).json({
+            requestId: uuidv4(),
+            data: { acknowledged: true },
+            message: `Successfully active account ${User?.name}`,
+            success: true
+          });
+    
+        } catch (error) {
+          console.error("Error active account:", error);
+    
+          return res.status(500).json({
+            requestId: uuidv4(),
+            data: null,
+            message: (error as Error).message || "Internal Server Error",
+            success: false
+          });
+        }
       }
 }

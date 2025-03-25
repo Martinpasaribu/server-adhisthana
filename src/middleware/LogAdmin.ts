@@ -16,7 +16,7 @@ const CekUser = async (id: any) => {
 
 const CekBooking= async (id: any) => {
 
-  let booking = await BookingModel.findOne({ orderId: id, isDeleted: false }).select("name email phone orderId");
+  let booking = await BookingModel.findOne({ orderId: id, isDeleted: false }).select("name email phone orderId checkIn checkOut verified reservation night amountTotal otaTotal room createdAt");
   console.log("Update Data user di LOG :", booking );
 
   return booking;
@@ -32,8 +32,8 @@ export const logActivity = (action: string) => {
 
     try {
 
-      let user = await CekUser(req.params.id);
-      let booking = await CekBooking(req.params.TransactionId);
+      let user = await CekUser(req.params.id || req.params.MessageId || req.params.UserId);
+      let booking = await CekBooking(req.params.TransactionId || req.query.id || req.body.id_TRX);
       let adminId = req.body.adminId || req.session.userId; 
       const ipAddress = req.ip || req.socket.remoteAddress;
       const routePath = req.originalUrl; // Dapatkan route yang diakses
@@ -41,6 +41,7 @@ export const logActivity = (action: string) => {
       let target = ""; // Target data yang akan dicatat di log
       let statement1 = ""; // Target data yang akan dicatat di log
       let statement2 = ""; // Target data yang akan dicatat di log
+      let data = "";
       let changedPrices: IChangedPrices | null = null; // ⬅️ Inisialisasi awal
 
       let date = [];
@@ -92,39 +93,89 @@ export const logActivity = (action: string) => {
 
         case routePath.startsWith("/api/v1/admin/customer/deleted-message"):
           type = "Customer"
-          target = req.params.MessageId || "-";
+          target = user ? (`ID  : ${user._id} ,  Name : ${user.name}`) : "-";
+          break;
 
+        case routePath.startsWith("/api/v1/admin/customer/deleted"):
+          type = "Customer"
+          target = user ? (`ID  : ${user._id} ,  Name : ${user.name}`) : "-";
+          data = `${user}`
+          break;
+
+        case routePath.startsWith("/api/v1/admin/customer/set-block"):
+          type = "Customer"
+          target = user ? (`ID  : ${user._id} ,  Name : ${user.name}`) : "-";
+          data = `${user}`
+          break;
+
+        case routePath.startsWith("/api/v1/admin/customer/set-active"):
+          type = "Customer"
+          target = user ? (`ID  : ${user._id} ,  Name : ${user.name}`) : "-";
+          data = `${user}`
           break;
 
         case routePath.startsWith("/api/v1/admin/customer/update"):
           type = "Customer"
-          target = user ? (`Name : ${user.name}, Id : ${user._id}`) : "-";  // Mengambil nama user jika ada, jika tidak ada tampilkan "-"
-          statement1 = `New Data : ${JSON.stringify(req.body, null, 2)}`;
+          target = user ? (`ID  : ${user._id} ,  Name : ${user.name}`) : "-";
+          const body = req.body;
+
+          // Ambil hanya properti yang bukan indeks angka
+          const filteredData = Object.keys(body)
+          .filter(key => Number.isNaN(Number(key)))
+            .reduce((acc, key) => ({ ...acc, [key]: body[key] }), {}); // Simpan properti lainnya
+
+          statement1 = `New Data : ${JSON.stringify(filteredData, null, 2)}`;
+
           statement2 = `Old Data : ${user}`
           break;
           
         case routePath.startsWith("/api/v1/admin/booking/set-verified"):
           type = "Booking"
           // const user = await CekUser(req.params.TransactionId);
-          target = booking ? (`Name : ${booking.name}, TRX : ${booking.orderId}`) : "-";
+          target = booking ? (`ID  : ${booking.orderId} ,  Name : ${booking.name}`) : "-";
 
           break;
           
         case routePath.startsWith("/api/v1/admin/booking/set-checkout"):
           type = "Booking"
           // const user = await CekUser(req.params.TransactionId);
-          target = booking ? (`Name : ${booking.name}, TRX : ${booking.orderId}`) : "-";
+          target = booking ? (`ID : ${booking.orderId} ,  Name : ${booking.name}`) : "-";
 
           break;
 
-        case routePath.startsWith("/api/v1/booking"):
-          target = req.body.bookingCode || req.params.id || "Tidak ada Booking Data";
+        case routePath.startsWith("/api/v1/reservation/add-reservation"):
+          type = "Reservation"
+          target = req.body.name || []
+          data = `${JSON.stringify(req.body, null, 2)} `|| '-';
+          break;
+
+        case routePath.startsWith("/api/v1/reservation/pay-transaction"):
+          type = "Reservation"
+          target = booking ? (`ID : ${booking.orderId} ,  Name : ${booking.name}`) : "-";
+          data = `${booking}`
           break;
           
 
-        case routePath.startsWith("/api/v1/user"):
-          target = req.body.username || req.params.id || "Tidak ada User Data";
+        case routePath.startsWith("/api/v1/site/minder/del-transaction"):
+          type = "Management"
+          target = booking ? (`ID : ${booking.orderId} ,  Name : ${booking.name}`) : "-";
+
           break;
+
+        case routePath.startsWith("/api/v1/site/minder/del-booking"):
+          type = "Management"
+          target = booking ? (`ID : ${booking.orderId} ,  Name : ${booking.name}`) : "-";
+          data = `${booking}`
+          break;
+
+        case routePath.startsWith("/api/v1/site/minder/edit-date-transaction"):
+          type = "Transaction"
+          target = booking ? (`ID : ${booking.orderId} ,  Name : ${booking.name}`) : "-";
+          statement1 = `New Date : ${JSON.stringify(req.body.Edit_Date, null, 2)}`;
+          statement2 = `Old Date :  In [ ${booking?.checkIn} ] -  Out [ ${booking?.checkOut} ]`
+          break;
+
+
 
         default:
           target = req.params.id || req.body.name || "Tidak ada Target Data";
@@ -141,6 +192,7 @@ export const logActivity = (action: string) => {
         statement2,
         changedPrices,
         date,
+        data,
         action,
         target,
         ipAddress,
@@ -156,6 +208,7 @@ export const logActivity = (action: string) => {
         statement1,
         statement2,
         date,
+        data,
         target,
         ipAddress,
         routePath,

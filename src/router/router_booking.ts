@@ -1,6 +1,6 @@
 import express, { Request, Response, NextFunction } from "express";
 import { BookingController } from "../controller/Booking/controller_booking";
-import activityLogger from "../middleware/logActivity";
+import activityLogger from "../middleware/LogAPI";
 import { verifyID } from "../middleware/VerifyId";
 import { verifyToken } from "../middleware/VerifyToken";
 

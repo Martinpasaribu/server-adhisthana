@@ -576,59 +576,8 @@ class SetMinderController {
             try {
                 let ShortAvailable;
                 let Transaction;
-                const { id } = req.query;
-                ShortAvailable = yield models_ShortAvailable_1.ShortAvailableModel.findOneAndUpdate({ transactionId: id }, { isDeleted: false }, { new: true, runValidators: true });
-                if (!ShortAvailable) {
-                    return res.status(404).json({
-                        requestId: (0, uuid_1.v4)(),
-                        data: null,
-                        message: "Data ShortAvailable not found.",
-                        success: false
-                    });
-                }
-                yield models_ShortAvailable_1.ShortAvailableModel.updateMany({ transactionId: id }, { isDeleted: true });
-                Transaction = yield models_transaksi_1.TransactionModel.findOneAndUpdate({ bookingId: id }, { isDeleted: false }, { new: true, runValidators: true });
-                if (!Transaction) {
-                    return res.status(404).json({
-                        requestId: (0, uuid_1.v4)(),
-                        data: null,
-                        message: "Transaction not found.",
-                        success: false
-                    });
-                }
-                yield models_transaksi_1.TransactionModel.updateMany({ bookingId: id }, { isDeleted: true });
-                res.status(201).json({
-                    requestId: (0, uuid_1.v4)(),
-                    data: [],
-                    message: `Successfully Deleted ID : ${Transaction.name}  `,
-                    success: true
-                });
-            }
-            catch (error) {
-                res.status(400).json({
-                    requestId: (0, uuid_1.v4)(),
-                    data: null,
-                    message: error.message,
-                    success: false
-                });
-            }
-        });
-    }
-    static DeletedBooking(req, res) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                let ShortAvailable;
-                let Transaction;
                 let Booking;
                 const { id } = req.query;
-                if (!id) {
-                    return res.status(400).json({
-                        requestId: (0, uuid_1.v4)(),
-                        data: null,
-                        message: "Id is null",
-                        success: false
-                    });
-                }
                 ShortAvailable = yield models_ShortAvailable_1.ShortAvailableModel.findOneAndUpdate({ transactionId: id }, { isDeleted: false }, { new: true, runValidators: true });
                 if (!ShortAvailable) {
                     return res.status(404).json({
@@ -662,7 +611,69 @@ class SetMinderController {
                 res.status(201).json({
                     requestId: (0, uuid_1.v4)(),
                     data: [],
-                    message: `Successfully Deleted data : ${Booking.name}  `,
+                    message: `Successfully Deleted Transaction : ${Transaction.name}  `,
+                    success: true
+                });
+            }
+            catch (error) {
+                res.status(400).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: null,
+                    message: error.message,
+                    success: false
+                });
+            }
+        });
+    }
+    static DeletedBooking(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                let ShortAvailable;
+                let Transaction;
+                let Booking;
+                const { id } = req.query;
+                if (!id) {
+                    return res.status(400).json({
+                        requestId: (0, uuid_1.v4)(),
+                        data: null,
+                        message: "Id is null",
+                        success: false
+                    });
+                }
+                ShortAvailable = yield models_ShortAvailable_1.ShortAvailableModel.findOneAndUpdate({ transactionId: id }, { isDeleted: false }, { new: true, runValidators: true });
+                // if (!ShortAvailable) {
+                //     return res.status(404).json({
+                //         requestId: uuidv4(),
+                //         data: null,
+                //         message: "Data ShortAvailable not found.",
+                //         success: false
+                //     });
+                // }
+                yield models_ShortAvailable_1.ShortAvailableModel.updateMany({ transactionId: id }, { isDeleted: true });
+                Transaction = yield models_transaksi_1.TransactionModel.findOneAndUpdate({ bookingId: id }, { isDeleted: false }, { new: true, runValidators: true });
+                if (!Transaction) {
+                    return res.status(404).json({
+                        requestId: (0, uuid_1.v4)(),
+                        data: null,
+                        message: "Transaction not found.",
+                        success: false
+                    });
+                }
+                yield models_transaksi_1.TransactionModel.updateMany({ bookingId: id }, { isDeleted: true });
+                Booking = yield models_booking_1.BookingModel.findOneAndUpdate({ orderId: id }, { isDeleted: false }, { new: true, runValidators: true });
+                if (!Booking) {
+                    return res.status(404).json({
+                        requestId: (0, uuid_1.v4)(),
+                        data: null,
+                        message: "Booking not found.",
+                        success: false
+                    });
+                }
+                yield models_booking_1.BookingModel.updateMany({ orderId: id }, { isDeleted: true });
+                res.status(201).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: [],
+                    message: `Successfully Deleted Booking : ${Booking.name}  `,
                     success: true
                 });
             }
@@ -684,13 +695,20 @@ class SetMinderController {
             // Konversi ke format ISO 8601
             const checkIn = new Date(`${SetcheckIn}T08:00:00.000Z`).toISOString();
             const checkOut = new Date(`${SetcheckOut}T05:00:00.000Z`).toISOString();
-            // new Date() akan otomatis mengonversi string ISO 8601 menjadi objek Date di JavaScript.
-            // Jika Mongoose mendeteksi bahwa field dalam skema bertipe Date, maka MongoDB akan menyimpannya dalam format ISO 8601 seperti berikut:
+            // Konversi ke objek Date
+            const checkin = new Date(`${SetcheckIn}T08:00:00.000Z`);
+            const checkout = new Date(`${SetcheckOut}T05:00:00.000Z`);
+            // Validasi apakah hasil konversi adalah objek Date yang valid
+            if (isNaN(checkin.getTime()) || isNaN(checkout.getTime())) {
+                throw new Error("Format tanggal tidak valid");
+            }
+            const night = Math.max(0, (checkout.getTime() - checkin.getTime()) / (1000 * 60 * 60 * 24));
             try {
                 // Jalankan dua update secara paralel menggunakan Promise.all() agar lebih cepat
                 const [ShortAvailable, Transaction] = yield Promise.all([
                     models_ShortAvailable_1.ShortAvailableModel.findOneAndUpdate({ transactionId: id_TRX, isDeleted: false }, { checkIn, checkOut }, { new: true, runValidators: true }),
-                    models_transaksi_1.TransactionModel.findOneAndUpdate({ bookingId: id_TRX, isDeleted: false }, { checkIn, checkOut }, { new: true, runValidators: true })
+                    models_transaksi_1.TransactionModel.findOneAndUpdate({ bookingId: id_TRX, isDeleted: false }, { checkIn, checkOut, night }, { new: true, runValidators: true }),
+                    models_booking_1.BookingModel.findOneAndUpdate({ orderId: id_TRX, isDeleted: false }, { checkIn, checkOut }, { new: true, runValidators: true })
                 ]);
                 // Cek apakah data ditemukan
                 if (!ShortAvailable || !Transaction) {

@@ -8,6 +8,7 @@ interface IUser extends Document {
     name : string;
     password: string;
     email : string;
+    block : boolean;
     phone : number;
     subject : string;
     message : string;
@@ -57,6 +58,11 @@ const UserSchema: Schema = new Schema(
         createAt: {
             type: Number,
             default: Date.now
+        },
+
+        block: {
+            type: Boolean,
+            default: false
         },
 
         BookingId: {

@@ -694,87 +694,9 @@ export class SetMinderController {
           try {
             let ShortAvailable ;
             let Transaction ;
+            let Booking;
 
             const { id } = req.query;
-            
-            ShortAvailable= await ShortAvailableModel.findOneAndUpdate({transactionId :  id},{ isDeleted: false },{ new: true, runValidators: true });
-          
-            if (!ShortAvailable) {
-                return res.status(404).json({
-                    requestId: uuidv4(),
-                    data: null,
-                    message: "Data ShortAvailable not found.",
-                    success: false
-                });
-            }
-
-             await ShortAvailableModel.updateMany(
-                { transactionId: id },
-                { isDeleted: true }
-              );
-
-            Transaction = await TransactionModel.findOneAndUpdate({bookingId :  id},{ isDeleted: false },{ new: true, runValidators: true });
-          
-            if (!Transaction) {
-                return res.status(404).json({
-                    requestId: uuidv4(),
-                    data: null,
-                    message: "Transaction not found.",
-                    success: false
-                });
-            }
-            await TransactionModel.updateMany(
-              { bookingId: id },
-              { isDeleted: true }
-            );
-
-
-            res.status(201).json(
-                {
-                    requestId: uuidv4(), 
-                    data: [],
-                    message: `Successfully Deleted ID : ${Transaction.name}  `,
-                    success: true
-                }
-            );
-
-
-          } catch (error) {
-            
-            res.status(400).json(
-                {
-                    requestId: uuidv4(), 
-                    data: null,
-                    message:  (error as Error).message,
-                    success: false
-                }
-            );
-
-          }
-
-        }
-
-        static async DeletedBooking(req: Request, res: Response){
-
-          try {
-            let ShortAvailable ;
-            let Transaction ;
-            let Booking ;
-
-            const { id } = req.query;
-
-            if(!id){
-
-              return res.status(400).json(
-                  {
-                      requestId: uuidv4(), 
-                      data: null,
-                      message:  "Id is null",
-                      success: false
-                  }
-              );
-
-            }
             
             ShortAvailable= await ShortAvailableModel.findOneAndUpdate({transactionId :  id},{ isDeleted: false },{ new: true, runValidators: true });
           
@@ -823,11 +745,106 @@ export class SetMinderController {
             );
 
 
+
             res.status(201).json(
                 {
                     requestId: uuidv4(), 
                     data: [],
-                    message: `Successfully Deleted data : ${Booking.name}  `,
+                    message: `Successfully Deleted Transaction : ${Transaction.name}  `,
+                    success: true
+                }
+            );
+
+
+          } catch (error) {
+            
+            res.status(400).json(
+                {
+                    requestId: uuidv4(), 
+                    data: null,
+                    message:  (error as Error).message,
+                    success: false
+                }
+            );
+
+          }
+
+        }
+
+        static async DeletedBooking(req: Request, res: Response){
+
+          try {
+            let ShortAvailable ;
+            let Transaction ;
+            let Booking ;
+
+            const { id } = req.query;
+
+            if(!id){
+
+              return res.status(400).json(
+                  {
+                      requestId: uuidv4(), 
+                      data: null,
+                      message:  "Id is null",
+                      success: false
+                  }
+              );
+
+            }
+            
+            ShortAvailable = await ShortAvailableModel.findOneAndUpdate({transactionId :  id},{ isDeleted: false },{ new: true, runValidators: true });
+          
+            // if (!ShortAvailable) {
+            //     return res.status(404).json({
+            //         requestId: uuidv4(),
+            //         data: null,
+            //         message: "Data ShortAvailable not found.",
+            //         success: false
+            //     });
+            // }
+
+             await ShortAvailableModel.updateMany(
+                { transactionId: id },
+                { isDeleted: true }
+              );
+
+            Transaction = await TransactionModel.findOneAndUpdate({bookingId :  id},{ isDeleted: false },{ new: true, runValidators: true });
+          
+            if (!Transaction) {
+                return res.status(404).json({
+                    requestId: uuidv4(),
+                    data: null,
+                    message: "Transaction not found.",
+                    success: false
+                });
+            }
+            await TransactionModel.updateMany(
+              { bookingId: id },
+              { isDeleted: true }
+            );
+
+            Booking = await BookingModel.findOneAndUpdate({orderId :  id},{ isDeleted: false },{ new: true, runValidators: true });
+          
+            if (!Booking) {
+                return res.status(404).json({
+                    requestId: uuidv4(),
+                    data: null,
+                    message: "Booking not found.",
+                    success: false
+                });
+            }
+            await BookingModel.updateMany(
+              { orderId: id },
+              { isDeleted: true }
+            );
+
+
+            res.status(201).json(
+                {
+                    requestId: uuidv4(), 
+                    data: [],
+                    message: `Successfully Deleted Booking : ${Booking.name}  `,
                     success: true
                 }
             );
@@ -859,8 +876,17 @@ export class SetMinderController {
           const checkIn = new Date(`${SetcheckIn}T08:00:00.000Z`).toISOString();
           const checkOut = new Date(`${SetcheckOut}T05:00:00.000Z`).toISOString();
 
-          // new Date() akan otomatis mengonversi string ISO 8601 menjadi objek Date di JavaScript.
-          // Jika Mongoose mendeteksi bahwa field dalam skema bertipe Date, maka MongoDB akan menyimpannya dalam format ISO 8601 seperti berikut:
+          // Konversi ke objek Date
+          const checkin: Date = new Date(`${SetcheckIn}T08:00:00.000Z`);
+          const checkout: Date = new Date(`${SetcheckOut}T05:00:00.000Z`);
+
+          // Validasi apakah hasil konversi adalah objek Date yang valid
+          if (isNaN(checkin.getTime()) || isNaN(checkout.getTime())) {
+            throw new Error("Format tanggal tidak valid");
+          }
+
+          const night: number = Math.max(0, (checkout.getTime() - checkin.getTime()) / (1000 * 60 * 60 * 24));
+
 
           try {
 
@@ -873,6 +899,11 @@ export class SetMinderController {
                 ),
                 TransactionModel.findOneAndUpdate(
                     { bookingId: id_TRX, isDeleted: false },
+                    { checkIn, checkOut, night },
+                    { new: true, runValidators: true }
+                ),
+                BookingModel.findOneAndUpdate(
+                    { orderId: id_TRX, isDeleted: false },
                     { checkIn, checkOut },
                     { new: true, runValidators: true }
                 )

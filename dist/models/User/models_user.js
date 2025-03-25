@@ -65,6 +65,10 @@ const UserSchema = new mongoose_1.Schema({
         type: Number,
         default: Date.now
     },
+    block: {
+        type: Boolean,
+        default: false
+    },
     BookingId: {
         type: String,
         required: false

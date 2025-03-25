@@ -21,6 +21,7 @@ interface IActivityLog extends Document {
   statement1?: string;
   statement2?: string;
   date?: string[]; // 🔹 Ubah ke array string langsung
+  data?: string[]; // 🔹 Ubah ke array string langsung
   changedPrices?: IChangedPrices;
   timestamp: Date;
   ipAddress?: string;
@@ -35,6 +36,7 @@ const ActivityLogSchema: Schema = new Schema({
   statement1: { type: String }, // Data yang dimodifikasi (opsional)
   statement2: { type: String }, // Data yang dimodifikasi (opsional)
   date: [{ type: String }], // 🔹 Ubah jadi array string, bukan array objek
+  data: [{ type: String }], // 🔹 Ubah jadi array string, bukan array objek
   role: { type: String }, // Data yang dimodifikasi (opsional)
   changedPrices: { type: Schema.Types.Mixed, default: {} }, // ✅ Simpan sebagai objek fleksibel
   timestamp: { type: Date, default: Date.now },

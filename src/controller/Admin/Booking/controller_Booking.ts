@@ -72,7 +72,7 @@ export class AdminBookingController {
             const updatedBooking = await BookingModel.findOneAndUpdate(
               { orderId: TransactionId, isDeleted: false },
               {
-                verified: { status: true, timeIn: Date.now() }
+                $set: { "verified.status": true, "verified.timeIn": Date.now() }
               },
               { new: true } // Mengembalikan data yang sudah diperbarui
             );
@@ -140,7 +140,7 @@ export class AdminBookingController {
             const updatedBooking = await BookingModel.findOneAndUpdate(
               { orderId: TransactionId, isDeleted: false },
               {
-                verified: { status: null, timeOut: Date.now() }
+                $set: { "verified.status": false, "verified.timeOut": Date.now() }
               },
               { new: true } // Mengembalikan data yang sudah diperbarui
             );

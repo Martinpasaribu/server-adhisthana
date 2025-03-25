@@ -67,17 +67,19 @@ const BookingSchema = new mongoose_1.Schema({
     verified: {
         status: {
             type: Boolean,
-            default: false,
+            default: null,
         },
         time: {
             type: Number,
             default: Date.now, // Otomatis set timestamp saat diverifikasi
         },
-        TimeIn: {
+        timeIn: {
             type: Number,
+            default: '0',
         },
-        TimeOut: {
+        timeOut: {
             type: Number,
+            default: '0',
         }
     },
     reservation: {

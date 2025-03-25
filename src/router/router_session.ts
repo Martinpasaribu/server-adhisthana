@@ -1,5 +1,5 @@
 import express, { Request, Response, NextFunction } from "express";
-import activityLogger from "../middleware/logActivity";
+import activityLogger from "../middleware/LogAPI";
 import { SessionController } from "../controller/SessionManage/controller_session";
 
 

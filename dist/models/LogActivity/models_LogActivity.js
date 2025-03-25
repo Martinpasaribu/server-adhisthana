@@ -44,6 +44,7 @@ const ActivityLogSchema = new mongoose_1.Schema({
     statement1: { type: String }, // Data yang dimodifikasi (opsional)
     statement2: { type: String }, // Data yang dimodifikasi (opsional)
     date: [{ type: String }], // 🔹 Ubah jadi array string, bukan array objek
+    data: [{ type: String }], // 🔹 Ubah jadi array string, bukan array objek
     role: { type: String }, // Data yang dimodifikasi (opsional)
     changedPrices: { type: mongoose_1.Schema.Types.Mixed, default: {} }, // ✅ Simpan sebagai objek fleksibel
     timestamp: { type: Date, default: Date.now },
