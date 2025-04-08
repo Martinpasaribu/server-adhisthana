@@ -67,50 +67,107 @@ class UserController {
             }
         });
     }
+    // static async  Register  (req : any , res:any)  {
+    //     const { title , name, email, password, phone } = req.body;
+    //     // if (password !== confPassword) {
+    //     //     return res.status(400).json({ msg: "Passwords are not the same" });
+    //     // }
+    //     let user
+    //     // 2. Validasi Apakah Email Benar-benar Ada dengan hunter.io
+    //     const isEmailValid = await verifyEmail(email);
+    //     if (!isEmailValid) {
+    //         return res.status(400).json({ message: `Email : ${email} does not exist or is invalid.` });
+    //     }
+    //     if( password && password ){
+    //         const salt = await bcrypt.genSalt();
+    //         const hashPassword = await bcrypt.hash(password, salt);
+    //         user = await UserModel.create({
+    //             title: title,
+    //             name: name,
+    //             email: email,
+    //             password: hashPassword,
+    //             phone: phone
+    //         });
+    //     } else {
+    //         user = await UserModel.create({
+    //             title: title,
+    //             name: name,
+    //             email: email,
+    //             phone: phone
+    //         });
+    //     }
+    //     try {
+    //         res.status(201).json(
+    //             {
+    //                 requestId: uuidv4(), 
+    //                 data: user,
+    //                 message: "Successfully register user.",
+    //                 success: true
+    //             }
+    //         );
+    //     } catch (error) {
+    //         res.status(400).json(
+    //             {
+    //                 requestId: uuidv4(), 
+    //                 data: null,
+    //                 message:  (error as Error).message,
+    //                 success: false
+    //             }
+    //         );
+    //     }
+    // }
     static Register(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const { title, name, email, password, phone } = req.body;
-            // if (password !== confPassword) {
-            //     return res.status(400).json({ msg: "Passwords are not the same" });
-            // }
-            let user;
-            // 2. Validasi Apakah Email Benar-benar Ada dengan hunter.io
-            const isEmailValid = yield (0, ValidationEmail_1.verifyEmail)(email);
-            if (!isEmailValid) {
-                return res.status(400).json({ message: `Email : ${email} does not exist or is invalid.` });
-            }
-            if (password && password) {
-                const salt = yield bcrypt_1.default.genSalt();
-                const hashPassword = yield bcrypt_1.default.hash(password, salt);
-                user = yield models_user_1.default.create({
-                    title: title,
-                    name: name,
-                    email: email,
-                    password: hashPassword,
-                    phone: phone
-                });
-            }
-            else {
-                user = yield models_user_1.default.create({
-                    title: title,
-                    name: name,
-                    email: email,
-                    phone: phone
-                });
-            }
             try {
-                res.status(201).json({
+                // 1. Cek apakah email sudah terdaftar
+                const existingUser = yield models_user_1.default.findOne({ email });
+                if (existingUser) {
+                    return res.status(400).json({
+                        requestId: (0, uuid_1.v4)(),
+                        data: null,
+                        message: `Email ${email} sudah terdaftar.`,
+                        success: false
+                    });
+                }
+                // 2. Validasi Email melalui hunter.io (atau layanan lain)
+                const isEmailValid = yield (0, ValidationEmail_1.verifyEmail)(email);
+                if (!isEmailValid) {
+                    return res.status(400).json({
+                        requestId: (0, uuid_1.v4)(),
+                        data: null,
+                        message: `Email ${email} tidak valid atau tidak aktif.`,
+                        success: false
+                    });
+                }
+                let hashPassword = "";
+                // 3. Hash password jika ada
+                if (password) {
+                    const salt = yield bcrypt_1.default.genSalt();
+                    hashPassword = yield bcrypt_1.default.hash(password, salt);
+                }
+                // 4. Simpan user ke DB
+                const user = yield models_user_1.default.create({
+                    title,
+                    name,
+                    email,
+                    password: hashPassword || undefined,
+                    phone
+                });
+                // 5. Respon sukses
+                return res.status(201).json({
                     requestId: (0, uuid_1.v4)(),
                     data: user,
-                    message: "Successfully register user.",
+                    message: "User berhasil didaftarkan.",
                     success: true
                 });
             }
             catch (error) {
-                res.status(400).json({
+                console.error("Register Error:", error);
+                return res.status(500).json({
                     requestId: (0, uuid_1.v4)(),
                     data: null,
-                    message: error.message,
+                    message: error.message || "Terjadi kesalahan pada server.",
                     success: false
                 });
             }
