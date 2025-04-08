@@ -10,7 +10,7 @@ export const  CekUser = async (email : string) => {
         
         return users._id
 
-    }else {
+    } else {
        
         return null;
     } 
