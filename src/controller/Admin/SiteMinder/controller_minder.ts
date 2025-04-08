@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
 
 import RoomModel from '../../../models/Room/models_room';
-
+import moment from 'moment';
 import { NationalHolidays, PAID, PAID_ADMIN } from '../../../constant'
 import { ShortAvailableController } from '../../ShortAvailable/controller_short';
 import { SiteMinderModel } from '../../../models/SiteMinder/models_SitemMinder';
@@ -14,6 +14,7 @@ import { TransactionModel } from '../../../models/Transaction/models_transaksi';
 import { generateDateRange } from './components/GenerateDateRange';
 import { ActivityLogModel } from '../../../models/LogActivity/models_LogActivity';
 import { BookingModel } from '../../../models/Booking/models_booking';
+import { UpdateRefund } from './components/UpdateRefundBooking';
 
 
 export class SetMinderController {
@@ -876,22 +877,39 @@ export class SetMinderController {
           const checkIn = new Date(`${SetcheckIn}T08:00:00.000Z`).toISOString();
           const checkOut = new Date(`${SetcheckOut}T05:00:00.000Z`).toISOString();
 
-          // Konversi ke objek Date
-          const checkin: Date = new Date(`${SetcheckIn}T08:00:00.000Z`);
-          const checkout: Date = new Date(`${SetcheckOut}T05:00:00.000Z`);
+          const checkin = new Date(SetcheckIn);
+          checkin.setHours(0, 0, 0, 0);
+          
+          const checkout = new Date(SetcheckOut);
+          checkout.setHours(0, 0, 0, 0);
+          
+          const night = Math.max(0, (checkout.getTime() - checkin.getTime()) / (1000 * 60 * 60 * 24));
+          
+          const DataRoom = await BookingModel.findOne({ orderId:id_TRX, isDeleted : false })
 
-          // Validasi apakah hasil konversi adalah objek Date yang valid
-          if (isNaN(checkin.getTime()) || isNaN(checkout.getTime())) {
-            throw new Error("Format tanggal tidak valid");
+          if (!DataRoom || !DataRoom.room) {
+            throw new Error("Data booking tidak ditemukan");
           }
+          
+          const dateMinderStart = moment.utc(checkIn).format('YYYY-MM-DD'); 
+          const dateMinderEnd = moment.utc(checkOut).subtract(1, 'days').format('YYYY-MM-DD'); 
 
-          const night: number = Math.max(0, (checkout.getTime() - checkin.getTime()) / (1000 * 60 * 60 * 24));
+          const DataByDate = await SiteMinderModel.find({
+              isDeleted: false,
+              date: { $gte: dateMinderStart, $lte: dateMinderEnd }, 
+          });
 
 
+          const grossAmount = await UpdateRefund(DataRoom.room,DataByDate,night,checkin)
+
+          
+          console.log(`Hasil checkIn :${checkin}, checkOut :${checkout}, Night :${night}, grossAmount : ${grossAmount}, DataByDate : ${DataByDate} `)
+          
           try {
 
             // Jalankan dua update secara paralel menggunakan Promise.all() agar lebih cepat
             const [ShortAvailable, Transaction] = await Promise.all([
+
                 ShortAvailableModel.findOneAndUpdate(
                     { transactionId: id_TRX, isDeleted: false },
                     { checkIn, checkOut },
@@ -899,12 +917,12 @@ export class SetMinderController {
                 ),
                 TransactionModel.findOneAndUpdate(
                     { bookingId: id_TRX, isDeleted: false },
-                    { checkIn, checkOut, night },
+                    { checkIn, checkOut, grossAmount },
                     { new: true, runValidators: true }
                 ),
                 BookingModel.findOneAndUpdate(
                     { orderId: id_TRX, isDeleted: false },
-                    { checkIn, checkOut },
+                    { checkIn, checkOut, night, amountTotal:grossAmount },
                     { new: true, runValidators: true }
                 )
             ]);

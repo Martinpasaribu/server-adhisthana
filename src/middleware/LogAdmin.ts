@@ -159,7 +159,7 @@ export const logActivity = (action: string) => {
         case routePath.startsWith("/api/v1/site/minder/del-transaction"):
           type = "Management"
           target = booking ? (`ID : ${booking.orderId} ,  Name : ${booking.name}`) : "-";
-
+          data = `${booking}`
           break;
 
         case routePath.startsWith("/api/v1/site/minder/del-booking"):

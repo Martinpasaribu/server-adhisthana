@@ -16,6 +16,7 @@ exports.SetMinderController = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const uuid_1 = require("uuid");
 const models_room_1 = __importDefault(require("../../../models/Room/models_room"));
+const moment_1 = __importDefault(require("moment"));
 const constant_1 = require("../../../constant");
 const models_SitemMinder_1 = require("../../../models/SiteMinder/models_SitemMinder");
 const models_ShortAvailable_1 = require("../../../models/ShortAvailable/models_ShortAvailable");
@@ -23,6 +24,7 @@ const log_1 = require("../../../log");
 const models_transaksi_1 = require("../../../models/Transaction/models_transaksi");
 const GenerateDateRange_1 = require("./components/GenerateDateRange");
 const models_booking_1 = require("../../../models/Booking/models_booking");
+const UpdateRefundBooking_1 = require("./components/UpdateRefundBooking");
 class SetMinderController {
     static SetUpPrice(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -695,20 +697,29 @@ class SetMinderController {
             // Konversi ke format ISO 8601
             const checkIn = new Date(`${SetcheckIn}T08:00:00.000Z`).toISOString();
             const checkOut = new Date(`${SetcheckOut}T05:00:00.000Z`).toISOString();
-            // Konversi ke objek Date
-            const checkin = new Date(`${SetcheckIn}T08:00:00.000Z`);
-            const checkout = new Date(`${SetcheckOut}T05:00:00.000Z`);
-            // Validasi apakah hasil konversi adalah objek Date yang valid
-            if (isNaN(checkin.getTime()) || isNaN(checkout.getTime())) {
-                throw new Error("Format tanggal tidak valid");
-            }
+            const checkin = new Date(SetcheckIn);
+            checkin.setHours(0, 0, 0, 0);
+            const checkout = new Date(SetcheckOut);
+            checkout.setHours(0, 0, 0, 0);
             const night = Math.max(0, (checkout.getTime() - checkin.getTime()) / (1000 * 60 * 60 * 24));
+            const DataRoom = yield models_booking_1.BookingModel.findOne({ orderId: id_TRX, isDeleted: false });
+            if (!DataRoom || !DataRoom.room) {
+                throw new Error("Data booking tidak ditemukan");
+            }
+            const dateMinderStart = moment_1.default.utc(checkIn).format('YYYY-MM-DD');
+            const dateMinderEnd = moment_1.default.utc(checkOut).subtract(1, 'days').format('YYYY-MM-DD');
+            const DataByDate = yield models_SitemMinder_1.SiteMinderModel.find({
+                isDeleted: false,
+                date: { $gte: dateMinderStart, $lte: dateMinderEnd },
+            });
+            const grossAmount = yield (0, UpdateRefundBooking_1.UpdateRefund)(DataRoom.room, DataByDate, night, checkin);
+            console.log(`Hasil checkIn :${checkin}, checkOut :${checkout}, Night :${night}, grossAmount : ${grossAmount}, DataByDate : ${DataByDate} `);
             try {
                 // Jalankan dua update secara paralel menggunakan Promise.all() agar lebih cepat
                 const [ShortAvailable, Transaction] = yield Promise.all([
                     models_ShortAvailable_1.ShortAvailableModel.findOneAndUpdate({ transactionId: id_TRX, isDeleted: false }, { checkIn, checkOut }, { new: true, runValidators: true }),
-                    models_transaksi_1.TransactionModel.findOneAndUpdate({ bookingId: id_TRX, isDeleted: false }, { checkIn, checkOut, night }, { new: true, runValidators: true }),
-                    models_booking_1.BookingModel.findOneAndUpdate({ orderId: id_TRX, isDeleted: false }, { checkIn, checkOut }, { new: true, runValidators: true })
+                    models_transaksi_1.TransactionModel.findOneAndUpdate({ bookingId: id_TRX, isDeleted: false }, { checkIn, checkOut, grossAmount }, { new: true, runValidators: true }),
+                    models_booking_1.BookingModel.findOneAndUpdate({ orderId: id_TRX, isDeleted: false }, { checkIn, checkOut, night, amountTotal: grossAmount }, { new: true, runValidators: true })
                 ]);
                 // Cek apakah data ditemukan
                 if (!ShortAvailable || !Transaction) {
