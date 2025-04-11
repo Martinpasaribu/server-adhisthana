@@ -85,19 +85,19 @@ app.use(session({
 
 
 
-        secure: false,
-        httpOnly: true,      
-        maxAge: 1000 * 60 * 60 * 24, // 1 hari
+        // secure: false,
+        // httpOnly: true,      
+        // maxAge: 1000 * 60 * 60 * 24, // 1 hari
 
         
         
         // ===========  Chrome , edge , fireFox Production  ==============
 
 
-        // secure: process.env.NODE_ENV === 'production',
-        // sameSite: 'none',
-        // httpOnly: true, 
-        // maxAge: 1000 * 60 * 60 * 24, 
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'none',
+        httpOnly: true, 
+        maxAge: 1000 * 60 * 60 * 24, 
 
 
         // ===========  Safari Production ==============

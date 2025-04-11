@@ -39,7 +39,7 @@ class AuthController {
                 if (!recaptchaData.success || recaptchaData.score < 0.5) {
                     return res.status(400).json({ message: "reCAPTCHA verification failed. Please try again." });
                 }
-                const user = yield models_user_1.default.findOne({ email: req.body.email });
+                const user = yield models_user_1.default.findOne({ email: req.body.email, isDeleted: false });
                 if (!user) {
                     return res.status(404).json({ message: "User not found" });
                 }
@@ -374,9 +374,12 @@ class AuthController {
                     return res.status(400).json({ message: 'reCAPTCHA verification failed. Please try again.' });
                 }
                 // 2. Cari Admin berdasarkan email atau username
-                const admin = yield models_admin_1.default.findOne({ username: username });
+                const admin = yield models_admin_1.default.findOne({ username: username, isDeleted: false });
                 if (!admin)
                     return res.status(404).json({ message: 'User not found' });
+                const CekActive = yield models_admin_1.default.findOne({ username: admin.username, active: true, isDeleted: false });
+                if (!CekActive)
+                    return res.status(404).json({ message: 'User is not active' });
                 // 3. Periksa status akun admin
                 const statusMessages = {
                     block: 'User InActive',

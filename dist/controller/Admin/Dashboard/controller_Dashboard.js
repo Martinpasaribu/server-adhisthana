@@ -18,6 +18,7 @@ const models_room_1 = __importDefault(require("../../../models/Room/models_room"
 const models_transaksi_1 = require("../../../models/Transaction/models_transaksi");
 const models_user_1 = __importDefault(require("../../../models/User/models_user"));
 const models_ShortAvailable_1 = require("../../../models/ShortAvailable/models_ShortAvailable");
+const models_admin_1 = __importDefault(require("../../../models/Admin/models_admin"));
 class DashboardController {
     static ChartTransaction(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -132,6 +133,26 @@ class DashboardController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const user = yield models_user_1.default.find({ isDeleted: false });
+                // Kirim hasil response
+                res.status(200).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: user.length,
+                    success: true
+                });
+            }
+            catch (error) {
+                res.status(500).json({
+                    requestId: (0, uuid_1.v4)(),
+                    message: `Failed to fetch total user ${error}`,
+                    success: false
+                });
+            }
+        });
+    }
+    static TotalUserAdmin(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const user = yield models_admin_1.default.find({ isDeleted: false });
                 // Kirim hasil response
                 res.status(200).json({
                     requestId: (0, uuid_1.v4)(),
