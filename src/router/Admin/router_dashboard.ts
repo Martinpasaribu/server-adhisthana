@@ -12,6 +12,7 @@ const DashboardRouter: express.Router = express.Router();
 
 DashboardRouter.get("/get-total-room", verifyAdmin , DashboardController.TotalProduct);
 DashboardRouter.get("/get-total-user", verifyAdmin , DashboardController.TotalUser);
+DashboardRouter.get("/get-total-user-admin", verifyAdmin , DashboardController.TotalUserAdmin);
 DashboardRouter.get("/get-cart-transaction", verifyAdmin, DashboardController.ChartTransaction); 
 DashboardRouter.get("/get-most-purchased", DashboardController.MostPurchased); 
 

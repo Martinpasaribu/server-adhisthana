@@ -61,6 +61,7 @@ var router_dashboard_1 = require("./router/Admin/router_dashboard");
 var router_admin_booking_1 = require("./router/Admin/router_admin_booking");
 var router_admin_customer_1 = require("./router/Admin/router_admin_customer");
 var router_logging_1 = require("./router/Admin/router_logging");
+var router_report_1 = require("./router/Admin/router_report");
 var app = express_1["default"]();
 dotenv_1["default"].config();
 app.use(cors_1["default"]({
@@ -98,12 +99,7 @@ app.use(express_session_1["default"]({
     store: store,
     cookie: {
         //  ==========  Development  ============
-        // secure: false,
-        // httpOnly: true,      
-        // maxAge: 1000 * 60 * 60 * 24, // 1 hari
-        // ===========  Chrome , edge , fireFox Production  ==============
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'none',
+        secure: false,
         httpOnly: true,
         maxAge: 1000 * 60 * 60 * 24
     }
@@ -136,6 +132,7 @@ app.use("/api/v1/dashboard", router_dashboard_1["default"]);
 app.use("/api/v1/admin/booking", router_admin_booking_1["default"]);
 app.use("/api/v1/admin/customer", router_admin_customer_1["default"]);
 app.use("/api/v1/admin/log", router_logging_1["default"]);
+app.use("/api/v1/admin/report", router_report_1["default"]);
 app.use("/api/v1/instagram", router_instagram_1["default"]);
 app.use("/api/v1/contact", router_contact_1["default"]);
 app.use("/api/v1/booking", router_booking_1["default"]);

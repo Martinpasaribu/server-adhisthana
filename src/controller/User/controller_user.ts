@@ -137,7 +137,7 @@ export class UserController {
         const { title, name, email, password, phone } = req.body;
     
         try {
-            
+
             // 1. Cek apakah email sudah terdaftar
             const existingUser = await UserModel.findOne({ email });
             if (existingUser) {
@@ -151,6 +151,7 @@ export class UserController {
     
             // 2. Validasi Email melalui hunter.io (atau layanan lain)
             const isEmailValid = await verifyEmail(email);
+            
             if (!isEmailValid) {
                 return res.status(400).json({
                     requestId: uuidv4(),

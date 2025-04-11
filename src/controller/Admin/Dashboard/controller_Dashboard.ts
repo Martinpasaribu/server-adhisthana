@@ -3,6 +3,7 @@ import RoomModel from '../../../models/Room/models_room';
 import { TransactionModel } from '../../../models/Transaction/models_transaksi';
 import UserModel from '../../../models/User/models_user';
 import { ShortAvailableModel } from '../../../models/ShortAvailable/models_ShortAvailable';
+import AdminModel from '../../../models/Admin/models_admin';
 
 export class DashboardController {
 
@@ -135,6 +136,29 @@ export class DashboardController {
         
         
         const user = await UserModel.find({ isDeleted : false});
+
+        // Kirim hasil response
+        res.status(200).json({
+          requestId: uuidv4(),
+          data: user.length,
+          success: true
+        });
+    
+      } catch (error) {
+        res.status(500).json({
+            requestId: uuidv4(),
+            message: `Failed to fetch total user ${error}`,
+            success: false 
+        });
+      }
+    }
+
+    static async TotalUserAdmin(req: any, res: any) {
+
+      try {
+        
+        
+        const user = await AdminModel.find({ isDeleted : false});
 
         // Kirim hasil response
         res.status(200).json({

@@ -43,7 +43,7 @@ export class AuthController {
                 return res.status(400).json({ message: "reCAPTCHA verification failed. Please try again." });
             }
 
-            const user = await UserModel.findOne({ email: req.body.email });
+            const user = await UserModel.findOne({ email: req.body.email, isDeleted: false });
 
             if (!user) {
                 return res.status(404).json({ message: "User not found" });
@@ -469,9 +469,13 @@ export class AuthController {
           }
     
           // 2. Cari Admin berdasarkan email atau username
-          const admin = await AdminModel.findOne({ username: username });
+          const admin = await AdminModel.findOne({ username: username, isDeleted : false });
     
           if (!admin) return res.status(404).json({ message: 'User not found' });
+
+          const CekActive = await AdminModel.findOne({ username: admin.username, active:true, isDeleted : false  });
+
+          if (!CekActive) return res.status(404).json({ message: 'User is not active' });
     
           // 3. Periksa status akun admin
           const statusMessages: Record<string, string> = {

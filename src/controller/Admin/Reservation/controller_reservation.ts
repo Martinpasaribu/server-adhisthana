@@ -193,6 +193,7 @@ export class ReservationController {
         }
 
         static async SetPayment(req: Request, res: Response) {
+          
           try {
               // Destructure req.body
               const {
@@ -268,6 +269,8 @@ export class ReservationController {
                   success: true
               });
 
+          
+          
           } catch (error) {
               console.error("Error creating transaction:", error);
 

@@ -25,6 +25,7 @@ import DashboardRouter from "./router/Admin/router_dashboard";
 import AdminBookingRouter from "./router/Admin/router_admin_booking";
 import AdminCustomerRouter from "./router/Admin/router_admin_customer";
 import LoggingRouter from "./router/Admin/router_logging";
+import ReportRouter from "./router/Admin/router_report";
 
 
 
@@ -84,19 +85,19 @@ app.use(session({
 
 
 
-        // secure: false,
-        // httpOnly: true,      
-        // maxAge: 1000 * 60 * 60 * 24, // 1 hari
+        secure: false,
+        httpOnly: true,      
+        maxAge: 1000 * 60 * 60 * 24, // 1 hari
 
         
         
         // ===========  Chrome , edge , fireFox Production  ==============
 
 
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'none',
-        httpOnly: true, 
-        maxAge: 1000 * 60 * 60 * 24, 
+        // secure: process.env.NODE_ENV === 'production',
+        // sameSite: 'none',
+        // httpOnly: true, 
+        // maxAge: 1000 * 60 * 60 * 24, 
 
 
         // ===========  Safari Production ==============
@@ -175,6 +176,7 @@ app.use("/api/v1/dashboard", DashboardRouter)
 app.use("/api/v1/admin/booking", AdminBookingRouter)
 app.use("/api/v1/admin/customer", AdminCustomerRouter)
 app.use("/api/v1/admin/log", LoggingRouter)
+app.use("/api/v1/admin/report", ReportRouter)
 
 app.use("/api/v1/instagram", InstagramRouter)
 app.use("/api/v1/contact", ContactRouter)
