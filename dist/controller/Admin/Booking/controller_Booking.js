@@ -8,11 +8,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdminBookingController = void 0;
+const mongoose_1 = __importDefault(require("mongoose"));
 const uuid_1 = require("uuid");
 const models_transaksi_1 = require("../../../models/Transaction/models_transaksi");
 const models_booking_1 = require("../../../models/Booking/models_booking");
+const controller_invoice_1 = require("../Invoice/controller_invoice");
 class AdminBookingController {
     static GetAllBooking(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -172,7 +177,7 @@ class AdminBookingController {
                     return res.status(404).json({
                         requestId: (0, uuid_1.v4)(),
                         data: null,
-                        message: "Transaction not found!",
+                        message: `Transaction ${TransactionId} not found!`,
                         success: false
                     });
                 }
@@ -189,6 +194,157 @@ class AdminBookingController {
                 return res.status(500).json({
                     requestId: (0, uuid_1.v4)(),
                     data: null,
+                    message: error.message || "Internal Server Error",
+                    success: false
+                });
+            }
+        });
+    }
+    static GetBookingById(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { id } = req.params;
+                // ✅ Validasi jika TransactionId tidak ada
+                if (!id) {
+                    return res.status(400).json({
+                        requestId: (0, uuid_1.v4)(),
+                        data: null,
+                        message: "TransactionId is required!",
+                        success: false
+                    });
+                }
+                // ✅ Cari booking berdasarkan TransactionId
+                const Booking = yield models_booking_1.BookingModel.findOne({
+                    orderId: id,
+                    isDeleted: false
+                }).select("title name email orderId");
+                ;
+                if (!Booking) {
+                    return res.status(404).json({
+                        requestId: (0, uuid_1.v4)(),
+                        data: null,
+                        message: `Booking ${id} not found!`,
+                        success: false
+                    });
+                }
+                console.log(`Booking ${Booking.name} has been get`);
+                return res.status(200).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: Booking,
+                    message: `Successfully get Booking detail: ${Booking.name}`,
+                    success: true
+                });
+            }
+            catch (error) {
+                console.error("Error get Booking:", error);
+                return res.status(500).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: null,
+                    message: error.message || "Internal Server Error",
+                    success: false
+                });
+            }
+        });
+    }
+    static SetOrderDish(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { id } = req.params;
+                const { dish, invoice } = req.body;
+                console.log("Nanana ", invoice);
+                // ✅ Validasi jika TransactionId tidak ada
+                if (!id) {
+                    return res.status(400).json({
+                        requestId: (0, uuid_1.v4)(),
+                        data: null,
+                        message: "TransactionId is required!",
+                        success: false
+                    });
+                }
+                const invoiceResult = yield controller_invoice_1.InvoiceController.SetInvoice(invoice);
+                if (!invoiceResult.status) {
+                    return res.status(400).json({
+                        requestId: (0, uuid_1.v4)(),
+                        data: null,
+                        message: invoiceResult.message,
+                        success: false
+                    });
+                }
+                const DataDish = Object.assign(Object.assign({}, dish), { id_Invoice: invoiceResult.id_Invoice });
+                // Pastikan data yang dikirim tidak kosong
+                if (Object.keys(DataDish).length === 0) {
+                    return res.status(400).json({
+                        requestId: (0, uuid_1.v4)(),
+                        success: false,
+                        message: "No data Dish for update",
+                    });
+                }
+                const updatedRoom = yield models_booking_1.BookingModel.findByIdAndUpdate({ _id: new mongoose_1.default.Types.ObjectId(id) }, { $push: { dish: DataDish } }, { new: true, runValidators: true });
+                if (!updatedRoom) {
+                    return res.status(404).json({
+                        requestId: (0, uuid_1.v4)(),
+                        success: false,
+                        message: "Booking not found",
+                    });
+                }
+                console.log(`Dish Add to  ${updatedRoom.name} `);
+                return res.status(200).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: updatedRoom,
+                    edit: DataDish,
+                    resultInvoice: invoiceResult,
+                    message: `Successfully Add Dish: ${updatedRoom.name}`,
+                    success: true
+                });
+            }
+            catch (error) {
+                console.error("Error Add Dish:", error);
+                return res.status(500).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: null,
+                    message: error.message || "Internal Server Error",
+                    success: false
+                });
+            }
+        });
+    }
+    static DeletedInvoiceBooking(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { id_Booking, id_Invoice } = req.params;
+            try {
+                const booking = yield models_booking_1.BookingModel.findOne({ _id: id_Booking, isDeleted: false });
+                if (!booking) {
+                    return res.status(404).json({
+                        requestId: (0, uuid_1.v4)(),
+                        message: "Booking not found",
+                        success: false
+                    });
+                }
+                // Temukan invoice yang akan dihapus
+                const deletedInvoice = booking.invoice.find((item) => item.id === id_Invoice);
+                if (!deletedInvoice) {
+                    return res.status(404).json({
+                        requestId: (0, uuid_1.v4)(),
+                        message: 'Invoice product not found in booking!',
+                        success: false
+                    });
+                }
+                // Hapus invoice dari array dish
+                booking.invoice = booking.invoice.filter((item) => item.id !== id_Invoice);
+                // Simpan perubahan
+                yield booking.save();
+                res.status(200).json({
+                    requestId: (0, uuid_1.v4)(),
+                    message: `Successfully deleted invoice: ${id_Invoice}`,
+                    id_Invoice: id_Invoice,
+                    data: deletedInvoice, // mengembalikan data invoice yang dihapus
+                    success: true
+                });
+            }
+            catch (error) {
+                console.error(`Error deleting dish ${id_Invoice}:`, error);
+                return res.status(500).json({
+                    requestId: (0, uuid_1.v4)(),
                     message: error.message || "Internal Server Error",
                     success: false
                 });

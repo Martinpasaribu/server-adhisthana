@@ -92,6 +92,12 @@ const RoomSchema = new mongoose_1.Schema({
             row: { type: Number },
             image: { type: String }
         }],
+    roomType: [{
+            number: { type: Number },
+            name: { type: String },
+            code: { type: String },
+            status: { type: Boolean, default: true }
+        }],
     imagePoster: {
         type: String,
         required: false,

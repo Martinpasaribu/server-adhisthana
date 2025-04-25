@@ -13,7 +13,7 @@ const ReservationRouter: express.Router = express.Router();
 
 ReservationRouter.post("/add-reservation",  verifyAdmin, logActivity("Create Reservation"), ReservationController.AddTransaction);
 ReservationRouter.get("/get-reservation",verifyAdmin , ReservationController.GetAllTransactionReservation); 
-ReservationRouter.put("/pay-transaction/:TransactionId", verifyAdmin , logActivity("Transaction PAID"), ReservationController.SetPayment); 
+ReservationRouter.put("/pay-transaction/:TransactionId/:code", verifyAdmin , logActivity("Transaction PAID"), ReservationController.SetPayment); 
 
 
 

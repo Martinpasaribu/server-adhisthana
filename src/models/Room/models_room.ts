@@ -14,10 +14,16 @@ interface Image {
     row:number;
     image:string;
 }
-
+interface RoomType {
+    number:number;
+    name:string;
+    code:string;
+    status:boolean;
+}
 interface IRoom extends Document {
     _id: string;
     name: string;
+    roomType: RoomType [],
     nameAdditional: string;
     image: Image [],
     imageShort:string,
@@ -102,6 +108,13 @@ const RoomSchema: Schema = new Schema(
         image: [{
             row: {type: Number},
             image: {type: String}
+        }],
+
+        roomType: [{
+            number:{type: Number},
+            name: {type: String},
+            code: {type: String},
+            status: {type: Boolean, default:true}
         }],
 
         imagePoster: {

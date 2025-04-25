@@ -83,5 +83,5 @@ const ReportSchema = new mongoose_1.Schema({
 }, {
     timestamps: true,
 });
-const ReportModel = mongoose_1.default.model('Report', ReportSchema, 'Report');
+const ReportModel = mongoose_1.default.model('ReportRoom', ReportSchema, 'ReportRoom');
 exports.default = ReportModel;

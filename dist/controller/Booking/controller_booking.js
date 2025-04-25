@@ -75,7 +75,7 @@ class BookingController {
                 // Filter untuk singkron price per Item dengan lama malam -nya menjadi priceDateList
                 const updateRoomsAvailable = yield (0, SetResponseShort_1.SetResponseShort)(roomDetails, setPriceDayList);
                 // SetUp Room yang akan masuk dalam Room Pending
-                yield Controller_PendingRoom_1.PendingRoomController.SetPending(BookingReq.room, bookingId, UserId, BookingReq.checkIn, BookingReq.checkOut, req, res);
+                yield Controller_PendingRoom_1.PendingRoomController.SetPending(BookingReq.room, bookingId, UserId, BookingReq.checkIn, BookingReq.checkOut, "website", req, res);
                 const midtransPayload = {
                     transaction_details: {
                         order_id: bookingId,
@@ -132,6 +132,7 @@ class BookingController {
                             roomId: room._id,
                             quantity: roomBooking.quantity,
                             price: roomBooking === null || roomBooking === void 0 ? void 0 : roomBooking.price,
+                            image: roomBooking === null || roomBooking === void 0 ? void 0 : roomBooking.imageShort,
                         };
                     }),
                 });
@@ -151,6 +152,7 @@ class BookingController {
                         return {
                             roomId: room._id,
                             name: room.name,
+                            image: room.imageShort,
                             quantity: roomBooking === null || roomBooking === void 0 ? void 0 : roomBooking.quantity, // Optional chaining jika roomBooking tidak ditemukan
                             price: roomBooking === null || roomBooking === void 0 ? void 0 : roomBooking.price, // Menambahkan price dari room
                         };

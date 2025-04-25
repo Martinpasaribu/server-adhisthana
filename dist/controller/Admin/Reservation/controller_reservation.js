@@ -22,6 +22,9 @@ const Controller_PendingRoom_1 = require("../../PendingRoom/Controller_PendingRo
 const controller_short_1 = require("../../ShortAvailable/controller_short");
 const constant_1 = require("../../../constant");
 const models_booking_1 = require("../../../models/Booking/models_booking");
+const controller_invoice_1 = require("../Invoice/controller_invoice");
+const Filter_1 = require("../RoomStatus/components/Filter");
+const Service_1 = require("../RoomStatus/components/Service");
 class ReservationController {
     static GetAllTransactionReservation(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -60,15 +63,27 @@ class ReservationController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 // Destructure req.body
-                const { title, name, email, phone, grossAmount, otaTotal, reservation, products, night, checkIn, checkOut } = req.body;
-                console.log(`Ini data payload room dari reservation: ${JSON.stringify(products, null, 2)}`);
-                // ✅ Validasi data sebelum disimpan
-                if (!title || !name || !email || !phone || !grossAmount || !checkIn || !checkOut) {
+                const { title, name, email, phone, grossAmount, otaTotal, reservation, products, night, checkIn, checkOut, selectOta, roomType, } = req.body;
+                // Melakukan pengecekan apakah room type yang sedang dipilih apaka sudah sedang digunakan
+                const dataFilterStatusRoom = yield (0, Filter_1.FilterAvailableWithRoomStatus)(checkIn, checkOut);
+                const CekRoomInUse = yield (0, Filter_1.CompareSameDataWithRoomStatus)(roomType, dataFilterStatusRoom);
+                // Jika terdapat data yang sudah digunakan kembalikan false
+                if (CekRoomInUse.sameRoomTypeOnly.length > 0) {
                     return res.status(400).json({
                         requestId: (0, uuid_1.v4)(),
-                        data: null,
+                        message: "The room you have selected is currently in use",
+                        success: false,
+                        data: CekRoomInUse,
+                    });
+                }
+                console.log(`Ini data payload room dari reservation: ${JSON.stringify(products, null, 2)}`);
+                // ✅ Validasi data sebelum disimpan
+                if (!title || !name || !email || !phone || !grossAmount || !checkIn || !checkOut || !selectOta) {
+                    return res.status(400).json({
+                        requestId: (0, uuid_1.v4)(),
                         message: "All required fields must be provided!",
-                        success: false
+                        success: false,
+                        data: null,
                     });
                 }
                 // Cek Roompending sebelum membuat reservation transaction 
@@ -100,6 +115,7 @@ class ReservationController {
                     amountTotal: grossAmount,
                     otaTotal: otaTotal,
                     reservation,
+                    ota: selectOta,
                     room: ReservationReadyToBeSaved.WithoutPending,
                     night,
                     checkIn,
@@ -126,38 +142,59 @@ class ReservationController {
                     checkIn,
                     checkOut
                 });
+                // Data untuk membuat status room
+                const data = {
+                    id_Trx: bookingId,
+                    status: "Use",
+                    bookingKey: savedBooking._id,
+                    checkIn,
+                    checkOut,
+                    roomType,
+                };
+                // Fungsi untuk membuat status room 
+                const createRoomStatus = yield Service_1.RoomStatusService.SetRoomStatus(data);
+                if (createRoomStatus && createRoomStatus.roomStatusKey) {
+                    const roomStatusKey = createRoomStatus.roomStatusKey;
+                    const updatedInvoice = yield models_booking_1.BookingModel.findOneAndUpdate({ _id: savedBooking._id, isDeleted: false }, { $push: { roomStatusKey } }, { new: true, runValidators: true });
+                    console.log("RoomStatusKey successfully added to booking:", updatedInvoice);
+                }
+                // // ✅ Simpan ke database Booking
+                // const savedBooking = await newBooking.save();
                 // ✅ Simpan ke database Transaction
                 const savedTransaction = yield newTransaction.save();
                 // SetUp Room yang akan masuk dalam Room Pending
-                yield Controller_PendingRoom_1.PendingRoomController.SetPending(ReservationReadyToBeSaved.WithoutPending, bookingId, IsHaveAccount !== null && IsHaveAccount !== void 0 ? IsHaveAccount : userId, checkIn, checkOut, req, res);
+                yield Controller_PendingRoom_1.PendingRoomController.SetPending(ReservationReadyToBeSaved.WithoutPending, bookingId, IsHaveAccount !== null && IsHaveAccount !== void 0 ? IsHaveAccount : userId, checkIn, checkOut, "reservation", req, res);
                 // ✅ Berikan respon sukses
                 return res.status(201).json({
                     requestId: (0, uuid_1.v4)(),
+                    message: "Successfully add transaction to reservation.",
+                    success: true,
                     data: {
                         acknowledged: true,
                         insertedTransactionId: savedTransaction._id,
                         insertedBoopkingId: savedBooking._id
                     },
-                    message: "Successfully add transaction to reservation.",
-                    success: true
                 });
             }
             catch (error) {
                 console.error("Error creating transaction:", error);
                 return res.status(500).json({
                     requestId: (0, uuid_1.v4)(),
-                    data: null,
                     message: error.message || "Internal Server Error",
-                    success: false
+                    success: false,
+                    data: null,
                 });
             }
         });
     }
     static SetPayment(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            var _a;
             try {
                 // Destructure req.body
-                const { TransactionId } = req.params;
+                const { TransactionId, code } = req.params;
+                const { invoice } = req.body;
+                console.log(" invoice : ", invoice);
                 // ✅ Validasi data sebelum disimpan
                 if (!TransactionId) {
                     return res.status(400).json({
@@ -166,6 +203,19 @@ class ReservationController {
                         message: "required TransactionId!",
                         success: false
                     });
+                }
+                // Lalu pakai:
+                let invoiceResult = null;
+                if (code === "VLA") {
+                    invoiceResult = yield controller_invoice_1.InvoiceController.SetInvoice(invoice);
+                    if (!invoiceResult.status) {
+                        return res.status(400).json({
+                            requestId: (0, uuid_1.v4)(),
+                            data: null,
+                            message: invoiceResult.message,
+                            success: false
+                        });
+                    }
                 }
                 const BookingReservation = yield models_transaksi_1.TransactionModel.find({ bookingId: TransactionId, isDeleted: false, reservation: true });
                 if (!BookingReservation) {
@@ -207,6 +257,7 @@ class ReservationController {
                     data: {
                         acknowledged: true
                     },
+                    resultInvoice: (_a = invoiceResult === null || invoiceResult === void 0 ? void 0 : invoiceResult.data) !== null && _a !== void 0 ? _a : [],
                     message: `Successfully payment transaction : ${TransactionId}`,
                     success: true
                 });

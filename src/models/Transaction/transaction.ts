@@ -13,6 +13,7 @@ export interface createTransaction {
         quantity: number,
         price: number,
         name: string,
+        image: string,
       }[];
     
     va_numbers ?: {
@@ -34,6 +35,7 @@ export default interface createTransactionItem {
     transactionId: string;
     itemId: string;
     name: string;
+    image: string;
     price: number;
     quantity: number;
     total: number;
@@ -63,6 +65,6 @@ export interface createTransactionBooking {
     couponId: string;
     userId: string;
     creatorId: string;
-    rooms: { roomId: string; quantity: number }[];
+    rooms: { roomId: string; quantity: number; image: string }[];
 
 }

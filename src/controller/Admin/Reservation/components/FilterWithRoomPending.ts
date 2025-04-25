@@ -15,6 +15,7 @@ interface Room {
     ota: number;
     priceTotal: number;
     name: string;
+    image: string;
 }
 
 class reservationService {

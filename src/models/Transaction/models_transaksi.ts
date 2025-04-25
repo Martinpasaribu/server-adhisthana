@@ -4,6 +4,7 @@ interface Room {
     roomId: string;
     quantity: number;
     ota:number;
+    image:string;
     price: number;
     priceTotal: number;
     availableCount: number;
@@ -112,6 +113,7 @@ const TransactionSchema: Schema = new Schema(
             {
                 roomId: { type: String, trim: true },
                 name: { type: String, trim: true },
+                image: { type: String, trim: true },
                 price: { type: Number }, // Tidak perlu trim di tipe Number
                 priceTotal: { type: Number }, // Tidak perlu trim di tipe Number
                 quantity: { type: Number }, // Tidak perlu trim di tipe Number

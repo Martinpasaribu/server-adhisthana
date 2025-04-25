@@ -1,15 +1,67 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 
-interface Room {
+export interface Room {
     roomId:string;
     name:string;
+    image: string;
     priceTotal:number;
     ota:number;
     quantity:number;
 }
+export interface data {
+    status:string;
+    note:string;
+    amountPrice:number;
+    desc:string,
+    image:string,
+    name:string;
+    code:string;
+    price:number;
+}
 
-interface IVerified {
+export interface Dish {
+    status:boolean;
+    id:string;
+    id_Invoice:string;
+    note:string;
+    amountPrice:number;
+    totalPrice:number;
+    data: data [];
+    createAt: Date;
+}
+
+export interface Ota {
+    status:string;
+    code:string;
+    name:string;
+    qty:number;
+    price:number;
+}
+
+export interface Invoice {
+    status:boolean;
+    code:string;
+    note:string;
+    subject:string;
+    id:number;
+    less:number;
+    totalPrice:number;
+    id_Product:number;
+    timePaid:number;
+    createAt: number;
+
+}
+
+export interface Additional {
+    status:string;
+    name:string;
+    qty:number;
+    price:number;
+    note:string;
+}
+
+export interface IVerified {
     status: boolean;
     time?: number; // Opsional, jika hanya diisi saat diverifikasi
     timeIn?: number; // Opsional, jika hanya diisi saat diverifikasi
@@ -20,6 +72,7 @@ interface IVerified {
 interface IBooking extends Document {
 
     _id: string;
+    roomStatusKey:string;
     name: string;
     email: string;
     phone: number;
@@ -34,11 +87,13 @@ interface IBooking extends Document {
     amountTotal: number;
     otaTotal: number;
     amountBefDisc: number;
-   
+    dish: Dish[];
+    additional: Additional[];
+    ota: Ota[];
     couponId: string;
     userId:string ;
     room : Room [];
-    
+    invoice : Invoice [];
     createAt: number;
     creatorId: string;
     
@@ -46,8 +101,14 @@ interface IBooking extends Document {
 
 
 const BookingSchema: Schema = new Schema(
-    {
 
+    {
+        roomStatusKey: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'RoomStatus',  // mengacu ke nama model
+            default: [], 
+        }],
+        
         orderId: {
             type: String,
             // required: [true, "oderId cannot be empty"],
@@ -101,6 +162,7 @@ const BookingSchema: Schema = new Schema(
             type: Boolean,
             trim: true,
         },
+        
     
         adult: {
             type: Number,
@@ -121,18 +183,106 @@ const BookingSchema: Schema = new Schema(
             // min: [1, 'children must more then 0'],
             trim: true
         },
+
+        dish: [{
+            status: { type: Boolean, default: null },
+            id: { type: String, default: null },
+            note: { type: String, default: null },
+            id_Invoice: { type: String, default: null },
+            amountPrice: { type: Number, default: 0 },
+            totalPrice: { type: Number, default: 0 },
+            data: [{
+              type: { type: String, default: null },
+              code: { type: String, default: null },
+              desc: { type: String, default: null },
+              name: { type: String, default: null },
+              image: { type: String, default: null },
+              qty: { type: Number, default: null },
+              amountPrice: { type: Number, default: null },
+              price: { type: Number, default: null },
+            }],
+            createAt: {
+                type: Number,
+                default: Date.now,
+            },
+        }],
+        
+        invoice: [{
+            status: { type: Boolean, default: null },
+            id: { type: String, default: null },
+            id_Product: { type: String, default: null },
+            note: { type: String, default: null },
+            subject: { type: String, default: null },
+            code: { type: String, default: null }, // VLA,FAD,ADD
+            less: { type: Number, default: 0 },
+            totalPrice: { type: Number, default: 0 },
+            timePaid: {
+                type: Number,
+                default: '0',
+            },
+            createAt: {
+                type: Number,
+                default: Date.now,
+            },
+        }],
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+        additional: [{            
+
+            status: { 
+                type: Boolean, 
+                default: null,  
+            },                                                                                        
+
+            name:{
+                type: String, 
+                default: null,  
+            },
+            qty:{
+                type: String, 
+                default: null,  
+            },
+            price:{
+                type: String, 
+                default: null,  
+            },
+            note:{
+                type: String, 
+                default: null,  
+            },
+        }],
+
         amountTotal: {
             type: Number,
             required: false,
             // min: [1, 'amountTotal must more then 0'],
             trim: true
         },
+
+        ota: {
+            status: { 
+                type: Boolean, 
+                default: null,  
+            },
+
+            code:{
+                type: String, 
+                default: null,  
+            },
+        
+            name:{
+                type: String, 
+                default: null,  
+            },
+        },
+
         otaTotal: {
             type: Number,
             required: false,
             // min: [1, 'amountTotal must more then 0'],
             trim: true
         },
+
+        
         amountBefDisc: {
             type: Number,
             required: false,
@@ -154,6 +304,7 @@ const BookingSchema: Schema = new Schema(
         room: [{
             roomId: {type: String},
             name: {type: String},
+            image: {type: String},
             ota: {type: Number},
             priceTotal: {type: Number},
             quantity: {type: Number}

@@ -25,6 +25,7 @@ const models_transaksi_1 = require("../../../models/Transaction/models_transaksi
 const GenerateDateRange_1 = require("./components/GenerateDateRange");
 const models_booking_1 = require("../../../models/Booking/models_booking");
 const UpdateRefundBooking_1 = require("./components/UpdateRefundBooking");
+const models_RoomStatus_1 = require("../../../models/RoomStatus/models_RoomStatus");
 class SetMinderController {
     static SetUpPrice(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -579,6 +580,7 @@ class SetMinderController {
                 let ShortAvailable;
                 let Transaction;
                 let Booking;
+                let RoomStatus;
                 const { id } = req.query;
                 ShortAvailable = yield models_ShortAvailable_1.ShortAvailableModel.findOneAndUpdate({ transactionId: id }, { isDeleted: false }, { new: true, runValidators: true });
                 if (!ShortAvailable) {
@@ -610,6 +612,16 @@ class SetMinderController {
                     });
                 }
                 yield models_booking_1.BookingModel.updateMany({ orderId: id }, { isDeleted: true });
+                RoomStatus = yield models_RoomStatus_1.RoomStatusModel.findOneAndUpdate({ id_Trx: id }, { isDeleted: false }, { new: true, runValidators: true });
+                // if (!RoomStatus) {
+                //     return res.status(404).json({
+                //         requestId: uuidv4(),
+                //         data: null,
+                //         message: "RoomStatus not found.",
+                //         success: false
+                //     });
+                // }
+                yield models_RoomStatus_1.RoomStatusModel.updateMany({ id_Trx: id }, { isDeleted: true });
                 res.status(201).json({
                     requestId: (0, uuid_1.v4)(),
                     data: [],
@@ -633,6 +645,7 @@ class SetMinderController {
                 let ShortAvailable;
                 let Transaction;
                 let Booking;
+                let RoomStatus;
                 const { id } = req.query;
                 if (!id) {
                     return res.status(400).json({
@@ -672,6 +685,16 @@ class SetMinderController {
                     });
                 }
                 yield models_booking_1.BookingModel.updateMany({ orderId: id }, { isDeleted: true });
+                RoomStatus = yield models_RoomStatus_1.RoomStatusModel.findOneAndUpdate({ id_Trx: id }, { isDeleted: false }, { new: true, runValidators: true });
+                // if (!RoomStatus) {
+                //     return res.status(404).json({
+                //         requestId: uuidv4(),
+                //         data: null,
+                //         message: "RoomStatus not found.",
+                //         success: false
+                //     });
+                // }
+                yield models_RoomStatus_1.RoomStatusModel.updateMany({ id_Trx: id }, { isDeleted: true });
                 res.status(201).json({
                     requestId: (0, uuid_1.v4)(),
                     data: [],
@@ -719,7 +742,8 @@ class SetMinderController {
                 const [ShortAvailable, Transaction] = yield Promise.all([
                     models_ShortAvailable_1.ShortAvailableModel.findOneAndUpdate({ transactionId: id_TRX, isDeleted: false }, { checkIn, checkOut }, { new: true, runValidators: true }),
                     models_transaksi_1.TransactionModel.findOneAndUpdate({ bookingId: id_TRX, isDeleted: false }, { checkIn, checkOut, grossAmount }, { new: true, runValidators: true }),
-                    models_booking_1.BookingModel.findOneAndUpdate({ orderId: id_TRX, isDeleted: false }, { checkIn, checkOut, night, amountTotal: grossAmount }, { new: true, runValidators: true })
+                    models_booking_1.BookingModel.findOneAndUpdate({ orderId: id_TRX, isDeleted: false }, { checkIn, checkOut, night, amountTotal: grossAmount }, { new: true, runValidators: true }),
+                    models_RoomStatus_1.RoomStatusModel.updateMany({ id_Trx: id_TRX, isDeleted: false }, { checkIn, checkOut }, { runValidators: true })
                 ]);
                 // Cek apakah data ditemukan
                 if (!ShortAvailable || !Transaction) {

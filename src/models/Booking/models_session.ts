@@ -1,5 +1,37 @@
 
+
 import mongoose, { Document, Schema } from 'mongoose';
+import { Additional, Dish, Invoice, IVerified, Ota, Room } from './models_booking';
+
+
+export interface BookingModels {
+
+    _id: string;
+    name: string;
+    email: string;
+    phone: number;
+    orderId: string;
+    checkIn: string;
+    checkOut: string;
+    verified: IVerified;
+    reservation: boolean;
+    adult: number;
+    night: number;
+    children: number;
+    amountTotal: number;
+    otaTotal: number;
+    amountBefDisc: number;
+    dish: Dish[];
+    additional: Additional[];
+    ota: Ota[];
+    couponId: string;
+    userId:string ;
+    room : Room [];
+    invoice : Invoice [];
+    createAt: number;
+    creatorId: string;
+    
+}
 
 
 interface ISess extends Document {
@@ -60,7 +92,5 @@ const SessionSchema: Schema = new Schema(
 
 );
 
-
 export const  SessionModel = mongoose.model<ISess>('Session', SessionSchema,'Session');
-
 

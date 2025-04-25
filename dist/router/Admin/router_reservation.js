@@ -11,5 +11,5 @@ const ReservationRouter = express_1.default.Router();
 // semantic meaning
 ReservationRouter.post("/add-reservation", VerifyAdminId_1.verifyAdmin, (0, LogAdmin_1.logActivity)("Create Reservation"), controller_reservation_1.ReservationController.AddTransaction);
 ReservationRouter.get("/get-reservation", VerifyAdminId_1.verifyAdmin, controller_reservation_1.ReservationController.GetAllTransactionReservation);
-ReservationRouter.put("/pay-transaction/:TransactionId", VerifyAdminId_1.verifyAdmin, (0, LogAdmin_1.logActivity)("Transaction PAID"), controller_reservation_1.ReservationController.SetPayment);
+ReservationRouter.put("/pay-transaction/:TransactionId/:code", VerifyAdminId_1.verifyAdmin, (0, LogAdmin_1.logActivity)("Transaction PAID"), controller_reservation_1.ReservationController.SetPayment);
 exports.default = ReservationRouter;

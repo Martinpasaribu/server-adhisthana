@@ -89,7 +89,6 @@ export class BookingController {
                 const FilterSiteMinders = await FilterSiteMinder(BookingReq.checkIn, BookingReq.checkOut)
                                
 
-
                 // Filter Room dengan harga yang sudah singkron dengan siteMinder
                 const setPriceDayList = await SetPriceDayList(roomDetails,FilterSiteMinders, Day)
 
@@ -97,7 +96,7 @@ export class BookingController {
                 const updateRoomsAvailable =  await SetResponseShort(roomDetails,setPriceDayList)
 
                 // SetUp Room yang akan masuk dalam Room Pending
-                await PendingRoomController.SetPending(BookingReq.room,bookingId, UserId, BookingReq.checkIn, BookingReq.checkOut, req, res )
+                await PendingRoomController.SetPending(BookingReq.room,bookingId, UserId, BookingReq.checkIn, BookingReq.checkOut,"website", req, res )
 
                 const midtransPayload = {
                     
@@ -168,6 +167,7 @@ export class BookingController {
                             roomId: room._id,
                             quantity: roomBooking.quantity,
                             price: roomBooking?.price, 
+                            image: roomBooking?.imageShort, 
                         };
                     }),
                 })
@@ -191,6 +191,7 @@ export class BookingController {
                         return {
                           roomId: room._id,
                           name: room.name,
+                          image: room.imageShort,
                           quantity: roomBooking?.quantity, // Optional chaining jika roomBooking tidak ditemukan
                           price: roomBooking?.price, // Menambahkan price dari room
                         };

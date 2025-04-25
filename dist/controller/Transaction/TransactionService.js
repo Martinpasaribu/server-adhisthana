@@ -31,7 +31,8 @@ class TransactionService {
                     roomId: products.roomId,
                     price: products.price,
                     quantity: products.quantity,
-                    name: products.name
+                    name: products.name,
+                    image: products.image
                 })),
                 snap_token,
                 payment_type: '',
@@ -71,6 +72,7 @@ class TransactionService {
                     room: rooms.map(room => ({
                         roomId: room.roomId,
                         quantity: room.quantity,
+                        image: room.image
                     })),
                     creatorId,
                     createAt: Date.now(),

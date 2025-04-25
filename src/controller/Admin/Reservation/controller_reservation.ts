@@ -13,6 +13,19 @@ import { ShortAvailableController } from '../../ShortAvailable/controller_short'
 import { PAID, PAID_ADMIN, PAYMENT_ADMIN } from '../../../constant';
 import { BookingModel } from '../../../models/Booking/models_booking';
 import { OTAService } from './components/controller_OTA'
+import { InvoiceController } from '../Invoice/controller_invoice';
+import { Invoice } from '../../../models/Invoice/models_invoice';
+import { CompareDataHasBeenUsedWithRoomStatus, CompareSameDataWithRoomStatus, FilterAvailableWithRoomStatus } from '../RoomStatus/components/Filter';
+import { RoomStatusService } from '../RoomStatus/components/Service';
+
+// types/invoice.ts
+
+
+interface ResponseData<T> {
+  status: boolean;
+  message: string;
+  data?: T;
+}
 
 export class ReservationController {
 
@@ -70,18 +83,36 @@ export class ReservationController {
                   products, 
                   night, 
                   checkIn, 
-                  checkOut 
+                  checkOut,
+                  selectOta,
+                  roomType, 
               } = req.body;
+
+
+
+              // Melakukan pengecekan apakah room type yang sedang dipilih apaka sudah sedang digunakan
+              const dataFilterStatusRoom = await FilterAvailableWithRoomStatus(checkIn,checkOut);
+              const CekRoomInUse = await CompareSameDataWithRoomStatus(roomType,dataFilterStatusRoom)
+              
+              // Jika terdapat data yang sudah digunakan kembalikan false
+              if(CekRoomInUse.sameRoomTypeOnly.length > 0){
+                return res.status(400).json({
+                    requestId: uuidv4(),
+                    message: "The room you have selected is currently in use",
+                    success: false,
+                    data: CekRoomInUse,
+                });
+              }
 
               console.log(`Ini data payload room dari reservation: ${JSON.stringify(products, null, 2)}`);
 
               // ✅ Validasi data sebelum disimpan
-              if (!title || !name || !email || !phone || !grossAmount || !checkIn || !checkOut) {
+              if (!title || !name || !email || !phone || !grossAmount || !checkIn || !checkOut || !selectOta) {
                   return res.status(400).json({
                       requestId: uuidv4(),
-                      data: null,
                       message: "All required fields must be provided!",
-                      success: false
+                      success: false,
+                      data: null,
                   });
               }
 
@@ -130,6 +161,7 @@ export class ReservationController {
                   amountTotal :grossAmount,
                   otaTotal :otaTotal,
                   reservation,
+                  ota:selectOta,
                   room: ReservationReadyToBeSaved.WithoutPending,
                   night,
                   checkIn,
@@ -144,7 +176,7 @@ export class ReservationController {
 
               // ✅ Buat objek baru berdasarkan schema
               const newTransaction = new TransactionModel({
-                booking_keyId: savedBooking._id,
+                booking_keyId: savedBooking._id,                                    
                 bookingId,
                 userId : IsHaveAccount ?? userId,
                 status,
@@ -154,30 +186,61 @@ export class ReservationController {
                 phone,
                 grossAmount,
                 otaTotal,
-                reservation,
+                reservation,                 
                 products: ReservationReadyToBeSaved.WithoutPending,
-                night,
+                night,                                                 
                 checkIn,
                 checkOut
-              });
+              });                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+
+              // Data untuk membuat status room
+              const data = {
+                id_Trx: bookingId,
+                status: "Use",
+                bookingKey:savedBooking._id,
+                checkIn,
+                checkOut,
+                roomType,
+
+              }
+              
+              // Fungsi untuk membuat status room 
+              const createRoomStatus = await RoomStatusService.SetRoomStatus(data);
+
+              if (createRoomStatus && createRoomStatus.roomStatusKey) {
+                const roomStatusKey = createRoomStatus.roomStatusKey;
+
+                const updatedInvoice = await BookingModel.findOneAndUpdate(
+                  { _id: savedBooking._id, isDeleted: false },
+                  { $push: { roomStatusKey } },
+                  { new: true, runValidators: true }
+                );
+
+                console.log("RoomStatusKey successfully added to booking:", updatedInvoice);
+              }
+
+
+              // // ✅ Simpan ke database Booking
+              // const savedBooking = await newBooking.save();
 
               // ✅ Simpan ke database Transaction
-              const savedTransaction = await newTransaction.save();
+              const savedTransaction = await newTransaction.save()                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
 
-
+            
               // SetUp Room yang akan masuk dalam Room Pending
-              await PendingRoomController.SetPending(ReservationReadyToBeSaved.WithoutPending,bookingId, IsHaveAccount ?? userId, checkIn, checkOut, req, res )
+              await PendingRoomController.SetPending(ReservationReadyToBeSaved.WithoutPending,bookingId, IsHaveAccount ?? userId, checkIn, checkOut,"reservation", req, res )
+
 
               // ✅ Berikan respon sukses
               return res.status(201).json({
                   requestId: uuidv4(),
+                  message: "Successfully add transaction to reservation.",
+                  success: true,
                   data: {
                       acknowledged: true,
                       insertedTransactionId: savedTransaction._id,
                       insertedBoopkingId: savedBooking._id
                   },
-                  message: "Successfully add transaction to reservation.",
-                  success: true
               });
 
           } catch (error) {
@@ -185,9 +248,9 @@ export class ReservationController {
 
               return res.status(500).json({
                   requestId: uuidv4(),
-                  data: null,
                   message: (error as Error).message || "Internal Server Error",
-                  success: false
+                  success: false,
+                  data: null,
               });
           }
         }
@@ -196,9 +259,10 @@ export class ReservationController {
           
           try {
               // Destructure req.body
-              const {
-                TransactionId
-              } = req.params;
+              const { TransactionId, code } = req.params;
+              const { invoice } = req.body;
+
+              console.log(" invoice : ", invoice)
 
               // ✅ Validasi data sebelum disimpan
               if (!TransactionId) {
@@ -211,6 +275,23 @@ export class ReservationController {
                   });
               }
 
+            // Lalu pakai:
+            let invoiceResult: ResponseData<Invoice[]> | null = null;
+
+
+              if(code === "VLA"){
+                  
+                invoiceResult =  await InvoiceController.SetInvoice(invoice);
+    
+                  if (!invoiceResult.status) {
+                    return res.status(400).json({
+                      requestId: uuidv4(),
+                      data: null,
+                      message: invoiceResult.message,
+                      success: false
+                    });
+                  }
+              }
 
               const BookingReservation = await TransactionModel.find(
                 { bookingId:TransactionId,  isDeleted : false, reservation: true}
@@ -265,6 +346,7 @@ export class ReservationController {
                   data: {
                       acknowledged: true
                   },
+                  resultInvoice: invoiceResult?.data ?? [],
                   message: `Successfully payment transaction : ${TransactionId}`,
                   success: true
               });

@@ -5,48 +5,67 @@ import { PendingRoomModel } from '../../models/PendingRoom/models_PendingRoom';
 
 export class PendingRoomController {
 
-        static async SetPending(room: any[], bookingId : any, userId: any, dateIn: any, dateOut: any, req: Request, res: Response) {
+        static async SetPending(room: any[], bookingId : any, userId: any, dateIn: any, dateOut: any, code:any,  req: Request, res: Response) {
             try {
                 // Validasi input
                 if (!userId || !room || !dateIn || !dateOut) {
-                    return res.status(400).json({ message: 'Room, date, or userId is not available' });
+                    return res.status(400).json({ message: 'Room, date, or userId is Empty' });
                 }
         
                 const nowUTC = new Date(); // Waktu sekarang UTC server
 
                 // Konversi UTC ke WIB (UTC + 7 jam)
-                const wibOffset = 7 * 60 * 60 * 1000; // Offset WIB dalam milidetik (7 jam)
-                const wibTime = new Date(nowUTC.getTime() + wibOffset);
+                const wibTime = new Date(nowUTC.getTime() + 7 * 60 * 60 * 1000);
                 
+                if (code === "website") wibTime.setMinutes(wibTime.getMinutes() + 5);
+                if (code === "reservation") wibTime.setMinutes(wibTime.getMinutes() + 5);
+              
                 // Menambahkan 5 menit ke waktu WIB
-                wibTime.setMinutes(wibTime.getMinutes() + 5);
+             
 
                 // Format WIB untuk disimpan (contoh: '2025-01-27 15:00:00')
-                const wibFormatted = wibTime.toISOString().replace("T", " ").split(".")[0] + " GMT+0700 (WIB)";
-                
-                const lockedUntil = wibFormatted;
+                const lockedUntil = wibTime.toISOString().replace("T", " ").split(".")[0] + " GMT+0700 (WIB)";
+
                 
                 // console.log(` Data SetPending room Date lockedUntil ${lockedUntil}: `)
 
                 // Iterasi melalui setiap room
-                for (const r of room) {
-                    // Pastikan room memiliki properti yang diperlukan
-                    if (!r.roomId || !r.quantity) {
-                        return res.status(400).json({ message: `Room data is invalid for roomId: ${r.roomId}` });
-                    }
+                // for (const r of room) {
+                //     // Pastikan room memiliki properti yang diperlukan
+                //     if (!r.roomId || !r.quantity) {
+                //         return res.status(400).json({ message: `Room data is invalid for roomId: ${r.roomId}` });
+                //     }
 
-                    // Buat entri baru di PendingRoomModel
-                    await PendingRoomModel.create({
-                        bookingId,
-                        userId,
-                        roomId: r.roomId,
-                        start: dateIn,
-                        end: dateOut,
-                        stock: r.quantity,
-                        lockedUntil
+                //     // Buat entri baru di PendingRoomModel
+                //     await PendingRoomModel.create({
+                //         bookingId,
+                //         userId,
+                //         roomId: r.roomId,
+                //         start: dateIn,
+                //         end: dateOut,
+                //         stock: r.quantity,
+                //         lockedUntil
+                //     });
+                // }
+
+            await Promise.all(
+                room.map((r) => {
+                    if (!r.roomId || !r.quantity) {
+                        throw new Error(`Room data is invalid for roomId: ${r.roomId}`);
+                    }
+                
+                    return PendingRoomModel.create({
+                    bookingId,
+                    userId,
+                    roomId: r.roomId,
+                    start: dateIn,
+                    end: dateOut,
+                    stock: r.quantity,
+                    lockedUntil
                     });
-                }
-        
+                })
+            );
+
             } catch (error) {
                 console.error(error);
                 throw new Error('Function SetPending not implemented.');

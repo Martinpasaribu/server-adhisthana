@@ -16,6 +16,7 @@ import { SetPriceDayList } from './SetPriceDayList';
 import { SetResponseShort } from './SetResponseShort';
 import { FilterUnAvailable } from './FilterUnAvailable';
 import { PendingRoomController } from '../PendingRoom/Controller_PendingRoom';
+import { FilterAvailableWithRoomStatus, CompareDataHasBeenUsedWithRoomStatus } from '../Admin/RoomStatus/components/Filter';
 
 export class ShortAvailableController {
 
@@ -96,17 +97,17 @@ export class ShortAvailableController {
         
                 res.status(200).json({
                     requestId: uuidv4(),
-                    data: availableRooms,
                     message: `Successfully retrieved rooms. From Date: ${checkInDate.toISOString()} To: ${checkOutDate.toISOString()}`,
                     success: true,
+                    data: availableRooms,
                 });
             } catch (error) {
                 console.error(error);
                 res.status(500).json({
                     requestId: uuidv4(),
-                    data: null,
                     message: (error as Error).message,
                     success: false,
+                    data: null,
                 });
             }
         }
@@ -118,10 +119,10 @@ export class ShortAvailableController {
             // Validasi dan konversi parameter checkin dan checkout
             if (!checkin || !checkout) {
                 return res.status(400).json({
-                requestId: uuidv4(),
-                data: null,
-                message: "Check-in and check-out dates are required.",
-                success: false,
+                    requestId: uuidv4(),
+                    message: "Check-in and check-out dates are required.",
+                    success: false,
+                    data: null,
                 });
             }
         
@@ -134,17 +135,17 @@ export class ShortAvailableController {
         
             res.status(200).json({
                 requestId: uuidv4(),
-                data: data,
                 message: `Successfully get vila.`,
                 success: true,
+                data: data,
             });
             
             } catch (error) {
             res.status(500).json({
                 requestId: uuidv4(),
-                data: null,
                 message: (error as Error).message,
                 success: false,
+                data: null,
             });
             }
         }
@@ -240,14 +241,11 @@ export class ShortAvailableController {
 
                 // console.log('test in :', checkIn, 'convert :', dateMinderStart);
                 // console.log('test out :', checkOut, 'convert :', dateMinderEnd);
-                
-
+            
                 
                 if (checkInDate >= checkOutDate) {
                     return res.status(400).json({ message: "The check-out date must be greater than the check-in date." });
                 }
-
-
               
                 const siteMinders = await SiteMinderModel.find({
                     isDeleted: false,
@@ -275,23 +273,26 @@ export class ShortAvailableController {
                 // Filter untuk singkron price per Item dengan lama malam -nya menjadi priceDateList
                 const updateRoomsAvailable =  await SetResponseShort(availableRoomsWithoutPending?.WithoutPending,setPriceDayList)
 
-                
-
+                // Filter Terahkir untuk menentukan jenis room yang masih tersedia 
+                const dataFilterStatusRoom = await FilterAvailableWithRoomStatus(checkInDate,checkOutDate);
+                const FilterFinish = await CompareDataHasBeenUsedWithRoomStatus(updateRoomsAvailable,dataFilterStatusRoom);
+                 
                 res.status(200).json({
                     requestId: uuidv4(),
-                    data: updateRoomsAvailable,
-                    dataUnAvailable: unavailableRooms?.length === 0  ? availableRoomsWithoutPending?.PendingRoom : unavailableRooms.concat(availableRoomsWithoutPending?.PendingRoom),
                     message: `Successfully retrieved rooms. From Date: ${checkInDate.toISOString()} To: ${checkOutDate.toISOString()}`,
                     success: true,
+                    updateRoomsAvailable: updateRoomsAvailable,
+                    dataUnAvailable: unavailableRooms?.length === 0  ? availableRoomsWithoutPending?.PendingRoom : unavailableRooms.concat(availableRoomsWithoutPending?.PendingRoom),
+                    data : FilterFinish,
                 });
                 
             } catch (error) {
                 console.error(error);
                 res.status(500).json({
                     requestId: uuidv4(),
-                    data: null,
                     message: (error as Error).message,
                     success: false,
+                    data: null,
                 });
             }
         }

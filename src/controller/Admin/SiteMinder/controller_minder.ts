@@ -15,6 +15,7 @@ import { generateDateRange } from './components/GenerateDateRange';
 import { ActivityLogModel } from '../../../models/LogActivity/models_LogActivity';
 import { BookingModel } from '../../../models/Booking/models_booking';
 import { UpdateRefund } from './components/UpdateRefundBooking';
+import { RoomStatusModel } from '../../../models/RoomStatus/models_RoomStatus';
 
 
 export class SetMinderController {
@@ -696,6 +697,7 @@ export class SetMinderController {
             let ShortAvailable ;
             let Transaction ;
             let Booking;
+            let RoomStatus;
 
             const { id } = req.query;
             
@@ -745,6 +747,21 @@ export class SetMinderController {
               { isDeleted: true }
             );
 
+            RoomStatus = await RoomStatusModel.findOneAndUpdate({id_Trx :  id},{ isDeleted: false },{ new: true, runValidators: true });
+          
+            // if (!RoomStatus) {
+            //     return res.status(404).json({
+            //         requestId: uuidv4(),
+            //         data: null,
+            //         message: "RoomStatus not found.",
+            //         success: false
+            //     });
+            // }
+            
+            await RoomStatusModel.updateMany(
+              { id_Trx: id },
+              { isDeleted: true }
+            );
 
 
             res.status(201).json(
@@ -778,6 +795,7 @@ export class SetMinderController {
             let ShortAvailable ;
             let Transaction ;
             let Booking ;
+            let RoomStatus ;
 
             const { id } = req.query;
 
@@ -840,6 +858,20 @@ export class SetMinderController {
               { isDeleted: true }
             );
 
+            RoomStatus = await RoomStatusModel.findOneAndUpdate({id_Trx :  id},{ isDeleted: false },{ new: true, runValidators: true });
+          
+            // if (!RoomStatus) {
+            //     return res.status(404).json({
+            //         requestId: uuidv4(),
+            //         data: null,
+            //         message: "RoomStatus not found.",
+            //         success: false
+            //     });
+            // }
+            await RoomStatusModel.updateMany(
+              { id_Trx: id },
+              { isDeleted: true }
+            );
 
             res.status(201).json(
                 {
@@ -924,7 +956,15 @@ export class SetMinderController {
                     { orderId: id_TRX, isDeleted: false },
                     { checkIn, checkOut, night, amountTotal:grossAmount },
                     { new: true, runValidators: true }
+                ),
+
+                RoomStatusModel.updateMany(
+                  { id_Trx: id_TRX, isDeleted: false },
+                  { checkIn, checkOut },
+                  { runValidators: true }
                 )
+              
+
             ]);
 
             // Cek apakah data ditemukan

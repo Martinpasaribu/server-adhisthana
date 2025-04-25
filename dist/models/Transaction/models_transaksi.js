@@ -100,6 +100,7 @@ const TransactionSchema = new mongoose_1.Schema({
         {
             roomId: { type: String, trim: true },
             name: { type: String, trim: true },
+            image: { type: String, trim: true },
             price: { type: Number }, // Tidak perlu trim di tipe Number
             priceTotal: { type: Number }, // Tidak perlu trim di tipe Number
             quantity: { type: Number }, // Tidak perlu trim di tipe Number

@@ -92,6 +92,6 @@ const ReportSchema: Schema = new Schema(
 );
 
 
-const ReportModel = mongoose.model<IReport>('Report', ReportSchema,'Report');
+const ReportModel = mongoose.model<IReport>('ReportRoom', ReportSchema,'ReportRoom');
 
 export default ReportModel;

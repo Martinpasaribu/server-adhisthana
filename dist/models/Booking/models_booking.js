@@ -36,6 +36,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.BookingModel = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 const BookingSchema = new mongoose_1.Schema({
+    roomStatusKey: [{
+            type: mongoose_1.default.Schema.Types.ObjectId,
+            ref: 'RoomStatus', // mengacu ke nama model
+            default: [],
+        }],
     orderId: {
         type: String,
         // required: [true, "oderId cannot be empty"],
@@ -103,11 +108,87 @@ const BookingSchema = new mongoose_1.Schema({
         // min: [1, 'children must more then 0'],
         trim: true
     },
+    dish: [{
+            status: { type: Boolean, default: null },
+            id: { type: String, default: null },
+            note: { type: String, default: null },
+            id_Invoice: { type: String, default: null },
+            amountPrice: { type: Number, default: 0 },
+            totalPrice: { type: Number, default: 0 },
+            data: [{
+                    type: { type: String, default: null },
+                    code: { type: String, default: null },
+                    desc: { type: String, default: null },
+                    name: { type: String, default: null },
+                    image: { type: String, default: null },
+                    qty: { type: Number, default: null },
+                    amountPrice: { type: Number, default: null },
+                    price: { type: Number, default: null },
+                }],
+            createAt: {
+                type: Number,
+                default: Date.now,
+            },
+        }],
+    invoice: [{
+            status: { type: Boolean, default: null },
+            id: { type: String, default: null },
+            id_Product: { type: String, default: null },
+            note: { type: String, default: null },
+            subject: { type: String, default: null },
+            code: { type: String, default: null }, // VLA,FAD,ADD
+            less: { type: Number, default: 0 },
+            totalPrice: { type: Number, default: 0 },
+            timePaid: {
+                type: Number,
+                default: '0',
+            },
+            createAt: {
+                type: Number,
+                default: Date.now,
+            },
+        }],
+    additional: [{
+            status: {
+                type: Boolean,
+                default: null,
+            },
+            name: {
+                type: String,
+                default: null,
+            },
+            qty: {
+                type: String,
+                default: null,
+            },
+            price: {
+                type: String,
+                default: null,
+            },
+            note: {
+                type: String,
+                default: null,
+            },
+        }],
     amountTotal: {
         type: Number,
         required: false,
         // min: [1, 'amountTotal must more then 0'],
         trim: true
+    },
+    ota: {
+        status: {
+            type: Boolean,
+            default: null,
+        },
+        code: {
+            type: String,
+            default: null,
+        },
+        name: {
+            type: String,
+            default: null,
+        },
     },
     otaTotal: {
         type: Number,
@@ -135,6 +216,7 @@ const BookingSchema = new mongoose_1.Schema({
     room: [{
             roomId: { type: String },
             name: { type: String },
+            image: { type: String },
             ota: { type: Number },
             priceTotal: { type: Number },
             quantity: { type: Number }
