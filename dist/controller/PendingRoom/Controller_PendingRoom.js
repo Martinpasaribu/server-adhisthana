@@ -11,7 +11,29 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PendingRoomController = void 0;
 const models_PendingRoom_1 = require("../../models/PendingRoom/models_PendingRoom");
+const uuid_1 = require("uuid");
 class PendingRoomController {
+    static GetData(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const RoomPending = yield models_PendingRoom_1.PendingRoomModel.find({ isDeleted: false });
+                res.status(200).json({
+                    requestId: (0, uuid_1.v4)(),
+                    message: `Successfully retrieved before payment amount. ${RoomPending}.length`,
+                    success: true,
+                    data: RoomPending,
+                });
+            }
+            catch (error) {
+                res.status(500).json({
+                    requestId: (0, uuid_1.v4)(),
+                    message: error.message,
+                    success: false,
+                    data: null,
+                });
+            }
+        });
+    }
     static SetPending(room, bookingId, userId, dateIn, dateOut, code, req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -25,7 +47,7 @@ class PendingRoomController {
                 if (code === "website")
                     wibTime.setMinutes(wibTime.getMinutes() + 5);
                 if (code === "reservation")
-                    wibTime.setMinutes(wibTime.getMinutes() + 5);
+                    wibTime.setMinutes(wibTime.getMinutes() + 15);
                 // Menambahkan 5 menit ke waktu WIB
                 // Format WIB untuk disimpan (contoh: '2025-01-27 15:00:00')
                 const lockedUntil = wibTime.toISOString().replace("T", " ").split(".")[0] + " GMT+0700 (WIB)";

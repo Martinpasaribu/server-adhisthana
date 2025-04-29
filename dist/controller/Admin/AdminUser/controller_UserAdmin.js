@@ -76,7 +76,7 @@ class AdminUserController {
                 if (!req.session.userId) {
                     return res.status(401).json({ message: "Your session-Id no exists", success: false });
                 }
-                const user = yield models_admin_1.default.findOne({ _id: req.session.userId }, { role: true });
+                const user = yield models_admin_1.default.findOne({ _id: req.session.userId }, { role: true, username: true });
                 if (!user)
                     return res.status(404).json({ message: "Your session-Id no register", success: false });
                 res.status(200).json({

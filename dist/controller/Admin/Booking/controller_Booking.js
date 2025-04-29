@@ -22,7 +22,7 @@ class AdminBookingController {
     static GetAllBooking(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const bookings = yield models_booking_1.BookingModel.find({ isDeleted: false });
+                const bookings = yield models_booking_1.BookingModel.find({ isDeleted: false }).populate('roomStatusKey');
                 const result = yield Promise.all(bookings.map((booking) => __awaiter(this, void 0, void 0, function* () {
                     const transaction = yield models_transaksi_1.TransactionModel.findOne({ booking_keyId: booking._id, isDeleted: false });
                     return Object.assign(Object.assign({}, booking.toObject()), { transactionStatus: transaction ? transaction.status : 'Suspended' });

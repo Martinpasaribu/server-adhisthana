@@ -18,7 +18,8 @@ const models_PendingRoom_1 = require("../../models/PendingRoom/models_PendingRoo
 const models_ShortAvailable_1 = require("../../models/ShortAvailable/models_ShortAvailable");
 const models_transaksi_1 = require("../../models/Transaction/models_transaksi");
 const models_booking_1 = require("../../models/Booking/models_booking");
-node_cron_1.default.schedule('*/5 * * * *', () => __awaiter(void 0, void 0, void 0, function* () {
+const models_RoomStatus_1 = require("../../models/RoomStatus/models_RoomStatus");
+node_cron_1.default.schedule('*/1 * * * *', () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const nowUTC = new Date(); // Waktu sekarang UTC server
         // Konversi UTC ke WIB (UTC + 7 jam)
@@ -43,10 +44,6 @@ node_cron_1.default.schedule('*/5 * * * *', () => __awaiter(void 0, void 0, void
         // Filter ID yang tidak muncul di blockedIds
         const deletableIds = uniqueBookingIds.filter((id) => !blockedIds.includes(id));
         console.log('Booking ID yang BOLEH dihapus:', deletableIds);
-        // await PendingRoomModel.updateMany(
-        //   { lockedUntil: { $lte: now.toString() } },
-        //   { isDeleted: true }
-        // );
         // Jalankan proses penghapusan data lain berdasarkan bookingId
         // for (const id of uniqueBookingIds) {
         //   try {
@@ -56,8 +53,8 @@ node_cron_1.default.schedule('*/5 * * * *', () => __awaiter(void 0, void 0, void
         //     console.error(`Gagal hapus transaksi BookingID ${id}:`, (err as Error).message);
         //   }
         // }
-        if (uniqueBookingIds.length > 0) {
-            yield Promise.all(uniqueBookingIds.map((id) => __awaiter(void 0, void 0, void 0, function* () {
+        if (deletableIds.length > 0) {
+            yield Promise.all(deletableIds.map((id) => __awaiter(void 0, void 0, void 0, function* () {
                 try {
                     yield DeletedBookingTransaction(id);
                     yield (0, exports.DeletePendingRoomPermanently)(id);
@@ -98,15 +95,27 @@ const DeletedBookingTransaction = (id) => __awaiter(void 0, void 0, void 0, func
 });
 const DeletePendingRoomPermanently = (bookingId) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // Cari dulu apakah ada datanya
         const pendingData = yield models_PendingRoom_1.PendingRoomModel.findOne({ bookingId });
         if (!pendingData) {
             throw new Error('PendingRoom data not found.');
         }
-        // Hapus semua data berdasarkan bookingId
-        yield models_PendingRoom_1.PendingRoomModel.deleteMany({ bookingId });
-        console.log(`✅ Data PendingRoom dengan bookingId ${bookingId} berhasil dihapus secara permanen.`);
-        return { message: 'Success delete permanently', bookingId };
+        // Cari semua data yang akan dihapus
+        const pendingRoomsToDelete = yield models_PendingRoom_1.PendingRoomModel.find({ bookingId });
+        const roomStatusesToDelete = yield models_RoomStatus_1.RoomStatusModel.find({ id_Trx: bookingId });
+        console.log('🔍 PendingRoom yang akan dihapus:', pendingRoomsToDelete);
+        console.log('🔍 RoomStatus yang akan dihapus:', roomStatusesToDelete);
+        // Hapus datanya setelah ditemukan
+        yield Promise.all([
+            models_PendingRoom_1.PendingRoomModel.deleteMany({ bookingId }),
+            models_RoomStatus_1.RoomStatusModel.deleteMany({ id_Trx: bookingId })
+        ]);
+        console.log(`✅ Data dengan bookingId ${bookingId} berhasil dihapus secara permanen.`);
+        return {
+            message: 'Success delete permanently',
+            bookingId,
+            deletedPendingRooms: pendingRoomsToDelete,
+            deletedRoomStatuses: roomStatusesToDelete
+        };
     }
     catch (error) {
         const message = error.message;

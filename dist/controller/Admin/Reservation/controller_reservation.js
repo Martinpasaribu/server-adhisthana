@@ -63,7 +63,7 @@ class ReservationController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 // Destructure req.body
-                const { title, name, email, phone, grossAmount, otaTotal, reservation, products, night, checkIn, checkOut, selectOta, roomType, } = req.body;
+                const { title, name, email, phone, grossAmount, otaTotal, reservation, products, night, voucher, checkIn, checkOut, selectOta, roomType, } = req.body;
                 // Melakukan pengecekan apakah room type yang sedang dipilih apaka sudah sedang digunakan
                 const dataFilterStatusRoom = yield (0, Filter_1.FilterAvailableWithRoomStatus)(checkIn, checkOut);
                 const CekRoomInUse = yield (0, Filter_1.CompareSameDataWithRoomStatus)(roomType, dataFilterStatusRoom);
@@ -112,6 +112,7 @@ class ReservationController {
                     name,
                     email,
                     phone,
+                    voucher,
                     amountTotal: grossAmount,
                     otaTotal: otaTotal,
                     reservation,
@@ -135,6 +136,7 @@ class ReservationController {
                     email,
                     phone,
                     grossAmount,
+                    voucher,
                     otaTotal,
                     reservation,
                     products: ReservationReadyToBeSaved.WithoutPending,

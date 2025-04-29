@@ -40,6 +40,7 @@ const router_logging_1 = __importDefault(require("./router/Admin/router_logging"
 const router_report_1 = __importDefault(require("./router/Admin/router_report"));
 const router_admin_dish_1 = __importDefault(require("./router/Admin/router_admin_dish"));
 const router_admin_invoice_1 = __importDefault(require("./router/Admin/router_admin_invoice"));
+const router_admin_pending_room_1 = __importDefault(require("./router/Admin/router_admin_pending_room"));
 const app = (0, express_1.default)();
 dotenv_1.default.config();
 app.use((0, cors_1.default)({
@@ -77,14 +78,14 @@ app.use((0, express_session_1.default)({
     store: store,
     cookie: {
         //  ==========  Development  ============
-        secure: false,
-        httpOnly: true,
-        maxAge: 1000 * 60 * 60 * 24, // 1 hari
+        // secure: false,
+        // httpOnly: true,      
+        // maxAge: 1000 * 60 * 60 * 24, // 1 hari
         // ===========  Chrome , edge , fireFox Production  ==============
-        // secure: process.env.NODE_ENV === 'production',
-        // sameSite: 'none',
-        // httpOnly: true, 
-        // maxAge: 1000 * 60 * 60 * 24, 
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'none',
+        httpOnly: true,
+        maxAge: 1000 * 60 * 60 * 24,
         // ===========  Safari Production ==============
         // secure: true,           // Menggunakan HTTPS wajib
         // sameSite: 'none',       // Dibutuhkan untuk cookie lintas domain
@@ -123,6 +124,7 @@ app.use("/api/v1/admin/log", router_logging_1.default);
 app.use("/api/v1/admin/report", router_report_1.default);
 app.use("/api/v1/admin/dish", router_admin_dish_1.default);
 app.use("/api/v1/admin/invoice", router_admin_invoice_1.default);
+app.use("/api/v1/admin/room-pending", router_admin_pending_room_1.default);
 app.use("/api/v1/instagram", router_instagram_1.default);
 app.use("/api/v1/contact", router_contact_1.default);
 app.use("/api/v1/booking", router_booking_1.default);

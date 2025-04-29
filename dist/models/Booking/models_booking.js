@@ -213,6 +213,36 @@ const BookingSchema = new mongoose_1.Schema({
         // required: [true, "idUser cannot be empty"],
         trim: true
     },
+    voucher: {
+        status: {
+            type: Boolean,
+            default: false, // voucher belum aktif / belum diklaim
+        },
+        id_voucher: {
+            type: String, // atau ObjectId kalau ada model Voucher
+            default: null
+        },
+        user: {
+            type: String,
+            default: null
+        },
+        credential_account: {
+            type: String,
+            default: null
+        },
+        time: {
+            type: Date,
+            default: Date.now // otomatis set waktu saat voucher dibuat/dipakai
+        },
+        time_claim: {
+            type: Date,
+            default: null // belum diklaim = null
+        },
+        time_use: {
+            type: Date,
+            default: null // belum dipakai = null
+        }
+    },
     room: [{
             roomId: { type: String },
             name: { type: String },

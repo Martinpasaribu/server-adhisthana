@@ -19,6 +19,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 // URI MongoDB dari environment variable
 const mongoURI = process.env.MongoDB_cloud || "";
+// console.log(" Env : ", process.env.MongoDB_cloud);
 if (!mongoURI) {
     throw new Error("MongoDB URI tidak ditemukan di environment variables.");
 }
