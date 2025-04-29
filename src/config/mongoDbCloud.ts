@@ -1,11 +1,14 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 
+
 // Memuat variabel lingkungan dari file .env
 dotenv.config();
 
 // URI MongoDB dari environment variable
 const mongoURI: string = process.env.MongoDB_cloud || "";
+
+// console.log(" Env : ", process.env.MongoDB_cloud);
 
 if (!mongoURI) {
   throw new Error("MongoDB URI tidak ditemukan di environment variables.");

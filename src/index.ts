@@ -28,6 +28,7 @@ import LoggingRouter from "./router/Admin/router_logging";
 import ReportRouter from "./router/Admin/router_report";
 import AdminDishRouter from "./router/Admin/router_admin_dish";
 import AdminInvoiceRouter from "./router/Admin/router_admin_invoice";
+import AdminRoomPending from "./router/Admin/router_admin_pending_room";
 
 
 
@@ -87,19 +88,19 @@ app.use(session({
 
 
 
-        secure: false,
-        httpOnly: true,      
-        maxAge: 1000 * 60 * 60 * 24, // 1 hari
+        // secure: false,
+        // httpOnly: true,      
+        // maxAge: 1000 * 60 * 60 * 24, // 1 hari
 
         
         
         // ===========  Chrome , edge , fireFox Production  ==============
 
 
-        // secure: process.env.NODE_ENV === 'production',
-        // sameSite: 'none',
-        // httpOnly: true, 
-        // maxAge: 1000 * 60 * 60 * 24, 
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'none',
+        httpOnly: true, 
+        maxAge: 1000 * 60 * 60 * 24, 
 
 
         // ===========  Safari Production ==============
@@ -181,6 +182,7 @@ app.use("/api/v1/admin/log", LoggingRouter)
 app.use("/api/v1/admin/report", ReportRouter)
 app.use("/api/v1/admin/dish", AdminDishRouter)
 app.use("/api/v1/admin/invoice", AdminInvoiceRouter)
+app.use("/api/v1/admin/room-pending", AdminRoomPending)
 
 app.use("/api/v1/instagram", InstagramRouter)
 app.use("/api/v1/contact", ContactRouter)

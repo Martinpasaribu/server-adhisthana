@@ -85,7 +85,7 @@ export class AdminUserController {
 
             const user = await AdminModel.findOne(
                 { _id: req.session.userId },
-                { role: true } 
+                { role: true, username:true } 
             );
             
 

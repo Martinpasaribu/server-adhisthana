@@ -205,7 +205,7 @@ export class ReportController {
 
         try {
 
-            const ReportBooking = await BookingModel.find({isDeleted:false})
+            const ReportBooking = await BookingModel.find({isDeleted:false}).populate('roomStatusKey');
 
             // Kirim hasil response
             return res.status(200).json({

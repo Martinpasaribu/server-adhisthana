@@ -2,8 +2,33 @@
 import { Request, Response, NextFunction  } from 'express';
 
 import { PendingRoomModel } from '../../models/PendingRoom/models_PendingRoom';
+import RoomModel from '../../models/Room/models_room';
+import { v4 as uuidv4 } from 'uuid';
+
 
 export class PendingRoomController {
+
+        static async GetData(req: Request, res: Response){
+            try {
+
+                const RoomPending = await PendingRoomModel.find({isDeleted:false});
+
+                res.status(200).json({
+                    requestId: uuidv4(),
+                    message: `Successfully retrieved before payment amount. ${RoomPending}.length`,
+                    success: true,
+                    data: RoomPending,
+                });
+                
+            } catch (error) {
+                res.status(500).json({
+                    requestId: uuidv4(),
+                    message: (error as Error).message,
+                    success: false,
+                    data: null,
+                });
+            }
+        }
 
         static async SetPending(room: any[], bookingId : any, userId: any, dateIn: any, dateOut: any, code:any,  req: Request, res: Response) {
             try {
@@ -18,7 +43,7 @@ export class PendingRoomController {
                 const wibTime = new Date(nowUTC.getTime() + 7 * 60 * 60 * 1000);
                 
                 if (code === "website") wibTime.setMinutes(wibTime.getMinutes() + 5);
-                if (code === "reservation") wibTime.setMinutes(wibTime.getMinutes() + 5);
+                if (code === "reservation") wibTime.setMinutes(wibTime.getMinutes() + 15);
               
                 // Menambahkan 5 menit ke waktu WIB
              
@@ -71,7 +96,6 @@ export class PendingRoomController {
                 throw new Error('Function SetPending not implemented.');
             }
         }
-    
 
         static async FilterForUpdateBookingWithPending (rooms : any, dateIn : any, dateOut : any) {
  

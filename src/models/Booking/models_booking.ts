@@ -67,6 +67,15 @@ export interface IVerified {
     timeIn?: number; // Opsional, jika hanya diisi saat diverifikasi
     timeOut?: number; // Opsional, jika hanya diisi saat diverifikasi
 }
+export interface Voucher {
+    status: boolean;
+    id_voucher: string;
+    user: string;
+    credential_account: string;
+    time?: number; // Opsional, jika hanya diisi saat diverifikasi
+    tim_claim?: number; // Opsional, jika hanya diisi saat diverifikasi
+    time_use?: number; // Opsional, jika hanya diisi saat diverifikasi
+}
 
 
 interface IBooking extends Document {
@@ -91,6 +100,7 @@ interface IBooking extends Document {
     additional: Additional[];
     ota: Ota[];
     couponId: string;
+    voucher: Voucher;
     userId:string ;
     room : Room [];
     invoice : Invoice [];
@@ -300,6 +310,38 @@ const BookingSchema: Schema = new Schema(
             // required: [true, "idUser cannot be empty"],
             trim: true
         },
+
+        voucher: {
+            status: { 
+              type: Boolean, 
+              default: false,  // voucher belum aktif / belum diklaim
+            },
+            id_voucher: {
+              type: String,     // atau ObjectId kalau ada model Voucher
+              default: null
+            },
+            user: {
+              type: String, 
+              default: null
+            },
+            credential_account: {
+              type: String,
+              default: null
+            },
+            time: {
+              type: Date,
+              default: Date.now // otomatis set waktu saat voucher dibuat/dipakai
+            },
+            time_claim: {
+              type: Date,
+              default: null // belum diklaim = null
+            },
+            time_use: {
+              type: Date,
+              default: null // belum dipakai = null
+            }
+        },
+          
 
         room: [{
             roomId: {type: String},

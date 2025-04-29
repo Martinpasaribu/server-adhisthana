@@ -17,7 +17,7 @@ export class AdminBookingController {
           try {
            
 
-          const bookings = await BookingModel.find({isDeleted:false});
+          const bookings = await BookingModel.find({isDeleted:false}).populate('roomStatusKey');
 
           const result = await Promise.all(bookings.map(async (booking) => {
               const transaction = await TransactionModel.findOne({ booking_keyId: booking._id, isDeleted:false });

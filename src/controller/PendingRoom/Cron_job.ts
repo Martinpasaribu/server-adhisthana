@@ -4,8 +4,9 @@ import { PendingRoomModel } from '../../models/PendingRoom/models_PendingRoom';
 import { ShortAvailableModel } from '../../models/ShortAvailable/models_ShortAvailable';
 import { TransactionModel } from '../../models/Transaction/models_transaksi';
 import { BookingModel } from '../../models/Booking/models_booking';
+import { RoomStatusModel } from '../../models/RoomStatus/models_RoomStatus';
 
-cron.schedule('*/5 * * * *', async () => {
+cron.schedule('*/1 * * * *', async () => {
 
         try {
                     
@@ -47,10 +48,6 @@ cron.schedule('*/5 * * * *', async () => {
 
             console.log('Booking ID yang BOLEH dihapus:', deletableIds);
 
-                // await PendingRoomModel.updateMany(
-                //   { lockedUntil: { $lte: now.toString() } },
-                //   { isDeleted: true }
-                // );
 
 
 
@@ -66,10 +63,10 @@ cron.schedule('*/5 * * * *', async () => {
 
 
 
-              if(uniqueBookingIds.length > 0){
+              if(deletableIds.length > 0){
 
                 await Promise.all(
-                  uniqueBookingIds.map(async (id) => {
+                  deletableIds.map(async (id) => {
                     try {
 
                       await DeletedBookingTransaction(id);
@@ -140,20 +137,35 @@ cron.schedule('*/5 * * * *', async () => {
   }
 
 
-  export const DeletePendingRoomPermanently = async (bookingId: any) => {
+  export const DeletePendingRoomPermanently = async (bookingId: string) => {
     try {
-      // Cari dulu apakah ada datanya
       const pendingData = await PendingRoomModel.findOne({ bookingId });
   
       if (!pendingData) {
         throw new Error('PendingRoom data not found.');
       }
   
-      // Hapus semua data berdasarkan bookingId
-      await PendingRoomModel.deleteMany({ bookingId });
+      // Cari semua data yang akan dihapus
+      const pendingRoomsToDelete = await PendingRoomModel.find({ bookingId });
+      const roomStatusesToDelete = await RoomStatusModel.find({ id_Trx: bookingId });
   
-      console.log(`✅ Data PendingRoom dengan bookingId ${bookingId} berhasil dihapus secara permanen.`);
-      return { message: 'Success delete permanently', bookingId };
+      console.log('🔍 PendingRoom yang akan dihapus:', pendingRoomsToDelete);
+      console.log('🔍 RoomStatus yang akan dihapus:', roomStatusesToDelete);
+  
+      // Hapus datanya setelah ditemukan
+      await Promise.all([
+        PendingRoomModel.deleteMany({ bookingId }),
+        RoomStatusModel.deleteMany({ id_Trx: bookingId })
+      ]);
+  
+      console.log(`✅ Data dengan bookingId ${bookingId} berhasil dihapus secara permanen.`);
+  
+      return { 
+        message: 'Success delete permanently', 
+        bookingId, 
+        deletedPendingRooms: pendingRoomsToDelete,
+        deletedRoomStatuses: roomStatusesToDelete 
+      };
   
     } catch (error) {
       const message = (error as Error).message;
@@ -161,3 +173,4 @@ cron.schedule('*/5 * * * *', async () => {
       throw new Error(`Error deleting PendingRoom: ${message}`);
     }
   };
+  
