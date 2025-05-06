@@ -99,7 +99,7 @@ const DeletePendingRoomPermanently = (bookingId) => __awaiter(void 0, void 0, vo
         if (!pendingData) {
             throw new Error('PendingRoom data not found.');
         }
-        // Cari semua data yang akan dihapus
+        // Cari semua data yang akan dihapus UNTUK ROOM PENDINg & ROOM STATUS
         const pendingRoomsToDelete = yield models_PendingRoom_1.PendingRoomModel.find({ bookingId });
         const roomStatusesToDelete = yield models_RoomStatus_1.RoomStatusModel.find({ id_Trx: bookingId });
         console.log('🔍 PendingRoom yang akan dihapus:', pendingRoomsToDelete);
