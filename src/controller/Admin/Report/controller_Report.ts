@@ -201,124 +201,161 @@ export class ReportController {
       }
   };
     
-    static async GetReportBooking (req: Request, res: Response){
 
-        try {
 
-            const ReportBooking = await BookingModel.find({isDeleted:false}).populate('roomStatusKey');
+  // static async GetReportBooking (req: Request, res: Response){
 
-            // Kirim hasil response
-            return res.status(200).json({
-              requestId: uuidv4(),
-              data: ReportBooking,
-              success: true
-            });
+  //     try {
 
-        } catch (error) {
+  //         const ReportBooking = await BookingModel.find({isDeleted:false}).populate('roomStatusKey');
 
-            console.error('Error fetching report booking:', error);
-            
-            return res.status(500).json({
-                requestId: uuidv4(),
-                data: null,
-                message: (error as Error).message || "Internal Server Error",
-                success: false
-            });
-        }
-    };
+  //         // Kirim hasil response
+  //         return res.status(200).json({
+  //           requestId: uuidv4(),
+  //           data: ReportBooking,
+  //           success: true
+  //         });
 
- 
-    static async GetReportBookingByDate(req: Request, res: Response) {
-      try {
-        const { code, start, end } = req.params;
-  
+  //     } catch (error) {
+
+  //         console.error('Error fetching report booking:', error);
           
-        if( !code || !start || !end){
-          return res.status(400).json({
-            requestId: uuidv4(),
-            data: null,
-            message: "Date and Type date can't empty",
-            success: false,
-          });
-        }
-
-        // Validasi parameter tanggal
-        if (!start || !end || isNaN(new Date(start).getTime()) || isNaN(new Date(end).getTime())) {
-          return res.status(400).json({
-            requestId: uuidv4(),
-            data: null,
-            message: "Invalid Date",
-            success: false,
-          });
-        }
+  //         return res.status(500).json({
+  //             requestId: uuidv4(),
+  //             data: null,
+  //             message: (error as Error).message || "Internal Server Error",
+  //             success: false
+  //         });
+  //     }
+  // };
 
 
-        // Atur rentang waktu hari tersebut (dari jam 00:00 sampai 23:59)
-        const startOfDay = new Date(start);
-        startOfDay.setHours(0, 0, 0, 0);
+  static async GetReportBooking(req: Request, res: Response) {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 25;
   
-        const endOfDay = new Date(end);
-        endOfDay.setHours(23, 59, 59, 999);
+      const skip = (page - 1) * limit;
   
-        let todayReport: string | any[] 
+      const total = await BookingModel.countDocuments({ isDeleted: false });
+      const bookings = await BookingModel.find({ isDeleted: false })
+        .populate('roomStatusKey')
+        .skip(skip)
+        .limit(limit);
   
-        if (code === "BO") {
-          // Filter berdasarkan createdAt untuk CI
-          todayReport = await BookingModel.find({
-            createdAt: {
-              $gte: startOfDay,
-              $lte: endOfDay,
-            },
-            isDeleted: false,
-          });
-        } else if (code === "CI") {
-          // Filter berdasarkan checkIn untuk BO
-          // Pastikan field checkIn dalam format ISO date
-          todayReport = await BookingModel.find({
-            checkIn: {
-              $gte: startOfDay.toISOString(),
-              $lte: endOfDay.toISOString(),
-            },
-            isDeleted: false,
-          });
-        } else if (code === "PY") {
-          // Logika khusus untuk kode PY bisa ditambahkan di sini
-          todayReport = []; // Misalnya sementara kosong
-        } else {
-          return res.status(400).json({
-            requestId: uuidv4(),
-            data: null,
-            message: "Invalid code type",
-            success: false,
-          });
-        }
+      return res.status(200).json({
+        requestId: uuidv4(),
+        data: bookings,
+        page,
+        limit,
+        total,
+        success: true
+      });
   
-        if (!todayReport || todayReport.length === 0) {
-          return res.status(200).json({
-            requestId: uuidv4(),
-            data: [],
-            message: `No report found from ${startOfDay.toISOString()} - ${startOfDay.toISOString()}}`,
-            success: true,
-          });
-        }
+    } catch (error) {
+      return res.status(500).json({
+        requestId: uuidv4(),
+        data: null,
+        message: (error as Error).message || "Internal Server Error",
+        success: false
+      });
+    }
+  }
   
-        return res.status(200).json({
-          requestId: uuidv4(),
-          data: todayReport,
-          dataLength: todayReport.length,
-          message: `Data Report: ${startOfDay.toISOString()} - ${endOfDay.toISOString()}`,
-          success: true,
-        });
-      } catch (error) {
-        console.error("Error fetching report:", error);
-        return res.status(500).json({
+  
+
+
+  static async GetReportBookingByDate(req: Request, res: Response) {
+    try {
+      const { code, start, end } = req.params;
+
+        
+      if( !code || !start || !end){
+        return res.status(400).json({
           requestId: uuidv4(),
           data: null,
-          message: (error as Error).message || "Internal Server Error",
+          message: "Date and Type date can't empty",
           success: false,
         });
       }
+
+      // Validasi parameter tanggal
+      if (!start || !end || isNaN(new Date(start).getTime()) || isNaN(new Date(end).getTime())) {
+        return res.status(400).json({
+          requestId: uuidv4(),
+          data: null,
+          message: "Invalid Date",
+          success: false,
+        });
+      }
+
+
+      // Atur rentang waktu hari tersebut (dari jam 00:00 sampai 23:59)
+      const startOfDay = new Date(start);
+      startOfDay.setHours(0, 0, 0, 0);
+
+      const endOfDay = new Date(end);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      let todayReport: string | any[] 
+
+      if (code === "BO") {
+        // Filter berdasarkan createdAt untuk CI
+        todayReport = await BookingModel.find({
+          createdAt: {
+            $gte: startOfDay,
+            $lte: endOfDay,
+          },
+          isDeleted: false,
+        });
+      } else if (code === "CI") {
+        // Filter berdasarkan checkIn untuk BO
+        // Pastikan field checkIn dalam format ISO date
+        todayReport = await BookingModel.find({
+          checkIn: {
+            $gte: startOfDay.toISOString(),
+            $lte: endOfDay.toISOString(),
+          },
+          isDeleted: false,
+        });
+      } else if (code === "PY") {
+        // Logika khusus untuk kode PY bisa ditambahkan di sini
+        todayReport = []; // Misalnya sementara kosong
+      } else {
+        return res.status(400).json({
+          requestId: uuidv4(),
+          data: null,
+          message: "Invalid code type",
+          success: false,
+        });
+      }
+
+      if (!todayReport || todayReport.length === 0) {
+        return res.status(200).json({
+          requestId: uuidv4(),
+          data: [],
+          message: `No report found from ${startOfDay.toISOString()} - ${startOfDay.toISOString()}}`,
+          success: true,
+        });
+      }
+
+      return res.status(200).json({
+        requestId: uuidv4(),
+        data: todayReport,
+        dataLength: todayReport.length,
+        message: `Data Report: ${startOfDay.toISOString()} - ${endOfDay.toISOString()}`,
+        success: true,
+      });
+    } catch (error) {
+      console.error("Error fetching report:", error);
+      return res.status(500).json({
+        requestId: uuidv4(),
+        data: null,
+        message: (error as Error).message || "Internal Server Error",
+        success: false,
+      });
     }
+  }
   
 
 

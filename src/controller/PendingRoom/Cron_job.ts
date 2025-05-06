@@ -145,7 +145,7 @@ cron.schedule('*/1 * * * *', async () => {
         throw new Error('PendingRoom data not found.');
       }
   
-      // Cari semua data yang akan dihapus
+      // Cari semua data yang akan dihapus UNTUK ROOM PENDINg & ROOM STATUS
       const pendingRoomsToDelete = await PendingRoomModel.find({ bookingId });
       const roomStatusesToDelete = await RoomStatusModel.find({ id_Trx: bookingId });
   
