@@ -17,6 +17,9 @@ exports.ReportController = void 0;
 const models_report_1 = __importDefault(require("../../../models/Report/models_report"));
 const uuid_1 = require("uuid");
 const models_booking_1 = require("../../../models/Booking/models_booking");
+const dayjs_1 = __importDefault(require("dayjs"));
+const utc_js_1 = __importDefault(require("dayjs/plugin/utc.js"));
+const timezone_js_1 = __importDefault(require("dayjs/plugin/timezone.js"));
 class ReportController {
     static SaveReport(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -86,13 +89,19 @@ class ReportController {
     static GetTodayReport(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const startOfDay = new Date();
-                startOfDay.setHours(0, 0, 0, 0); // mulai dari jam 00:00:00
-                const endOfDay = new Date();
-                endOfDay.setHours(23, 59, 59, 999); // sampai jam 23:59:59
-                // const now = new Date();
-                // const startOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0));
-                // const endOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
+                dayjs_1.default.extend(utc_js_1.default);
+                dayjs_1.default.extend(timezone_js_1.default);
+                // Set zona waktu lokal yang kamu inginkan (contoh: Asia/Jakarta)
+                const zone = 'Asia/Jakarta';
+                // Buat start dan end of day berdasarkan timezone
+                const startOfDay = (0, dayjs_1.default)().tz(zone).startOf('day').toDate();
+                const endOfDay = (0, dayjs_1.default)().tz(zone).endOf('day').toDate();
+                // Debug: tampilkan hasil dalam zona waktu lokal
+                console.log("Report room status from", startOfDay.toLocaleString('id-ID', { timeZone: zone }), "until", endOfDay.toLocaleString('id-ID', { timeZone: zone }));
+                // const startOfDay = new Date();
+                // startOfDay.setHours(0, 0, 0, 0); // mulai dari jam 00:00:00
+                // const endOfDay = new Date();
+                // endOfDay.setHours(23, 59, 59, 999); // sampai jam 23:59:59
                 const todayReport = yield models_report_1.default.findOne({
                     createdAt: {
                         $gte: startOfDay,

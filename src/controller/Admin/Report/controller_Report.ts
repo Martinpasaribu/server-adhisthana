@@ -4,6 +4,10 @@ import ReportModel from '../../../models/Report/models_report';
 import { v4 as uuidv4 } from 'uuid';
 import { Request, Response } from 'express';
 import { BookingModel } from '../../../models/Booking/models_booking';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc.js';
+import timezone from 'dayjs/plugin/timezone.js';
+
 
 export class ReportController {
 
@@ -89,16 +93,32 @@ export class ReportController {
 
         try {
 
-            const startOfDay = new Date();
-            startOfDay.setHours(0, 0, 0, 0); // mulai dari jam 00:00:00
+
+
+          dayjs.extend(utc);
+          dayjs.extend(timezone);
+          
+          // Set zona waktu lokal yang kamu inginkan (contoh: Asia/Jakarta)
+          const zone = 'Asia/Jakarta';
+
+          // Buat start dan end of day berdasarkan timezone
+          const startOfDay = dayjs().tz(zone).startOf('day').toDate();
+          const endOfDay = dayjs().tz(zone).endOf('day').toDate();
+
+          // Debug: tampilkan hasil dalam zona waktu lokal
+          console.log("Report room status from", 
+            startOfDay.toLocaleString('id-ID', { timeZone: zone }),
+            "until", 
+            endOfDay.toLocaleString('id-ID', { timeZone: zone })
+          );
+
+
+            // const startOfDay = new Date();
+            // startOfDay.setHours(0, 0, 0, 0); // mulai dari jam 00:00:00
         
-            const endOfDay = new Date();
-            endOfDay.setHours(23, 59, 59, 999); // sampai jam 23:59:59
-        
-            // const now = new Date();
-            // const startOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0));
-            // const endOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
-            
+            // const endOfDay = new Date();
+            // endOfDay.setHours(23, 59, 59, 999); // sampai jam 23:59:59
+    
             
             const todayReport = await ReportModel.findOne({
                 

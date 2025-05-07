@@ -41,6 +41,9 @@ exports.ReportController = void 0;
 var models_report_1 = require("../../../models/Report/models_report");
 var uuid_1 = require("uuid");
 var models_booking_1 = require("../../../models/Booking/models_booking");
+var dayjs_1 = require("dayjs");
+var utc_js_1 = require("dayjs/plugin/utc.js");
+var timezone_js_1 = require("dayjs/plugin/timezone.js");
 var ReportController = /** @class */ (function () {
     function ReportController() {
     }
@@ -119,15 +122,18 @@ var ReportController = /** @class */ (function () {
     ;
     ReportController.GetTodayReport = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var startOfDay, endOfDay, todayReport, error_1;
+            var zone, startOfDay, endOfDay, todayReport, error_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        startOfDay = new Date();
-                        startOfDay.setHours(0, 0, 0, 0); // mulai dari jam 00:00:00
-                        endOfDay = new Date();
-                        endOfDay.setHours(23, 59, 59, 999); // sampai jam 23:59:59
+                        dayjs_1["default"].extend(utc_js_1["default"]);
+                        dayjs_1["default"].extend(timezone_js_1["default"]);
+                        zone = 'Asia/Jakarta';
+                        startOfDay = dayjs_1["default"]().tz(zone).startOf('day').toDate();
+                        endOfDay = dayjs_1["default"]().tz(zone).endOf('day').toDate();
+                        // Debug: tampilkan hasil dalam zona waktu lokal
+                        console.log("Report room status from", startOfDay.toLocaleString('id-ID', { timeZone: zone }), "until", endOfDay.toLocaleString('id-ID', { timeZone: zone }));
                         return [4 /*yield*/, models_report_1["default"].findOne({
                                 createdAt: {
                                     $gte: startOfDay,
