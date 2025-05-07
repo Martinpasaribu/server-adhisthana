@@ -89,12 +89,17 @@ export class ReportController {
 
         try {
 
-            const startOfDay = new Date();
-            startOfDay.setHours(0, 0, 0, 0); // mulai dari jam 00:00:00
+            // const startOfDay = new Date();
+            // startOfDay.setHours(0, 0, 0, 0); // mulai dari jam 00:00:00
         
-            const endOfDay = new Date();
-            endOfDay.setHours(23, 59, 59, 999); // sampai jam 23:59:59
+            // const endOfDay = new Date();
+            // endOfDay.setHours(23, 59, 59, 999); // sampai jam 23:59:59
         
+            const now = new Date();
+            const startOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0));
+            const endOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
+            
+            
             const todayReport = await ReportModel.findOne({
                 
                 createdAt: {
