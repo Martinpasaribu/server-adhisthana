@@ -203,68 +203,163 @@ export class ReportController {
     
 
 
-  // static async GetReportBooking (req: Request, res: Response){
+  static async GetReportBooking (req: Request, res: Response){
 
-  //     try {
+      try {
 
-  //         const ReportBooking = await BookingModel.find({isDeleted:false}).populate('roomStatusKey');
+          const ReportBooking = await BookingModel.find({isDeleted:false}).populate('roomStatusKey');
 
-  //         // Kirim hasil response
-  //         return res.status(200).json({
-  //           requestId: uuidv4(),
-  //           data: ReportBooking,
-  //           success: true
-  //         });
+          // Kirim hasil response
+          return res.status(200).json({
+            requestId: uuidv4(),
+            data: ReportBooking,
+            success: true
+          });
 
-  //     } catch (error) {
+      } catch (error) {
 
-  //         console.error('Error fetching report booking:', error);
+          console.error('Error fetching report booking:', error);
           
-  //         return res.status(500).json({
-  //             requestId: uuidv4(),
-  //             data: null,
-  //             message: (error as Error).message || "Internal Server Error",
-  //             success: false
-  //         });
-  //     }
-  // };
+          return res.status(500).json({
+              requestId: uuidv4(),
+              data: null,
+              message: (error as Error).message || "Internal Server Error",
+              success: false
+          });
+      }
+  };
 
 
-  static async GetReportBooking(req: Request, res: Response) {
+  // Pagination
+  // static async GetReportBooking(req: Request, res: Response) {
+  //   try {
+  //     const page = parseInt(req.query.page as string) || 1;
+  //     const limit = parseInt(req.query.limit as string) || 25;
+  
+  //     const skip = (page - 1) * limit;
+  
+  //     const total = await BookingModel.countDocuments({ isDeleted: false });
+
+  //     const bookings = await BookingModel.find({ isDeleted: false })
+  //       .populate('roomStatusKey')
+  //       .skip(skip)
+  //       .limit(limit);
+  
+  //     return res.status(200).json({
+  //       requestId: uuidv4(),
+  //       data: bookings,
+  //       page,
+  //       limit,
+  //       total,
+  //       success: true
+  //     });
+  
+  //   } catch (error) {
+  //     return res.status(500).json({
+  //       requestId: uuidv4(),
+  //       data: null,
+  //       message: (error as Error).message || "Internal Server Error",
+  //       success: false
+  //     });
+  //   }
+  // }
+  
+
+
+  static async GetReportBookingByDate(req: Request, res: Response) {
     try {
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 25;
-  
-      const skip = (page - 1) * limit;
-  
-      const total = await BookingModel.countDocuments({ isDeleted: false });
+      const { code, start, end } = req.params;
 
-      const bookings = await BookingModel.find({ isDeleted: false })
-        .populate('roomStatusKey')
-        .skip(skip)
-        .limit(limit);
-  
+        
+      if( !code || !start || !end){
+        return res.status(400).json({
+          requestId: uuidv4(),
+          data: null,
+          message: "Date and Type date can't empty",
+          success: false,
+        });
+      }
+
+      // Validasi parameter tanggal
+      if (!start || !end || isNaN(new Date(start).getTime()) || isNaN(new Date(end).getTime())) {
+        return res.status(400).json({
+          requestId: uuidv4(),
+          data: null,
+          message: "Invalid Date",
+          success: false,
+        });
+      }
+
+
+      // Atur rentang waktu hari tersebut (dari jam 00:00 sampai 23:59)
+      const startOfDay = new Date(start);
+      startOfDay.setHours(0, 0, 0, 0);
+
+      const endOfDay = new Date(end);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      let todayReport: string | any[] 
+
+      if (code === "BO") {
+        // Filter berdasarkan createdAt untuk CI
+        todayReport = await BookingModel.find({
+          createdAt: {
+            $gte: startOfDay,
+            $lte: endOfDay,
+          },
+          isDeleted: false,
+        });
+      } else if (code === "CI") {
+        // Filter berdasarkan checkIn untuk BO
+        // Pastikan field checkIn dalam format ISO date
+        todayReport = await BookingModel.find({
+          checkIn: {
+            $gte: startOfDay.toISOString(),
+            $lte: endOfDay.toISOString(),
+          },
+          isDeleted: false,
+        });
+      } else if (code === "PY") {
+        // Logika khusus untuk kode PY bisa ditambahkan di sini
+        todayReport = []; // Misalnya sementara kosong
+      } else {
+        return res.status(400).json({
+          requestId: uuidv4(),
+          data: null,
+          message: "Invalid code type",
+          success: false,
+        });
+      }
+
+      if (!todayReport || todayReport.length === 0) {
+        return res.status(200).json({
+          requestId: uuidv4(),
+          data: [],
+          message: `No report found from ${startOfDay.toISOString()} - ${startOfDay.toISOString()}}`,
+          success: true,
+        });
+      }
+
       return res.status(200).json({
         requestId: uuidv4(),
-        data: bookings,
-        page,
-        limit,
-        total,
-        success: true
+        data: todayReport,
+        dataLength: todayReport.length,
+        message: `Data Report: ${startOfDay.toISOString()} - ${endOfDay.toISOString()}`,
+        success: true,
       });
-  
     } catch (error) {
+      console.error("Error fetching report:", error);
       return res.status(500).json({
         requestId: uuidv4(),
         data: null,
         message: (error as Error).message || "Internal Server Error",
-        success: false
+        success: false,
       });
     }
   }
-  
-  
 
+
+  // Pagination
 
   // static async GetReportBookingByDate(req: Request, res: Response) {
   //   try {
@@ -358,108 +453,5 @@ export class ReportController {
   //   }
   // }
   
-
-  static async GetReportBookingByDate(req: Request, res: Response) {
-    try {
-      const { code, start, end } = req.params;
-  
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 25;
-      const skip = (page - 1) * limit;
-  
-      if (!code || !start || !end) {
-        return res.status(400).json({
-          requestId: uuidv4(),
-          data: null,
-          message: "Date and Type date can't be empty",
-          success: false,
-        });
-      }
-  
-      // Validasi tanggal
-      const startOfDay = new Date(start);
-      startOfDay.setHours(0, 0, 0, 0);
-  
-      const endOfDay = new Date(end);
-      endOfDay.setHours(23, 59, 59, 999);
-  
-      if (isNaN(startOfDay.getTime()) || isNaN(endOfDay.getTime())) {
-        return res.status(400).json({
-          requestId: uuidv4(),
-          data: null,
-          message: "Invalid date format",
-          success: false,
-        });
-      }
-  
-      let filter: any = { isDeleted: false };
-      let dateField = "";
-  
-      // Tentukan filter berdasarkan kode
-      switch (code) {
-        case "BO":
-          dateField = "createdAt";
-          break;
-        case "CI":
-          dateField = "checkIn";
-          break;
-        case "PY":
-          // Jika belum ada implementasi khusus
-          return res.status(200).json({
-            requestId: uuidv4(),
-            data: [],
-            dataLength: 0,
-            total: 0,
-            message: "No data for code PY yet",
-            success: true,
-          });
-        default:
-          return res.status(400).json({
-            requestId: uuidv4(),
-            data: null,
-            message: "Invalid code type",
-            success: false,
-          });
-      }
-  
-      // Tambahkan filter tanggal
-      if (dateField) {
-        filter[dateField] = {
-          $gte: dateField === "checkIn" ? startOfDay.toISOString() : startOfDay,
-          $lte: dateField === "checkIn" ? endOfDay.toISOString() : endOfDay,
-        };
-      }
-  
-      // Ambil data dan total
-      const todayReport = await BookingModel.find(filter)
-        .populate("roomStatusKey")
-        .skip(skip)
-        .limit(limit);
-  
-      const total = await BookingModel.countDocuments(filter);
-  
-      return res.status(200).json({
-        requestId: uuidv4(),
-        data: todayReport,
-        dataLength: todayReport.length,
-        total,
-        page,
-        limit,
-        message: `Data Report: ${startOfDay.toISOString()} - ${endOfDay.toISOString()}`,
-        success: true,
-      });
-  
-    } catch (error) {
-      console.error("Error fetching report:", error);
-      return res.status(500).json({
-        requestId: uuidv4(),
-        data: null,
-        message: (error as Error).message || "Internal Server Error",
-        success: false,
-      });
-    }
-  }
-  
-
 }
 
