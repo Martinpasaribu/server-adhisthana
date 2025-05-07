@@ -86,13 +86,13 @@ class ReportController {
     static GetTodayReport(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                // const startOfDay = new Date();
-                // startOfDay.setHours(0, 0, 0, 0); // mulai dari jam 00:00:00
-                // const endOfDay = new Date();
-                // endOfDay.setHours(23, 59, 59, 999); // sampai jam 23:59:59
-                const now = new Date();
-                const startOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0));
-                const endOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
+                const startOfDay = new Date();
+                startOfDay.setHours(0, 0, 0, 0); // mulai dari jam 00:00:00
+                const endOfDay = new Date();
+                endOfDay.setHours(23, 59, 59, 999); // sampai jam 23:59:59
+                // const now = new Date();
+                // const startOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0));
+                // const endOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
                 const todayReport = yield models_report_1.default.findOne({
                     createdAt: {
                         $gte: startOfDay,
@@ -105,6 +105,7 @@ class ReportController {
                         requestId: (0, uuid_1.v4)(),
                         data: todayReport,
                         message: 'No report found for today',
+                        message2: `report room status from ${startOfDay} until ${endOfDay}`,
                         success: true
                     });
                 }
@@ -112,6 +113,7 @@ class ReportController {
                 return res.status(200).json({
                     requestId: (0, uuid_1.v4)(),
                     data: todayReport,
+                    message: `report room status from ${startOfDay} until ${endOfDay}`,
                     success: true
                 });
             }

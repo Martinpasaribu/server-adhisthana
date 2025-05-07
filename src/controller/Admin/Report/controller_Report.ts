@@ -89,15 +89,15 @@ export class ReportController {
 
         try {
 
-            // const startOfDay = new Date();
-            // startOfDay.setHours(0, 0, 0, 0); // mulai dari jam 00:00:00
+            const startOfDay = new Date();
+            startOfDay.setHours(0, 0, 0, 0); // mulai dari jam 00:00:00
         
-            // const endOfDay = new Date();
-            // endOfDay.setHours(23, 59, 59, 999); // sampai jam 23:59:59
+            const endOfDay = new Date();
+            endOfDay.setHours(23, 59, 59, 999); // sampai jam 23:59:59
         
-            const now = new Date();
-            const startOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0));
-            const endOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
+            // const now = new Date();
+            // const startOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0));
+            // const endOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
             
             
             const todayReport = await ReportModel.findOne({
@@ -116,6 +116,7 @@ export class ReportController {
                     requestId: uuidv4(),
                     data: todayReport,
                     message: 'No report found for today',
+                    message2: `report room status from ${startOfDay} until ${endOfDay}`,
                     success: true
                   });
 
@@ -125,6 +126,7 @@ export class ReportController {
             return res.status(200).json({
               requestId: uuidv4(),
               data: todayReport,
+              message: `report room status from ${startOfDay} until ${endOfDay}`,
               success: true
             });
 
