@@ -18,7 +18,5 @@ ReportRouter.get("/get/booking/date/:code/:start/:end", ReportController.GetRepo
 ReportRouter.get("/get-reportby-day/:date", ReportController.GetReportByDate); 
 
 
-
-
 export default ReportRouter;
  

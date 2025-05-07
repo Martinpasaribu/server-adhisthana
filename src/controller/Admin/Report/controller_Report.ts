@@ -308,7 +308,7 @@ export class ReportController {
             $lte: endOfDay,
           },
           isDeleted: false,
-        });
+        }).populate('roomStatusKey');
       } else if (code === "CI") {
         // Filter berdasarkan checkIn untuk BO
         // Pastikan field checkIn dalam format ISO date
@@ -318,7 +318,7 @@ export class ReportController {
             $lte: endOfDay.toISOString(),
           },
           isDeleted: false,
-        });
+        }).populate('roomStatusKey');
       } else if (code === "PY") {
         // Logika khusus untuk kode PY bisa ditambahkan di sini
         todayReport = []; // Misalnya sementara kosong
