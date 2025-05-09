@@ -343,6 +343,11 @@ export class ReservationController {
               }, res);
 
 
+              // Perbaharui Room Pending pada saat user sudah melakukan transaction atau pembayaran gagal 
+              const messagePendingRoom = await PendingRoomController.UpdatePending(TransactionId);
+
+
+
               // ✅ Berikan respon sukses
               return res.status(201).json({
                   requestId: uuidv4(),
@@ -351,6 +356,7 @@ export class ReservationController {
                   },
                   resultInvoice: invoiceResult?.data ?? [],
                   message: `Successfully payment transaction : ${TransactionId}`,
+                  messagePendingRoom: messagePendingRoom,
                   success: true
               });
 

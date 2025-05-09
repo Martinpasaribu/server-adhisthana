@@ -242,6 +242,7 @@ class ShortAvailableController {
                     message: `Successfully retrieved rooms. From Date: ${checkInDate.toISOString()} To: ${checkOutDate.toISOString()}`,
                     success: true,
                     updateRoomsAvailable: updateRoomsAvailable,
+                    availableRoomsWithoutPending: availableRoomsWithoutPending,
                     dataUnAvailable: (unavailableRooms === null || unavailableRooms === void 0 ? void 0 : unavailableRooms.length) === 0 ? availableRoomsWithoutPending === null || availableRoomsWithoutPending === void 0 ? void 0 : availableRoomsWithoutPending.PendingRoom : unavailableRooms.concat(availableRoomsWithoutPending === null || availableRoomsWithoutPending === void 0 ? void 0 : availableRoomsWithoutPending.PendingRoom),
                     data: FilterFinish,
                 });
