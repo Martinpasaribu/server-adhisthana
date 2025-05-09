@@ -100,7 +100,6 @@ class TransactionService {
         }
     }
 
-
     
     async updateTransactionStatus({transactionId, status}: updateTransactionStatus) {
         return BookingModel.findByIdAndUpdate(
@@ -110,10 +109,12 @@ class TransactionService {
         );
     }
 
+    
     async getTransactions({ status }  : { status :string}) {
         const query = status ? { status } : {};
         return BookingModel.find(query);
     }
+
 }
 
 export const transactionService = new TransactionService();
