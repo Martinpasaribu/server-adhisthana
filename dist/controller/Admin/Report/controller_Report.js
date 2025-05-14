@@ -21,6 +21,7 @@ const dayjs_1 = __importDefault(require("dayjs"));
 const utc_js_1 = __importDefault(require("dayjs/plugin/utc.js"));
 const timezone_js_1 = __importDefault(require("dayjs/plugin/timezone.js"));
 const models_RoomStatus_1 = require("../../../models/RoomStatus/models_RoomStatus");
+const luxon_1 = require("luxon");
 class ReportController {
     static SaveReport(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -173,22 +174,22 @@ class ReportController {
                         success: false
                     });
                 }
-                const startOfDay = new Date(date);
-                startOfDay.setHours(0, 0, 0, 0); // mulai dari jam 00:00:00
-                const endOfDay = new Date(date);
-                endOfDay.setHours(23, 59, 59, 999); // sampai jam 23:59:59
+                const dateWIB = luxon_1.DateTime.fromJSDate(new Date(date), { zone: 'Asia/Jakarta' });
+                const startOfDay = dateWIB.startOf('day').toJSDate();
+                const endOfDay = dateWIB.endOf('day').toJSDate();
                 const todayReport = yield models_report_1.default.findOne({
                     createdAt: {
                         $gte: startOfDay,
-                        $lte: endOfDay
+                        $lte: endOfDay,
                     },
-                    isDeleted: false
+                    isDeleted: false,
                 });
                 if (!todayReport) {
                     return res.status(200).json({
                         requestId: (0, uuid_1.v4)(),
                         data: [],
                         message: `No report found for ${startOfDay}`,
+                        date_req: date,
                         success: true
                     });
                 }
@@ -197,6 +198,7 @@ class ReportController {
                     requestId: (0, uuid_1.v4)(),
                     data: todayReport,
                     message: `Data Report : ${startOfDay}`,
+                    date_req: date,
                     success: true
                 });
             }

@@ -8,6 +8,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 import timezone from 'dayjs/plugin/timezone.js';
 import { RoomStatusModel } from '../../../models/RoomStatus/models_RoomStatus';
+import { DateTime } from "luxon";
 
 
 export class ReportController {
@@ -207,21 +208,19 @@ export class ReportController {
         }
         
 
-          const startOfDay = new Date(date);
-          startOfDay.setHours(0, 0, 0, 0); // mulai dari jam 00:00:00
-      
-          const endOfDay = new Date(date);
-          endOfDay.setHours(23, 59, 59, 999); // sampai jam 23:59:59
-      
-          const todayReport = await ReportModel.findOne({
-              
-              createdAt: {
-                  $gte: startOfDay,
-                  $lte: endOfDay
-              },
+          const dateWIB = DateTime.fromJSDate(new Date(date), { zone: 'Asia/Jakarta' });
 
-              isDeleted: false
+          const startOfDay = dateWIB.startOf('day').toJSDate();
+          const endOfDay = dateWIB.endOf('day').toJSDate();
+
+          const todayReport = await ReportModel.findOne({
+            createdAt: {
+              $gte: startOfDay,
+              $lte: endOfDay,
+            },
+            isDeleted: false,
           });
+
       
           if (!todayReport) {
               
@@ -229,6 +228,7 @@ export class ReportController {
                   requestId: uuidv4(),
                   data: [],
                   message: `No report found for ${startOfDay}`,
+                  date_req: date,
                   success: true
                 });
 
@@ -239,6 +239,7 @@ export class ReportController {
             requestId: uuidv4(),
             data: todayReport,
             message: `Data Report : ${startOfDay}`,
+            date_req: date,
             success: true
           });
 
