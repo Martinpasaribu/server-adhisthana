@@ -11,7 +11,7 @@ import { TransactionModel } from '../../models/Transaction/models_transaksi';
 import { ShortAvailableModel } from '../../models/ShortAvailable/models_ShortAvailable';
 import moment from 'moment';
 import { SiteMinderModel } from '../../models/SiteMinder/models_SitemMinder';
-import { FilterAvailable } from './FilterAvailableRoom';
+import { FilterAvailable, FilterAvailable02, FilterAvailableNested } from './FilterAvailableRoom';
 import { SetPriceDayList } from './SetPriceDayList';
 import { SetResponseShort } from './SetResponseShort';
 import { FilterUnAvailable } from './FilterUnAvailable';
@@ -257,11 +257,16 @@ export class ShortAvailableController {
                     return res.status(404).json({ message: "No SiteMinder data found for that date." });
                 }
 
+                // const CekAja = await FilterAvailable02(checkInDate,checkOutDate)
 
                 // Filter Room yang Available
-                const availableRooms = await FilterAvailable(checkInDate,checkOutDate)
+                // const availableRooms = await FilterAvailable(checkInDate,checkOutDate)
+                const availableRooms = await FilterAvailable02(checkInDate,checkOutDate);
+                // const availableRooms = await FilterAvailableNested(checkInDate,checkOutDate);
 
-                // Filter Room yang sudah penuh
+                // Filter Room yang sudah penuh 
+
+                // const unavailableRooms = await FilterUnAvailable(availableRooms.data_yg_ada)
                 const unavailableRooms = await FilterUnAvailable(availableRooms)
 
                 // Filter Room yang sudah tersedia namun butuh pengecekan apakah ada room yang masih dipending
@@ -281,9 +286,11 @@ export class ShortAvailableController {
                     requestId: uuidv4(),
                     message: `Successfully retrieved rooms. From Date: ${checkInDate.toISOString()} To: ${checkOutDate.toISOString()}`,
                     success: true,
-                    updateRoomsAvailable: updateRoomsAvailable,
+                   
+                    availableRooms:availableRooms,
                     availableRoomsWithoutPending: availableRoomsWithoutPending,
                     dataUnAvailable: unavailableRooms?.length === 0  ? availableRoomsWithoutPending?.PendingRoom : unavailableRooms.concat(availableRoomsWithoutPending?.PendingRoom),
+                    updateRoomsAvailable: updateRoomsAvailable,
                     data : FilterFinish,
                 });
                 

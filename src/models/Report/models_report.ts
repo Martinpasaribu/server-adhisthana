@@ -4,6 +4,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 interface villa {
     roomId:string;
+    code:string;
     type:string;
     name:string;
     status1:string;
@@ -32,6 +33,7 @@ const ReportSchema: Schema = new Schema(
     {
         villa: [{
             roomId: {type: String},
+            code: {type: String},
             type: {type: String},
             name: {type: String},
             status1: {type: String},

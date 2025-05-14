@@ -344,6 +344,7 @@ export class SetMinderController {
 
         }
        
+        
         static async GetAllPrice(req: Request, res: Response) {
 
             try {

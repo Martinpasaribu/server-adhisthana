@@ -7,6 +7,7 @@ import { BookingModel } from '../../../models/Booking/models_booking';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 import timezone from 'dayjs/plugin/timezone.js';
+import { RoomStatusModel } from '../../../models/RoomStatus/models_RoomStatus';
 
 
 export class ReportController {
@@ -93,8 +94,6 @@ export class ReportController {
 
         try {
 
-
-
           dayjs.extend(utc);
           dayjs.extend(timezone);
           
@@ -104,6 +103,7 @@ export class ReportController {
           // Buat start dan end of day berdasarkan timezone
           const startOfDay = dayjs().tz(zone).startOf('day').toDate();
           const endOfDay = dayjs().tz(zone).endOf('day').toDate();
+
 
           // Debug: tampilkan hasil dalam zona waktu lokal
           console.log("Report room status from", 
@@ -119,6 +119,30 @@ export class ReportController {
             // const endOfDay = new Date();
             // endOfDay.setHours(23, 59, 59, 999); // sampai jam 23:59:59
     
+          const CheckInToday = await RoomStatusModel.find({
+              status: true,
+              isDeleted: false,
+              checkIn: { $lte: endOfDay.toISOString() },  // <=
+              checkOut: { $gt: endOfDay.toISOString() },  // >
+          });
+
+          const CheckOutToday = await RoomStatusModel.find({
+            status: true,
+            isDeleted: false,
+            checkOut: {
+              $gte: startOfDay.toISOString(), // mulai dari jam 00:00
+              $lte: endOfDay.toISOString(),   // sampai jam 23:59:59
+            },
+          });
+
+          const RoomTypeInToday = {
+            CheckIn : CheckInToday,
+            CheckOut : CheckOutToday
+
+          }
+
+            console.log(` Room status used today :, ${CheckInToday.length}, in date from : ${startOfDay}  to ${endOfDay} `);
+            console.log(` Room status out today :, ${CheckOutToday.length}, in date from : ${startOfDay}  to ${endOfDay} `);
             
             const todayReport = await ReportModel.findOne({
                 
@@ -129,12 +153,14 @@ export class ReportController {
 
                 isDeleted: false
             });
+            
         
             if (!todayReport) {
                 
                 return res.status(200).json({
                     requestId: uuidv4(),
                     data: todayReport,
+                    data_room_status: RoomTypeInToday,      
                     message: 'No report found for today',
                     message2: `report room status from ${startOfDay} until ${endOfDay}`,
                     success: true
@@ -146,6 +172,7 @@ export class ReportController {
             return res.status(200).json({
               requestId: uuidv4(),
               data: todayReport,
+              data_room_status: RoomTypeInToday,
               message: `report room status from ${startOfDay} until ${endOfDay}`,
               success: true
             });
@@ -227,8 +254,7 @@ export class ReportController {
           });
       }
   };
-    
-
+  
 
   static async GetReportBooking (req: Request, res: Response){
 

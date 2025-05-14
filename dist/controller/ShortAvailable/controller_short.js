@@ -224,9 +224,13 @@ class ShortAvailableController {
                 if (!siteMinders || siteMinders.length === 0) {
                     return res.status(404).json({ message: "No SiteMinder data found for that date." });
                 }
+                // const CekAja = await FilterAvailable02(checkInDate,checkOutDate)
                 // Filter Room yang Available
-                const availableRooms = yield (0, FilterAvailableRoom_1.FilterAvailable)(checkInDate, checkOutDate);
-                // Filter Room yang sudah penuh
+                // const availableRooms = await FilterAvailable(checkInDate,checkOutDate)
+                const availableRooms = yield (0, FilterAvailableRoom_1.FilterAvailable02)(checkInDate, checkOutDate);
+                // const availableRooms = await FilterAvailableNested(checkInDate,checkOutDate);
+                // Filter Room yang sudah penuh 
+                // const unavailableRooms = await FilterUnAvailable(availableRooms.data_yg_ada)
                 const unavailableRooms = yield (0, FilterUnAvailable_1.FilterUnAvailable)(availableRooms);
                 // Filter Room yang sudah tersedia namun butuh pengecekan apakah ada room yang masih dipending
                 const availableRoomsWithoutPending = yield Controller_PendingRoom_1.PendingRoomController.FilterForUpdateVilaWithPending(availableRooms, checkInDate, checkOutDate);
@@ -241,9 +245,10 @@ class ShortAvailableController {
                     requestId: (0, uuid_1.v4)(),
                     message: `Successfully retrieved rooms. From Date: ${checkInDate.toISOString()} To: ${checkOutDate.toISOString()}`,
                     success: true,
-                    updateRoomsAvailable: updateRoomsAvailable,
+                    availableRooms: availableRooms,
                     availableRoomsWithoutPending: availableRoomsWithoutPending,
                     dataUnAvailable: (unavailableRooms === null || unavailableRooms === void 0 ? void 0 : unavailableRooms.length) === 0 ? availableRoomsWithoutPending === null || availableRoomsWithoutPending === void 0 ? void 0 : availableRoomsWithoutPending.PendingRoom : unavailableRooms.concat(availableRoomsWithoutPending === null || availableRoomsWithoutPending === void 0 ? void 0 : availableRoomsWithoutPending.PendingRoom),
+                    updateRoomsAvailable: updateRoomsAvailable,
                     data: FilterFinish,
                 });
             }

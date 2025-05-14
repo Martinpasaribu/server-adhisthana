@@ -37,6 +37,7 @@ const mongoose_1 = __importStar(require("mongoose"));
 const ReportSchema = new mongoose_1.Schema({
     villa: [{
             roomId: { type: String },
+            code: { type: String },
             type: { type: String },
             name: { type: String },
             status1: { type: String },
