@@ -9,6 +9,7 @@ interface villa {
     name:string;
     status1:string;
     status2:string;
+    status3:string;
     r_receptionist:number;
     r_housekeeping:number;
 }
@@ -38,6 +39,7 @@ const ReportSchema: Schema = new Schema(
             name: {type: String},
             status1: {type: String},
             status2: {type: String},
+            status3: {type: String},
             r_receptionist: {type: String},
             r_housekeeping: {type: String},
         }],

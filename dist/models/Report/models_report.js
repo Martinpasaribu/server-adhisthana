@@ -42,6 +42,7 @@ const ReportSchema = new mongoose_1.Schema({
             name: { type: String },
             status1: { type: String },
             status2: { type: String },
+            status3: { type: String },
             r_receptionist: { type: String },
             r_housekeeping: { type: String },
         }],

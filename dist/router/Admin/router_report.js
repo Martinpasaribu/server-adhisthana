@@ -13,4 +13,5 @@ ReportRouter.get("/get-report-today", controller_Report_1.ReportController.GetTo
 ReportRouter.get("/get/booking", controller_Report_1.ReportController.GetReportBooking);
 ReportRouter.get("/get/booking/date/:code/:start/:end", controller_Report_1.ReportController.GetReportBookingByDate);
 ReportRouter.get("/get-reportby-day/:date", controller_Report_1.ReportController.GetReportByDate);
+ReportRouter.get("/get/next_prev/:date", controller_Report_1.ReportController.GetReportByPrevNext);
 exports.default = ReportRouter;

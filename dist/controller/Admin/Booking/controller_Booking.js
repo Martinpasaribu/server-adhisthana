@@ -217,7 +217,7 @@ class AdminBookingController {
                 const Booking = yield models_booking_1.BookingModel.findOne({
                     orderId: id,
                     isDeleted: false
-                }).select("title name email orderId ota amountTotal checkIn checkOut room bookingId orderId");
+                }).select("title name email orderId ota amountTotal checkIn checkOut room bookingId orderId verified");
                 ;
                 if (!Booking) {
                     return res.status(404).json({

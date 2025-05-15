@@ -166,15 +166,15 @@ class ReportController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { date } = req.params;
-                if (!date || isNaN(new Date(date).getTime())) {
+                const dateWIB = luxon_1.DateTime.fromJSDate(new Date(date), { zone: 'Asia/Jakarta' });
+                if (!dateWIB.isValid) {
                     return res.status(400).json({
                         requestId: (0, uuid_1.v4)(),
                         data: null,
-                        message: "Invalid Date",
+                        message: "Invalid date format",
                         success: false
                     });
                 }
-                const dateWIB = luxon_1.DateTime.fromJSDate(new Date(date), { zone: 'Asia/Jakarta' });
                 const startOfDay = dateWIB.startOf('day').toJSDate();
                 const endOfDay = dateWIB.endOf('day').toJSDate();
                 const todayReport = yield models_report_1.default.findOne({
@@ -187,7 +187,7 @@ class ReportController {
                 if (!todayReport) {
                     return res.status(200).json({
                         requestId: (0, uuid_1.v4)(),
-                        data: [],
+                        data: null,
                         message: `No report found for ${startOfDay}`,
                         date_req: date,
                         success: true
@@ -198,6 +198,79 @@ class ReportController {
                     requestId: (0, uuid_1.v4)(),
                     data: todayReport,
                     message: `Data Report : ${startOfDay}`,
+                    date_req: date,
+                    success: true
+                });
+            }
+            catch (error) {
+                console.error('Error fetching today report:', error);
+                return res.status(400).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: null,
+                    message: error.message || "Internal Server Error",
+                    success: false
+                });
+            }
+        });
+    }
+    ;
+    static GetReportByPrevNext(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { date } = req.params;
+                if (!date || isNaN(new Date(date).getTime())) {
+                    return res.status(400).json({
+                        requestId: (0, uuid_1.v4)(),
+                        data: null,
+                        message: "Invalid Date",
+                        success: false
+                    });
+                }
+                // const dateWIB = DateTime.fromJSDate(new Date(date), { zone: 'Asia/Jakarta' });
+                const dateWIB = luxon_1.DateTime.fromISO(date, { zone: 'Asia/Jakarta' });
+                const startOfDay = dateWIB.startOf('day').toJSDate();
+                const endOfDay = dateWIB.endOf('day').toJSDate();
+                const CheckInToday = yield models_RoomStatus_1.RoomStatusModel.find({
+                    status: true,
+                    isDeleted: false,
+                    checkIn: { $lte: endOfDay.toISOString() }, // <=
+                    checkOut: { $gt: endOfDay.toISOString() }, // >
+                });
+                const CheckOutToday = yield models_RoomStatus_1.RoomStatusModel.find({
+                    status: true,
+                    isDeleted: false,
+                    checkOut: {
+                        $gte: startOfDay.toISOString(), // mulai dari jam 00:00
+                        $lte: endOfDay.toISOString(), // sampai jam 23:59:59
+                    },
+                });
+                const RoomTypeInToday = {
+                    CheckIn: CheckInToday,
+                    CheckOut: CheckOutToday
+                };
+                const todayReport = yield models_report_1.default.findOne({
+                    createdAt: {
+                        $gte: startOfDay,
+                        $lte: endOfDay,
+                    },
+                    isDeleted: false,
+                });
+                if (!todayReport) {
+                    return res.status(200).json({
+                        requestId: (0, uuid_1.v4)(),
+                        data: [],
+                        message: `No report found Next Prev for ${startOfDay}`,
+                        data_room_status: RoomTypeInToday,
+                        date_req: date,
+                        success: true
+                    });
+                }
+                // Kirim hasil response
+                return res.status(200).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: todayReport,
+                    message: `Data Report : ${startOfDay}`,
+                    data_room_status: RoomTypeInToday,
                     date_req: date,
                     success: true
                 });
