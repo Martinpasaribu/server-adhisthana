@@ -7,6 +7,7 @@ export interface Invoice {
   subject: string | null;
   note: string | null;
   code: string | null;
+  code2: string | null;
   less: number;
   timePaid: number;
   createAt: number;

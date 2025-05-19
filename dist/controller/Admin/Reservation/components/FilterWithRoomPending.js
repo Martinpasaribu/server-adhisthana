@@ -17,7 +17,7 @@ class reservationService {
     // Fungsi untuk membuat Data Transaksi 
     createReservation(_a) {
         return __awaiter(this, arguments, void 0, function* ({ products, checkIn, checkOut }) {
-            const RoomCanUse = yield (0, FilterAvailableRoom_1.FilterAvailable)(checkIn, checkOut);
+            const RoomCanUse = yield (0, FilterAvailableRoom_1.FilterAvailable02)(checkIn, checkOut);
             // Ambil hanya data room yang sesuai dari RoomCanUse berdasarkan roomId di BookingReq
             const roomDetails = RoomCanUse.filter((room) => products.some((r) => r.roomId.toString() === room._id.toString()));
             if (!roomDetails) {
@@ -50,7 +50,7 @@ class reservationService {
             const availableRoomsWithoutPending = yield Controller_PendingRoom_1.PendingRoomController.FilterForUpdateVilaWithPending(RoomsAvailableCount, checkIn, checkOut);
             if ((availableRoomsWithoutPending === null || availableRoomsWithoutPending === void 0 ? void 0 : availableRoomsWithoutPending.PendingRoom.length) > 0) {
                 // return res.status(400).json({ status: 'error', message: `Some of the rooms you select have already been purchased`, data :availableRoomsWithoutPending?.PendingRoom });
-                throw new Error(`Some of the rooms you select have already been purchased`);
+                throw new Error(`Some of the rooms you select have already been purchased ${JSON.stringify(availableRoomsWithoutPending === null || availableRoomsWithoutPending === void 0 ? void 0 : availableRoomsWithoutPending.PendingRoom)}`);
             }
             console.log(` hasil filter reservation dengan room pending : ${availableRoomsWithoutPending.PendingRoom}`);
             return availableRoomsWithoutPending;

@@ -9,6 +9,27 @@ export interface Room {
     ota:number;
     quantity:number;
 }
+export interface Reschedule {
+  status: boolean;
+  
+  schedule_new: {
+    checkIn: Date | string;   // string jika data dari API berbentuk ISO string
+    checkOut: Date | string;
+  };
+  
+  schedule_old: {
+    checkIn: Date | string;   // string jika data dari API berbentuk ISO string
+    checkOut: Date | string;
+  };
+
+  key_reschedule?: string;    // Optional karena bisa null/undefined
+  reschedule_fee?: number | null;
+  price_prev?: number | null;
+  price_next?: number | null;
+  reason?: string;
+  time?: Date | string;       // Bisa ISO string jika dari server
+}
+
 export interface data {
     status:string;
     note:string;
@@ -42,6 +63,7 @@ export interface Ota {
 export interface Invoice {
     status:boolean;
     code:string;
+    code2: string;
     note:string;
     subject:string;
     id:number;
@@ -68,6 +90,7 @@ export interface IVerified {
     timeOut?: number; // Opsional, jika hanya diisi saat diverifikasi
 }
 export interface Voucher {
+    personal_voucher: boolean;
     status: boolean;
     id_voucher: string;
     user: string;
@@ -90,6 +113,7 @@ interface IBooking extends Document {
     checkOut: string;
     verified: IVerified;
     reservation: boolean;
+    reschedule: Reschedule[];
     adult: number;
     night: number;
     children: number;
@@ -168,6 +192,68 @@ const BookingSchema: Schema = new Schema(
             }
         },
 
+        reschedule: {
+
+            status: { 
+                type: Boolean, 
+                default: false,  
+            },
+
+            schedule_new: {
+                checkIn: {
+                    type: Date,
+                    default: "",
+                },
+                checkOut: {
+                    type: Date,
+                    default: "",
+                },
+            },
+
+            schedule_old: {
+                checkIn: {
+                    type: Date,
+                    default: "",
+                },
+                checkOut: {
+                    type: Date,
+                    default: "",
+                },
+            },
+
+            key_reschedule: {
+                type: String,
+                trim: true
+            },
+
+            reschedule_fee: {
+                type: Number,  
+                default: null      
+            },
+
+            price_prev: {
+                type: Number,
+                default: null
+            },
+
+            price_next: {
+                type: Number,
+                default: null
+            },
+
+            reason: {
+                type: String,
+                trim: true,
+                default: "",
+            },
+
+            time: {
+                type: Date,
+                default: Date.now
+            },
+        },
+
+
         reservation: {
             type: Boolean,
             trim: true,
@@ -224,6 +310,7 @@ const BookingSchema: Schema = new Schema(
             note: { type: String, default: null },
             subject: { type: String, default: null },
             code: { type: String, default: null }, // VLA,FAD,ADD
+            code2: { type: String, default: null }, // BDE
             less: { type: Number, default: 0 },
             totalPrice: { type: Number, default: 0 },
             timePaid: {
@@ -312,6 +399,12 @@ const BookingSchema: Schema = new Schema(
         },
 
         voucher: {
+
+            personal_voucher:{
+                type: Boolean,
+                default: false
+            },
+
             status: { 
               type: Boolean, 
               default: false,  // voucher belum aktif / belum diklaim

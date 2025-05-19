@@ -12,6 +12,7 @@ const ReservationRouter: express.Router = express.Router();
 // semantic meaning
 
 ReservationRouter.post("/add-reservation",  verifyAdmin, logActivity("Create Reservation"), ReservationController.AddTransaction);
+ReservationRouter.post("/add-reservation/reschedule",  verifyAdmin, logActivity("Create Reservation Reschedule"), ReservationController.AddTransactionToReschedule);
 ReservationRouter.get("/get-reservation",verifyAdmin , ReservationController.GetAllTransactionReservation); 
 ReservationRouter.put("/pay-transaction/:TransactionId/:code", verifyAdmin , logActivity("Transaction PAID"), ReservationController.SetPayment); 
 

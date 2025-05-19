@@ -1,11 +1,11 @@
-import { FilterAvailable } from "../ShortAvailable/FilterAvailableRoom"
+import { FilterAvailable, FilterAvailable02 } from "../ShortAvailable/FilterAvailableRoom"
 
 
 export const SetAvailableCount = async (rooms : any, checkInDate: any , checkOutDate : any) => {
 
     try {
         
-        const RoomsAvailableCount = await FilterAvailable(checkInDate, checkOutDate);
+        const RoomsAvailableCount = await FilterAvailable02(checkInDate, checkOutDate);
 
         const FilterAvailableCount = rooms.map((room: any) => {
             // Temukan elemen RoomsAvailableCount dengan roomId yang cocok

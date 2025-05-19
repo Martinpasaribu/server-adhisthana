@@ -31,7 +31,7 @@ class BookingController {
             const UserId = req.userId;
             const BookingReq = req.body;
             try {
-                const RoomCanUse = yield (0, FilterAvailableRoom_1.FilterAvailable)(BookingReq.checkIn, BookingReq.checkOut);
+                const RoomCanUse = yield (0, FilterAvailableRoom_1.FilterAvailable02)(BookingReq.checkIn, BookingReq.checkOut);
                 // Ambil hanya data room yang sesuai dari RoomCanUse berdasarkan roomId di BookingReq
                 const roomDetails = RoomCanUse.filter((room) => BookingReq.room.some((r) => r.roomId.toString() === room._id.toString()));
                 if (!roomDetails) {

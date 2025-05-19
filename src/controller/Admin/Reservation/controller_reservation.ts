@@ -2,7 +2,7 @@
 import { Request, Response, NextFunction  } from 'express';
 import mongoose from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
-
+const { ObjectId } = mongoose.Types;
 import { ShortAvailableModel } from '../../../models/ShortAvailable/models_ShortAvailable';
 import crypto from 'crypto';
 import { TransactionModel } from '../../../models/Transaction/models_transaksi';
@@ -121,8 +121,14 @@ export class ReservationController {
 
               const ReservationReadyToBeSaved = await ReservationService.createReservation({products, checkIn, checkOut })
 
+              // Cek Apakah Room Masih dalam tahap Pending semua
               if(ReservationReadyToBeSaved.WithoutPending === 0){
-
+                    return res.status(400).json({
+                      requestId: uuidv4(),
+                      message: "All Room is Pending",
+                      data:`Data Pending : ${ReservationReadyToBeSaved.PendingRoom}`,
+                      success: false,
+                  });
               }
 
               console.log(`Ini data reservation after filter : ${JSON.stringify(ReservationReadyToBeSaved.WithoutPending, null, 2)}`);
@@ -232,6 +238,214 @@ export class ReservationController {
             
               // SetUp Room yang akan masuk dalam Room Pending
               await PendingRoomController.SetPending(ReservationReadyToBeSaved.WithoutPending,bookingId, IsHaveAccount ?? userId, checkIn, checkOut,"reservation", req, res )
+
+
+              // ✅ Berikan respon sukses
+              return res.status(201).json({
+                  requestId: uuidv4(),
+                  message: "Successfully add transaction to reservation.",
+                  success: true,
+                  data: {
+                      acknowledged: true,
+                      insertedTransactionId: savedTransaction._id,
+                      insertedBoopkingId: savedBooking._id
+                  },
+              });
+
+          } catch (error) {
+              console.error("Error creating transaction:", error);
+
+              return res.status(500).json({
+                  requestId: uuidv4(),
+                  message: (error as Error).message || "Internal Server Error",
+                  success: false,
+                  data: null,
+              });
+          }
+        }
+
+        static async AddTransactionToReschedule(req: Request, res: Response) {
+          try {
+              // Destructure req.body
+              const {
+                  title, 
+                  name, 
+                  email, 
+                  phone, 
+                  grossAmount, 
+                  otaTotal,
+                  reservation, 
+                  products, 
+                  night, 
+                  voucher,
+                  checkIn, 
+                  checkOut,
+                  selectOta,
+                  roomType, 
+                  reschedule
+              } = req.body;
+
+
+
+              // Melakukan pengecekan apakah room type yang sedang dipilih apakah sudah sedang digunakan
+              const dataFilterStatusRoom = await FilterAvailableWithRoomStatus(checkIn,checkOut);
+              const CekRoomInUse = await CompareSameDataWithRoomStatus(roomType,dataFilterStatusRoom)
+              
+              // Jika terdapat data yang sudah digunakan kembalikan false
+              if(CekRoomInUse.sameRoomTypeOnly.length > 0){
+                return res.status(400).json({
+                    requestId: uuidv4(),
+                    message: "The room you have selected is currently in use",
+                    success: false,
+                    data: CekRoomInUse,
+                });
+              }
+
+              console.log(`Ini data payload room dari reservation: ${JSON.stringify(products, null, 2)}`);
+
+              // ✅ Validasi data sebelum disimpan
+              if (!title || !name || !email || !phone || !grossAmount || !checkIn || !checkOut || !selectOta) {
+                  return res.status(400).json({
+                      requestId: uuidv4(),
+                      message: "All required fields must be provided!",
+                      success: false,
+                      data: null,
+                  });
+              }
+
+              // Cek Room pending sebelum membuat reservation transaction 
+
+              const ReservationReadyToBeSaved = await ReservationService.createReservation({products, checkIn, checkOut })
+
+              // Cek Apakah Room Masih dalam tahap Pending semua
+              if(ReservationReadyToBeSaved.WithoutPending === 0){
+                    return res.status(400).json({
+                      requestId: uuidv4(),
+                      message: "All Room is Pending",
+                      data:`Data Pending : ${ReservationReadyToBeSaved.PendingRoom}`,
+                      success: false,
+                  });
+              }
+
+              console.log(`Ini data reservation after filter : ${JSON.stringify(ReservationReadyToBeSaved.WithoutPending, null, 2)}`);
+              
+              // Mix data Product with OTA
+
+              // const ProductClean = await OTAService.Mix_OTA(products,ReservationReadyToBeSaved.WithoutPending)
+
+              // console.log(`Ini data reservation after Mix OTA : ${ProductClean}`);
+              // Set Up Data Lain
+
+              const bookingId = 'TRX-' + crypto.randomBytes(5).toString('hex');
+              const status = PAYMENT_ADMIN
+
+
+
+              // Daftarkan terlebih dahulu usernya
+
+              const IsHaveAccount = await CekUser(email);
+
+              let userId ;
+
+              if (!IsHaveAccount){
+                  userId = await Register(title, name, email, phone);
+              }
+
+
+              // ✅ Buat objek baru berdasarkan schema
+              const newBooking = new BookingModel({
+                  orderId : bookingId,
+                  userId : IsHaveAccount ?? userId,
+                  status,
+                  title,
+                  name,
+                  email,
+                  phone,
+                  voucher,
+                  amountTotal :grossAmount,
+                  otaTotal :otaTotal,
+                  reservation,
+                  ota:selectOta,
+                  room: ReservationReadyToBeSaved.WithoutPending,
+                  night,
+                  checkIn,
+                  checkOut,
+                  reschedule
+              });
+
+              // ✅ Simpan ke database Booking
+              const savedBooking = await newBooking.save();
+
+
+              console.log(" add transaction with reservation : ", savedBooking)
+
+              // ✅ Buat objek baru berdasarkan schema
+              const newTransaction = new TransactionModel({
+                booking_keyId: savedBooking._id,                                    
+                bookingId,
+                userId : IsHaveAccount ?? userId,
+                status,
+                title,
+                name,
+                email,
+                phone,
+                grossAmount,
+                voucher,
+                otaTotal,
+                reservation,                 
+                products: ReservationReadyToBeSaved.WithoutPending,
+                night,                                                 
+                checkIn,
+                checkOut
+              });                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+
+              // Data untuk membuat status room
+              const data = {
+                id_Trx: bookingId,
+                status: "Use",
+                bookingKey:savedBooking._id,
+                checkIn,
+                checkOut,
+                roomType,
+
+              }
+              
+              // Fungsi untuk membuat status room 
+              const createRoomStatus = await RoomStatusService.SetRoomStatus(data);
+
+              if (createRoomStatus && createRoomStatus.roomStatusKey) {
+                const roomStatusKey = createRoomStatus.roomStatusKey;
+
+                const updatedInvoice = await BookingModel.findOneAndUpdate(
+                  { _id: savedBooking._id, isDeleted: false },
+                  { $push: { roomStatusKey } },
+                  { new: true, runValidators: true }
+                );
+
+                console.log("RoomStatusKey successfully added to booking:", updatedInvoice);
+              }
+
+
+              // // ✅ Simpan ke database Booking
+              // const savedBooking = await newBooking.save();
+
+              // ✅ Simpan ke database Transaction
+              const savedTransaction = await newTransaction.save()                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
+
+            
+              // SetUp Room yang akan masuk dalam Room Pending
+              await PendingRoomController.SetPending(ReservationReadyToBeSaved.WithoutPending,bookingId, IsHaveAccount ?? userId, checkIn, checkOut,"reservation", req, res )
+
+              // Update data booking lama
+              await BookingModel.findOneAndUpdate(
+                { _id: new ObjectId(reschedule.key_reschedule) },
+                {
+                  $set: {
+                    reschedule: reschedule
+                  }
+                },
+                { new: true } // Opsional: untuk return data yang sudah di-update
+              );
 
 
               // ✅ Berikan respon sukses

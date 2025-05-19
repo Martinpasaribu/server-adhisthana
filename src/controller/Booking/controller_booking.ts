@@ -10,7 +10,7 @@ import { snap } from '../../config/midtransConfig'
 
 import { PENDING_PAYMENT } from '../../constant';
 
-import { FilterAvailable } from '../ShortAvailable/FilterAvailableRoom';
+import { FilterAvailable, FilterAvailable02 } from '../ShortAvailable/FilterAvailableRoom';
 import { FilterSiteMinder } from './SiteMinderFilter';
 import { SetPriceDayList } from '../ShortAvailable/SetPriceDayList';
 import { SetResponseShort } from '../ShortAvailable/SetResponseShort';
@@ -29,7 +29,7 @@ export class BookingController {
             try {
 
 
-                const RoomCanUse = await FilterAvailable(BookingReq.checkIn, BookingReq.checkOut);
+                const RoomCanUse = await FilterAvailable02(BookingReq.checkIn, BookingReq.checkOut);
 
                 // Ambil hanya data room yang sesuai dari RoomCanUse berdasarkan roomId di BookingReq
                 const roomDetails = RoomCanUse.filter((room: any) => 

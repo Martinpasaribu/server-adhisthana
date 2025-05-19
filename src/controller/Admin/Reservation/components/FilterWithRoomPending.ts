@@ -1,6 +1,6 @@
 import { SetAvailableCount } from "../../../Booking/SetAvailableCounts";
 import { PendingRoomController } from "../../../PendingRoom/Controller_PendingRoom";
-import { FilterAvailable } from "../../../ShortAvailable/FilterAvailableRoom";
+import { FilterAvailable, FilterAvailable02 } from "../../../ShortAvailable/FilterAvailableRoom";
 
 interface ReservationModel {
     checkIn: Date,
@@ -23,7 +23,7 @@ class reservationService {
     // Fungsi untuk membuat Data Transaksi 
     async createReservation({products , checkIn, checkOut} : ReservationModel) {
 
-            const RoomCanUse = await FilterAvailable(checkIn, checkOut);
+            const RoomCanUse = await FilterAvailable02(checkIn, checkOut);
         
             // Ambil hanya data room yang sesuai dari RoomCanUse berdasarkan roomId di BookingReq
             const roomDetails = RoomCanUse.filter((room: any) => 
@@ -69,7 +69,7 @@ class reservationService {
 
             if(availableRoomsWithoutPending?.PendingRoom.length > 0) {
                 // return res.status(400).json({ status: 'error', message: `Some of the rooms you select have already been purchased`, data :availableRoomsWithoutPending?.PendingRoom });
-                throw new Error( `Some of the rooms you select have already been purchased`);
+                throw new Error( `Some of the rooms you select have already been purchased ${JSON.stringify(availableRoomsWithoutPending?.PendingRoom)}`);
             }
             
             console.log(` hasil filter reservation dengan room pending : ${availableRoomsWithoutPending.PendingRoom}`)

@@ -249,6 +249,7 @@ export class PendingRoomController {
             // console.log(" result filter WithoutPending : ", WithoutPending)
             
             const PendingRoom = rooms.filter((room: any) => {
+                
                 const roomId = room._id ? room._id.toString() : room.roomId;
               
                 // Hitung total stock untuk roomId yang sama di DataPendingRoom
@@ -272,6 +273,9 @@ export class PendingRoomController {
             } ;
 
             console.log('WKWKWKWKWKW : ', DataPendingRoom);
+            console.log('WKWKWKWKWKW PendingRoom: ', result.PendingRoom);
+            console.log('WKWKWKWKWKW WithoutPending : ', result.WithoutPending);
+            console.log('WKWKWKWKWKW Rooms Req : ', rooms);
             return result
 
 
