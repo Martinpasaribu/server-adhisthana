@@ -89,7 +89,7 @@ class ReportController {
         });
     }
     ;
-    static GetTodayReport(req, res) {
+    static GetRoomStatusToday(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 dayjs_1.default.extend(utc_js_1.default);

@@ -92,7 +92,7 @@ export class ReportController {
       }
     };
 
-    static async GetTodayReport (req: Request, res: Response){
+    static async GetRoomStatusToday (req: Request, res: Response){
 
         try {
 

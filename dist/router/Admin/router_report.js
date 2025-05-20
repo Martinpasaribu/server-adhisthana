@@ -9,7 +9,7 @@ const controller_Report_1 = require("../../controller/Admin/Report/controller_Re
 const ReportRouter = express_1.default.Router();
 // semantic meaning
 ReportRouter.post("/add-report/:date", (0, LogAdmin_1.logActivity)("Create Report"), controller_Report_1.ReportController.SaveReport);
-ReportRouter.get("/get-report-today", controller_Report_1.ReportController.GetTodayReport);
+ReportRouter.get("/room_status/today", controller_Report_1.ReportController.GetRoomStatusToday);
 ReportRouter.get("/get/booking", controller_Report_1.ReportController.GetReportBooking);
 ReportRouter.get("/get/total_price/saved", controller_Report_1.ReportController.UpdatePriceTotalByDate);
 ReportRouter.get("/get/booking/date/:code/:start/:end/:code2", controller_Report_1.ReportController.GetReportBookingByDate);
