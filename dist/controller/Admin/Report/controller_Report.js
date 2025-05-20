@@ -99,6 +99,8 @@ class ReportController {
                 // Buat start dan end of day berdasarkan timezone
                 const startOfDay = (0, dayjs_1.default)().tz(zone).startOf('day').toDate();
                 const endOfDay = (0, dayjs_1.default)().tz(zone).endOf('day').toDate();
+                const startOfDayNonR = (0, dayjs_1.default)().tz(zone).subtract(1, 'day').startOf('day').toDate();
+                const endOfDayNonR = (0, dayjs_1.default)().tz(zone).subtract(1, 'day').endOf('day').toDate();
                 // Debug: tampilkan hasil dalam zona waktu lokal
                 console.log("Report room status from", startOfDay.toLocaleString('id-ID', { timeZone: zone }), "until", endOfDay.toLocaleString('id-ID', { timeZone: zone }));
                 // const startOfDay = new Date();
@@ -133,10 +135,23 @@ class ReportController {
                     isDeleted: false
                 });
                 if (!todayReport) {
+                    const todayReport = yield models_report_1.default.findOne({
+                        createdAt: {
+                            $gte: startOfDayNonR,
+                            $lte: endOfDayNonR,
+                        },
+                        isDeleted: false,
+                    });
+                    if (!todayReport || !Array.isArray(todayReport.villa)) {
+                        return [];
+                    }
+                    const night = todayReport.villa.map((villa) => villa.status3);
+                    console.log(" Report Night :", night);
                     return res.status(200).json({
                         requestId: (0, uuid_1.v4)(),
                         data: todayReport,
                         data_room_status: RoomTypeInToday,
+                        data_night: night,
                         message: 'No report found for today',
                         message2: `report room status from ${startOfDay} until ${endOfDay}`,
                         success: true
@@ -168,6 +183,9 @@ class ReportController {
             try {
                 const { date } = req.params;
                 const dateWIB = luxon_1.DateTime.fromJSDate(new Date(date), { zone: 'Asia/Jakarta' });
+                const previousDateWIB = dateWIB.minus({ days: 1 });
+                const startOfDayNonR = previousDateWIB.startOf('day').toJSDate();
+                const endOfDayNonR = previousDateWIB.endOf('day').toJSDate();
                 if (!dateWIB.isValid) {
                     return res.status(400).json({
                         requestId: (0, uuid_1.v4)(),
@@ -178,6 +196,24 @@ class ReportController {
                 }
                 const startOfDay = dateWIB.startOf('day').toJSDate();
                 const endOfDay = dateWIB.endOf('day').toJSDate();
+                const CheckInToday = yield models_RoomStatus_1.RoomStatusModel.find({
+                    status: true,
+                    isDeleted: false,
+                    checkIn: { $lte: endOfDay.toISOString() }, // <=
+                    checkOut: { $gt: endOfDay.toISOString() }, // >
+                });
+                const CheckOutToday = yield models_RoomStatus_1.RoomStatusModel.find({
+                    status: true,
+                    isDeleted: false,
+                    checkOut: {
+                        $gte: startOfDay.toISOString(), // mulai dari jam 00:00
+                        $lte: endOfDay.toISOString(), // sampai jam 23:59:59
+                    },
+                });
+                const RoomTypeInToday = {
+                    CheckIn: CheckInToday,
+                    CheckOut: CheckOutToday
+                };
                 const todayReport = yield models_report_1.default.findOne({
                     createdAt: {
                         $gte: startOfDay,
@@ -186,10 +222,24 @@ class ReportController {
                     isDeleted: false,
                 });
                 if (!todayReport) {
+                    const todayReport = yield models_report_1.default.findOne({
+                        createdAt: {
+                            $gte: startOfDayNonR,
+                            $lte: endOfDayNonR,
+                        },
+                        isDeleted: false,
+                    });
+                    if (!todayReport || !Array.isArray(todayReport.villa)) {
+                        return [];
+                    }
+                    const night = todayReport.villa.map((villa) => villa.status3);
+                    console.log(" Report Night :", night);
                     return res.status(200).json({
                         requestId: (0, uuid_1.v4)(),
-                        data: null,
-                        message: `No report found for ${startOfDay}`,
+                        data: [],
+                        message: `No report found Next Prev for ${startOfDay}`,
+                        data_room_status: RoomTypeInToday,
+                        data_night: night,
                         date_req: date,
                         success: true
                     });
@@ -199,6 +249,7 @@ class ReportController {
                     requestId: (0, uuid_1.v4)(),
                     data: todayReport,
                     message: `Data Report : ${startOfDay}`,
+                    data_room_status: RoomTypeInToday,
                     date_req: date,
                     success: true
                 });
@@ -231,6 +282,10 @@ class ReportController {
                 const dateWIB = luxon_1.DateTime.fromISO(date, { zone: 'Asia/Jakarta' });
                 const startOfDay = dateWIB.startOf('day').toJSDate();
                 const endOfDay = dateWIB.endOf('day').toJSDate();
+                // Mundurkan 1 hari
+                const previousDateWIB = dateWIB.minus({ days: 1 });
+                const startOfDayNonR = previousDateWIB.startOf('day').toJSDate();
+                const endOfDayNonR = previousDateWIB.endOf('day').toJSDate();
                 const CheckInToday = yield models_RoomStatus_1.RoomStatusModel.find({
                     status: true,
                     isDeleted: false,
@@ -257,11 +312,24 @@ class ReportController {
                     isDeleted: false,
                 });
                 if (!todayReport) {
+                    const todayReport = yield models_report_1.default.findOne({
+                        createdAt: {
+                            $gte: startOfDayNonR,
+                            $lte: endOfDayNonR,
+                        },
+                        isDeleted: false,
+                    });
+                    if (!todayReport || !Array.isArray(todayReport.villa)) {
+                        return [];
+                    }
+                    const night = todayReport.villa.map((villa) => villa.status3);
+                    console.log(" Report Night :", night);
                     return res.status(200).json({
                         requestId: (0, uuid_1.v4)(),
                         data: [],
                         message: `No report found Next Prev for ${startOfDay}`,
                         data_room_status: RoomTypeInToday,
+                        data_night: night,
                         date_req: date,
                         success: true
                     });

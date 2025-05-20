@@ -106,6 +106,8 @@ export class ReportController {
           const startOfDay = dayjs().tz(zone).startOf('day').toDate();
           const endOfDay = dayjs().tz(zone).endOf('day').toDate();
 
+          const startOfDayNonR = dayjs().tz(zone).subtract(1, 'day').startOf('day').toDate();
+          const endOfDayNonR = dayjs().tz(zone).subtract(1, 'day').endOf('day').toDate();
 
           // Debug: tampilkan hasil dalam zona waktu lokal
           console.log("Report room status from", 
@@ -158,11 +160,30 @@ export class ReportController {
             
         
             if (!todayReport) {
+
+
+                const todayReport = await ReportModel.findOne({
+                  createdAt: {
+                    $gte: startOfDayNonR,
+                    $lte: endOfDayNonR,
+                  },
+                  isDeleted: false,
+                });
+
+                if (!todayReport || !Array.isArray(todayReport.villa)) {
+                  return [];
+                }
+
+                const night: string[] = todayReport.villa.map((villa: any) => villa.status3);
                 
+                console.log(" Report Night :", night)
+
+                    
                 return res.status(200).json({
                     requestId: uuidv4(),
                     data: todayReport,
-                    data_room_status: RoomTypeInToday,      
+                    data_room_status: RoomTypeInToday,
+                    data_night : night,     
                     message: 'No report found for today',
                     message2: `report room status from ${startOfDay} until ${endOfDay}`,
                     success: true
@@ -200,10 +221,13 @@ export class ReportController {
         const { date } = req.params;
 
         
-        
-        
         const dateWIB = DateTime.fromJSDate(new Date(date), { zone: 'Asia/Jakarta' });
         
+        const previousDateWIB = dateWIB.minus({ days: 1 });
+
+        const startOfDayNonR = previousDateWIB.startOf('day').toJSDate();
+        const endOfDayNonR = previousDateWIB.endOf('day').toJSDate();
+
         if (!dateWIB.isValid) {
             return res.status(400).json({
                 requestId: uuidv4(),
@@ -212,95 +236,31 @@ export class ReportController {
                 success: false
             });
         }
+
           const startOfDay = dateWIB.startOf('day').toJSDate();
           const endOfDay = dateWIB.endOf('day').toJSDate();
 
-          const todayReport = await ReportModel.findOne({
-            createdAt: {
-              $gte: startOfDay,
-              $lte: endOfDay,
-            },
-            isDeleted: false,
-          });
-
-      
-          if (!todayReport) {
-              return res.status(200).json({
-                  requestId: uuidv4(),
-                  data: null,
-                  message: `No report found for ${startOfDay}`,
-                  date_req: date,
-                  success: true
-              });
-          }
-
-      
-          // Kirim hasil response
-          return res.status(200).json({
-            requestId: uuidv4(),
-            data: todayReport,
-            message: `Data Report : ${startOfDay}`,
-            date_req: date,
-            success: true
-          });
-
-      } catch (error) {
-
-          console.error('Error fetching today report:', error);
-          
-          return res.status(400).json({
-              requestId: uuidv4(),
-              data: null,
-              message: (error as Error).message || "Internal Server Error",
-              success: false
-          });
-      }
-  };
-  
-  static async GetReportByPrevNext (req: Request, res: Response){
-      
-      try {
-        
-        const { date } = req.params;
-
-        if (!date || isNaN(new Date(date).getTime())) {
-            return res.status(400).json({
-                requestId: uuidv4(),
-                data: null,
-                message: "Invalid Date",
-                success: false
+            const CheckInToday = await RoomStatusModel.find({
+                status: true,
+                isDeleted: false,
+                checkIn: { $lte: endOfDay.toISOString() },  // <=
+                checkOut: { $gt: endOfDay.toISOString() },  // >
             });
-        }
-        
 
-          // const dateWIB = DateTime.fromJSDate(new Date(date), { zone: 'Asia/Jakarta' });
-          const dateWIB = DateTime.fromISO(date, { zone: 'Asia/Jakarta' });
-
-          const startOfDay = dateWIB.startOf('day').toJSDate();
-          const endOfDay = dateWIB.endOf('day').toJSDate();
-
-
-                    const CheckInToday = await RoomStatusModel.find({
+            const CheckOutToday = await RoomStatusModel.find({
               status: true,
               isDeleted: false,
-              checkIn: { $lte: endOfDay.toISOString() },  // <=
-              checkOut: { $gt: endOfDay.toISOString() },  // >
-          });
+              checkOut: {
+                $gte: startOfDay.toISOString(), // mulai dari jam 00:00
+                $lte: endOfDay.toISOString(),   // sampai jam 23:59:59
+              },
+            });
 
-          const CheckOutToday = await RoomStatusModel.find({
-            status: true,
-            isDeleted: false,
-            checkOut: {
-              $gte: startOfDay.toISOString(), // mulai dari jam 00:00
-              $lte: endOfDay.toISOString(),   // sampai jam 23:59:59
-            },
-          });
+            const RoomTypeInToday = {
+              CheckIn : CheckInToday,
+              CheckOut : CheckOutToday
 
-          const RoomTypeInToday = {
-            CheckIn : CheckInToday,
-            CheckOut : CheckOutToday
-
-          }
+            }
 
           const todayReport = await ReportModel.findOne({
             createdAt: {
@@ -312,17 +272,35 @@ export class ReportController {
 
       
           if (!todayReport) {
-              
-              return res.status(200).json({
-                  requestId: uuidv4(),
-                  data: [],
-                  message: `No report found Next Prev for ${startOfDay}`,
-                  data_room_status : RoomTypeInToday,
-                  date_req: date,
-                  success: true
+    
+                const todayReport = await ReportModel.findOne({
+                  createdAt: {
+                    $gte: startOfDayNonR,
+                    $lte: endOfDayNonR,
+                  },
+                  isDeleted: false,
                 });
 
+                if (!todayReport || !Array.isArray(todayReport.villa)) {
+                  return [];
+                }
+
+                const night: string[] = todayReport.villa.map((villa: any) => villa.status3);
+                
+                console.log(" Report Night :", night)
+
+                    
+                return res.status(200).json({
+                    requestId: uuidv4(),
+                    data: [],
+                    message: `No report found Next Prev for ${startOfDay}`,
+                    data_room_status : RoomTypeInToday,
+                    data_night : night,
+                    date_req: date,
+                    success: true
+                  });
           }
+
       
           // Kirim hasil response
           return res.status(200).json({
@@ -347,235 +325,344 @@ export class ReportController {
       }
   };
   
+    static async GetReportByPrevNext (req: Request, res: Response){
+        
+        try {
+          
+          const { date } = req.params;
 
-  static async GetReportBooking (req: Request, res: Response){
+          if (!date || isNaN(new Date(date).getTime())) {
+              return res.status(400).json({
+                  requestId: uuidv4(),
+                  data: null,
+                  message: "Invalid Date",
+                  success: false
+              });
+          }
+          
+
+            // const dateWIB = DateTime.fromJSDate(new Date(date), { zone: 'Asia/Jakarta' });
+            const dateWIB = DateTime.fromISO(date, { zone: 'Asia/Jakarta' });
+
+            const startOfDay = dateWIB.startOf('day').toJSDate();
+            const endOfDay = dateWIB.endOf('day').toJSDate();
+            // Mundurkan 1 hari
+            const previousDateWIB = dateWIB.minus({ days: 1 });
+
+            const startOfDayNonR = previousDateWIB.startOf('day').toJSDate();
+            const endOfDayNonR = previousDateWIB.endOf('day').toJSDate();
+
+
+            const CheckInToday = await RoomStatusModel.find({
+                status: true,
+                isDeleted: false,
+                checkIn: { $lte: endOfDay.toISOString() },  // <=
+                checkOut: { $gt: endOfDay.toISOString() },  // >
+            });
+
+            const CheckOutToday = await RoomStatusModel.find({
+              status: true,
+              isDeleted: false,
+              checkOut: {
+                $gte: startOfDay.toISOString(), // mulai dari jam 00:00
+                $lte: endOfDay.toISOString(),   // sampai jam 23:59:59
+              },
+            });
+
+            const RoomTypeInToday = {
+              CheckIn : CheckInToday,
+              CheckOut : CheckOutToday
+
+            }
+
+            const todayReport = await ReportModel.findOne({
+              createdAt: {
+                $gte: startOfDay,
+                $lte: endOfDay,
+              },
+              isDeleted: false,
+            });
+
+        
+            if (!todayReport) {
+                
+                const todayReport = await ReportModel.findOne({
+                  createdAt: {
+                    $gte: startOfDayNonR,
+                    $lte: endOfDayNonR,
+                  },
+                  isDeleted: false,
+                });
+
+                if (!todayReport || !Array.isArray(todayReport.villa)) {
+                  return [];
+                }
+
+                const night: string[] = todayReport.villa.map((villa: any) => villa.status3);
+                
+                console.log(" Report Night :", night)
+
+                    
+                return res.status(200).json({
+                    requestId: uuidv4(),
+                    data: [],
+                    message: `No report found Next Prev for ${startOfDay}`,
+                    data_room_status : RoomTypeInToday,
+                    data_night : night,
+                    date_req: date,
+                    success: true
+                  });
+
+            }
+        
+            // Kirim hasil response
+            return res.status(200).json({
+              requestId: uuidv4(),
+              data: todayReport,
+              message: `Data Report : ${startOfDay}`,
+              data_room_status : RoomTypeInToday,
+              date_req: date,
+              success: true
+            });
+
+        } catch (error) {
+
+            console.error('Error fetching today report:', error);
+            
+            return res.status(400).json({
+                requestId: uuidv4(),
+                data: null,
+                message: (error as Error).message || "Internal Server Error",
+                success: false
+            });
+        }
+    };
+    
+
+    static async GetReportBooking (req: Request, res: Response){
+
+        try {
+
+            const ReportBooking = await BookingModel.find({isDeleted:false}).populate('roomStatusKey');
+
+            // Kirim hasil response
+            return res.status(200).json({
+              requestId: uuidv4(),
+              data: ReportBooking,
+              success: true
+            });
+
+        } catch (error) {
+
+            console.error('Error fetching report booking:', error);
+            
+            return res.status(500).json({
+                requestId: uuidv4(),
+                data: null,
+                message: (error as Error).message || "Internal Server Error",
+                success: false
+            });
+        }
+    };
+
+
+    // Pagination
+    // static async GetReportBooking(req: Request, res: Response) {
+    //   try {
+    //     const page = parseInt(req.query.page as string) || 1;
+    //     const limit = parseInt(req.query.limit as string) || 25;
+    
+    //     const skip = (page - 1) * limit;
+    
+    //     const total = await BookingModel.countDocuments({ isDeleted: false });
+
+    //     const bookings = await BookingModel.find({ isDeleted: false })
+    //       .populate('roomStatusKey')
+    //       .skip(skip)
+    //       .limit(limit);
+    
+    //     return res.status(200).json({
+    //       requestId: uuidv4(),
+    //       data: bookings,
+    //       page,
+    //       limit,
+    //       total,
+    //       success: true
+    //     });
+    
+    //   } catch (error) {
+    //     return res.status(500).json({
+    //       requestId: uuidv4(),
+    //       data: null,
+    //       message: (error as Error).message || "Internal Server Error",
+    //       success: false
+    //     });
+    //   }
+    // }
+
+    static async GetReportBookingByDate(req: Request, res: Response) {
 
       try {
 
-          const ReportBooking = await BookingModel.find({isDeleted:false}).populate('roomStatusKey');
+        const { code, start, end, code2 } = req.params;
 
-          // Kirim hasil response
+        // Validasi parameter tanggal
+        if (!start || !end || isNaN(Date.parse(start)) || isNaN(Date.parse(end))) {
+          return res.status(400).json({
+            requestId: uuidv4(),
+            data: null,
+            message: "Invalid date format. Please use ISO format (e.g., 2024-12-25T00:00:00+07:00)",
+            success: false,
+          });
+        }
+
+        // Gunakan zona waktu Asia/Jakarta (WIB)
+        const startLuxon = DateTime.fromISO(start, { zone: "Asia/Jakarta" }).startOf("day");
+        const endLuxon = DateTime.fromISO(end, { zone: "Asia/Jakarta" }).endOf("day");
+
+        const startOfDay = startLuxon.toISO(); // string ISO dgn offset WIB
+        const endOfDay = endLuxon.toISO();
+        
+        
+        console.log("start:", start);
+        console.log("end:", end);
+        console.log("startOfDay:", startOfDay); // 2025-05-01T00:00:00.000+07:00
+        console.log("endOfDay:", endOfDay);     // 2025-05-05T23:59:59.999+07:00
+
+
+        let todayReport: string | any[];
+
+        if (code === "BO") {
+
+          todayReport = await BookingModel.find({
+            createdAt: {
+              $gte: startOfDay,
+              $lte: endOfDay,
+            },
+            isDeleted: false,
+          }).populate("roomStatusKey");
+
+        } else if (code2 === "SP" && code === "CI") {
+
+          await OptionModel.updateOne(
+            { isDeleted: false },
+            {
+              $set: {
+                price_total: {
+                  startOfDay: startOfDay,
+                  endOfDay: endOfDay,
+                  status: true,
+                },
+              },
+            },
+            { upsert: true }
+          );
+
+          console.log(' Save Price Date In update !')
+
+          todayReport = await BookingModel.find({
+            checkIn: {
+              $gte: startOfDay,
+              $lte: endOfDay,
+            },
+            isDeleted: false,
+          }).populate("roomStatusKey");
+
+        } else if (code === "CI") {
+
+          todayReport = await BookingModel.find({
+            checkIn: {
+              $gte: startOfDay,
+              $lte: endOfDay,
+            },
+            isDeleted: false,
+          }).populate("roomStatusKey");
+
+        } else if (code === "PY") {
+          todayReport = [];
+        } else {
+          return res.status(400).json({
+            requestId: uuidv4(),
+            data: null,
+            message: "Invalid code type",
+            success: false,
+          });
+        }
+
+        if (!todayReport || todayReport.length === 0) {
           return res.status(200).json({
             requestId: uuidv4(),
-            data: ReportBooking,
-            success: true
+            data: [],
+            message: `No report found from ${startOfDay} - ${endOfDay}`,
+            success: true,
           });
+        }
+
+        return res.status(200).json({
+          requestId: uuidv4(),
+          data: todayReport,
+          dataLength: todayReport.length,
+          message: `Data Report: ${startOfDay} - ${endOfDay}`,
+          success: true,
+        });
+      } catch (error) {
+        console.error("Error fetching report:", error);
+        return res.status(500).json({
+          requestId: uuidv4(),
+          data: null,
+          message: (error as Error).message || "Internal Server Error",
+          success: false,
+        });
+      }
+    }
+
+
+    static async UpdatePriceTotalByDate(req: Request, res: Response) {
+
+      try {
+        const SavedOption = await OptionModel.findOne({ isDeleted: false });
+
+        if (!SavedOption || !SavedOption.price_total) {
+          return res.status(404).json({
+            requestId: uuidv4(),
+            data: null,
+            message: "No price_total data available.",
+            success: false,
+          });
+        }
+
+        const { startOfDay, endOfDay } = SavedOption.price_total;
+
+        const todayReport = await BookingModel.find({
+
+          checkIn: {
+                $gte: startOfDay,
+                $lte: endOfDay,
+          },
+          isDeleted: false,
+          
+        }).populate("roomStatusKey");
+
+        return res.status(200).json({
+          requestId: uuidv4(),
+          data: todayReport,
+          dataLength: todayReport.length,
+          message: `Data Report: ${startOfDay} - ${endOfDay}`,
+          success: true,
+        });
 
       } catch (error) {
 
-          console.error('Error fetching report booking:', error);
-          
-          return res.status(500).json({
-              requestId: uuidv4(),
-              data: null,
-              message: (error as Error).message || "Internal Server Error",
-              success: false
-          });
-      }
-  };
+        console.error("Error fetching report:", error);
 
-
-  // Pagination
-  // static async GetReportBooking(req: Request, res: Response) {
-  //   try {
-  //     const page = parseInt(req.query.page as string) || 1;
-  //     const limit = parseInt(req.query.limit as string) || 25;
-  
-  //     const skip = (page - 1) * limit;
-  
-  //     const total = await BookingModel.countDocuments({ isDeleted: false });
-
-  //     const bookings = await BookingModel.find({ isDeleted: false })
-  //       .populate('roomStatusKey')
-  //       .skip(skip)
-  //       .limit(limit);
-  
-  //     return res.status(200).json({
-  //       requestId: uuidv4(),
-  //       data: bookings,
-  //       page,
-  //       limit,
-  //       total,
-  //       success: true
-  //     });
-  
-  //   } catch (error) {
-  //     return res.status(500).json({
-  //       requestId: uuidv4(),
-  //       data: null,
-  //       message: (error as Error).message || "Internal Server Error",
-  //       success: false
-  //     });
-  //   }
-  // }
-  
-
-
-  static async GetReportBookingByDate(req: Request, res: Response) {
-
-    try {
-
-      const { code, start, end, code2 } = req.params;
-
-      // Validasi parameter tanggal
-      if (!start || !end || isNaN(Date.parse(start)) || isNaN(Date.parse(end))) {
-        return res.status(400).json({
+        return res.status(500).json({
           requestId: uuidv4(),
           data: null,
-          message: "Invalid date format. Please use ISO format (e.g., 2024-12-25T00:00:00+07:00)",
+          message: (error as Error).message || "Internal Server Error",
           success: false,
         });
       }
-
-      // Gunakan zona waktu Asia/Jakarta (WIB)
-      const startLuxon = DateTime.fromISO(start, { zone: "Asia/Jakarta" }).startOf("day");
-      const endLuxon = DateTime.fromISO(end, { zone: "Asia/Jakarta" }).endOf("day");
-
-      const startOfDay = startLuxon.toISO(); // string ISO dgn offset WIB
-      const endOfDay = endLuxon.toISO();
-      
-      
-      console.log("start:", start);
-      console.log("end:", end);
-      console.log("startOfDay:", startOfDay); // 2025-05-01T00:00:00.000+07:00
-      console.log("endOfDay:", endOfDay);     // 2025-05-05T23:59:59.999+07:00
-
-
-      let todayReport: string | any[];
-
-      if (code === "BO") {
-
-        todayReport = await BookingModel.find({
-          createdAt: {
-            $gte: startOfDay,
-            $lte: endOfDay,
-          },
-          isDeleted: false,
-        }).populate("roomStatusKey");
-
-      } else if (code2 === "SP" && code === "CI") {
-
-        await OptionModel.updateOne(
-          { isDeleted: false },
-          {
-            $set: {
-              price_total: {
-                startOfDay: startOfDay,
-                endOfDay: endOfDay,
-                status: true,
-              },
-            },
-          },
-          { upsert: true }
-        );
-
-        console.log(' Save Price Date In update !')
-
-        todayReport = await BookingModel.find({
-          checkIn: {
-            $gte: startOfDay,
-            $lte: endOfDay,
-          },
-          isDeleted: false,
-        }).populate("roomStatusKey");
-
-      } else if (code === "CI") {
-
-        todayReport = await BookingModel.find({
-          checkIn: {
-            $gte: startOfDay,
-            $lte: endOfDay,
-          },
-          isDeleted: false,
-        }).populate("roomStatusKey");
-
-      } else if (code === "PY") {
-        todayReport = [];
-      } else {
-        return res.status(400).json({
-          requestId: uuidv4(),
-          data: null,
-          message: "Invalid code type",
-          success: false,
-        });
-      }
-
-      if (!todayReport || todayReport.length === 0) {
-        return res.status(200).json({
-          requestId: uuidv4(),
-          data: [],
-          message: `No report found from ${startOfDay} - ${endOfDay}`,
-          success: true,
-        });
-      }
-
-      return res.status(200).json({
-        requestId: uuidv4(),
-        data: todayReport,
-        dataLength: todayReport.length,
-        message: `Data Report: ${startOfDay} - ${endOfDay}`,
-        success: true,
-      });
-    } catch (error) {
-      console.error("Error fetching report:", error);
-      return res.status(500).json({
-        requestId: uuidv4(),
-        data: null,
-        message: (error as Error).message || "Internal Server Error",
-        success: false,
-      });
     }
-  }
-
-
-
-
-static async UpdatePriceTotalByDate(req: Request, res: Response) {
-
-  try {
-    const SavedOption = await OptionModel.findOne({ isDeleted: false });
-
-    if (!SavedOption || !SavedOption.price_total) {
-      return res.status(404).json({
-        requestId: uuidv4(),
-        data: null,
-        message: "No price_total data available.",
-        success: false,
-      });
-    }
-
-    const { startOfDay, endOfDay } = SavedOption.price_total;
-
-    const todayReport = await BookingModel.find({
-
-      checkIn: {
-            $gte: startOfDay,
-            $lte: endOfDay,
-      },
-      isDeleted: false,
-      
-    }).populate("roomStatusKey");
-
-    return res.status(200).json({
-      requestId: uuidv4(),
-      data: todayReport,
-      dataLength: todayReport.length,
-      message: `Data Report: ${startOfDay} - ${endOfDay}`,
-      success: true,
-    });
-
-  } catch (error) {
-
-    console.error("Error fetching report:", error);
-
-    return res.status(500).json({
-      requestId: uuidv4(),
-      data: null,
-      message: (error as Error).message || "Internal Server Error",
-      success: false,
-    });
-  }
-}
 
 
 

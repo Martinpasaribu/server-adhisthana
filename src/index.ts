@@ -31,7 +31,6 @@ import AdminInvoiceRouter from "./router/Admin/router_admin_invoice";
 import AdminRoomPending from "./router/Admin/router_admin_pending_room";
 
 
-
 const app: express.Application = express();
 
 dotenv.config()
@@ -48,6 +47,7 @@ app.use(cors({
 
     methods: ["POST", "GET", "PATCH", "DELETE", 'PUT', "OPTIONS"],
     credentials: true,
+
     allowedHeaders: ["Content-Type", "Authorization"],
 }));
 
