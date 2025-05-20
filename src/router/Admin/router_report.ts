@@ -14,7 +14,8 @@ const ReportRouter: express.Router = express.Router();
 ReportRouter.post("/add-report/:date",  logActivity("Create Report"), ReportController.SaveReport);
 ReportRouter.get("/get-report-today", ReportController.GetTodayReport); 
 ReportRouter.get("/get/booking", ReportController.GetReportBooking); 
-ReportRouter.get("/get/booking/date/:code/:start/:end", ReportController.GetReportBookingByDate); 
+ReportRouter.get("/get/total_price/saved", ReportController.UpdatePriceTotalByDate); 
+ReportRouter.get("/get/booking/date/:code/:start/:end/:code2", ReportController.GetReportBookingByDate); 
 ReportRouter.get("/get-reportby-day/:date", ReportController.GetReportByDate); 
 ReportRouter.get("/get/next_prev/:date", ReportController.GetReportByPrevNext); 
 

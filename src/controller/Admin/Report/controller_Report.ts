@@ -9,6 +9,7 @@ import utc from 'dayjs/plugin/utc.js';
 import timezone from 'dayjs/plugin/timezone.js';
 import { RoomStatusModel } from '../../../models/RoomStatus/models_RoomStatus';
 import { DateTime } from "luxon";
+import OptionModel from '../../../models/Option/models_option';
 
 
 export class ReportController {
@@ -411,61 +412,85 @@ export class ReportController {
 
 
   static async GetReportBookingByDate(req: Request, res: Response) {
-    try {
-      const { code, start, end } = req.params;
 
-        
-      if( !code || !start || !end){
-        return res.status(400).json({
-          requestId: uuidv4(),
-          data: null,
-          message: "Date and Type date can't empty",
-          success: false,
-        });
-      }
+    try {
+
+      const { code, start, end, code2 } = req.params;
 
       // Validasi parameter tanggal
-      if (!start || !end || isNaN(new Date(start).getTime()) || isNaN(new Date(end).getTime())) {
+      if (!start || !end || isNaN(Date.parse(start)) || isNaN(Date.parse(end))) {
         return res.status(400).json({
           requestId: uuidv4(),
           data: null,
-          message: "Invalid Date",
+          message: "Invalid date format. Please use ISO format (e.g., 2024-12-25T00:00:00+07:00)",
           success: false,
         });
       }
 
+      // Gunakan zona waktu Asia/Jakarta (WIB)
+      const startLuxon = DateTime.fromISO(start, { zone: "Asia/Jakarta" }).startOf("day");
+      const endLuxon = DateTime.fromISO(end, { zone: "Asia/Jakarta" }).endOf("day");
 
-      // Atur rentang waktu hari tersebut (dari jam 00:00 sampai 23:59)
-      const startOfDay = new Date(start);
-      startOfDay.setHours(0, 0, 0, 0);
+      const startOfDay = startLuxon.toISO(); // string ISO dgn offset WIB
+      const endOfDay = endLuxon.toISO();
+      
+      
+      console.log("start:", start);
+      console.log("end:", end);
+      console.log("startOfDay:", startOfDay); // 2025-05-01T00:00:00.000+07:00
+      console.log("endOfDay:", endOfDay);     // 2025-05-05T23:59:59.999+07:00
 
-      const endOfDay = new Date(end);
-      endOfDay.setHours(23, 59, 59, 999);
 
-      let todayReport: string | any[] 
+      let todayReport: string | any[];
 
       if (code === "BO") {
-        // Filter berdasarkan createdAt untuk CI
+
         todayReport = await BookingModel.find({
           createdAt: {
             $gte: startOfDay,
             $lte: endOfDay,
           },
           isDeleted: false,
-        }).populate('roomStatusKey');
-      } else if (code === "CI") {
-        // Filter berdasarkan checkIn untuk BO
-        // Pastikan field checkIn dalam format ISO date
+        }).populate("roomStatusKey");
+
+      } else if (code2 === "SP" && code === "CI") {
+
+        await OptionModel.updateOne(
+          { isDeleted: false },
+          {
+            $set: {
+              price_total: {
+                startOfDay: startOfDay,
+                endOfDay: endOfDay,
+                status: true,
+              },
+            },
+          },
+          { upsert: true }
+        );
+
+        console.log(' Save Price Date In update !')
+
         todayReport = await BookingModel.find({
           checkIn: {
-            $gte: startOfDay.toISOString(),
-            $lte: endOfDay.toISOString(),
+            $gte: startOfDay,
+            $lte: endOfDay,
           },
           isDeleted: false,
-        }).populate('roomStatusKey');
+        }).populate("roomStatusKey");
+
+      } else if (code === "CI") {
+
+        todayReport = await BookingModel.find({
+          checkIn: {
+            $gte: startOfDay,
+            $lte: endOfDay,
+          },
+          isDeleted: false,
+        }).populate("roomStatusKey");
+
       } else if (code === "PY") {
-        // Logika khusus untuk kode PY bisa ditambahkan di sini
-        todayReport = []; // Misalnya sementara kosong
+        todayReport = [];
       } else {
         return res.status(400).json({
           requestId: uuidv4(),
@@ -479,7 +504,7 @@ export class ReportController {
         return res.status(200).json({
           requestId: uuidv4(),
           data: [],
-          message: `No report found from ${startOfDay.toISOString()} - ${startOfDay.toISOString()}}`,
+          message: `No report found from ${startOfDay} - ${endOfDay}`,
           success: true,
         });
       }
@@ -488,7 +513,7 @@ export class ReportController {
         requestId: uuidv4(),
         data: todayReport,
         dataLength: todayReport.length,
-        message: `Data Report: ${startOfDay.toISOString()} - ${endOfDay.toISOString()}`,
+        message: `Data Report: ${startOfDay} - ${endOfDay}`,
         success: true,
       });
     } catch (error) {
@@ -501,6 +526,57 @@ export class ReportController {
       });
     }
   }
+
+
+
+
+static async UpdatePriceTotalByDate(req: Request, res: Response) {
+
+  try {
+    const SavedOption = await OptionModel.findOne({ isDeleted: false });
+
+    if (!SavedOption || !SavedOption.price_total) {
+      return res.status(404).json({
+        requestId: uuidv4(),
+        data: null,
+        message: "No price_total data available.",
+        success: false,
+      });
+    }
+
+    const { startOfDay, endOfDay } = SavedOption.price_total;
+
+    const todayReport = await BookingModel.find({
+
+      checkIn: {
+            $gte: startOfDay,
+            $lte: endOfDay,
+      },
+      isDeleted: false,
+      
+    }).populate("roomStatusKey");
+
+    return res.status(200).json({
+      requestId: uuidv4(),
+      data: todayReport,
+      dataLength: todayReport.length,
+      message: `Data Report: ${startOfDay} - ${endOfDay}`,
+      success: true,
+    });
+
+  } catch (error) {
+
+    console.error("Error fetching report:", error);
+
+    return res.status(500).json({
+      requestId: uuidv4(),
+      data: null,
+      message: (error as Error).message || "Internal Server Error",
+      success: false,
+    });
+  }
+}
+
 
 
   // Pagination
