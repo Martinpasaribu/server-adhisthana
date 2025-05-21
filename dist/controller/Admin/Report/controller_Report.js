@@ -135,28 +135,30 @@ class ReportController {
                     isDeleted: false
                 });
                 if (!todayReport) {
-                    const todayReport = yield models_report_1.default.findOne({
+                    const todayReportNonR = yield models_report_1.default.findOne({
                         createdAt: {
                             $gte: startOfDayNonR,
                             $lte: endOfDayNonR,
                         },
                         isDeleted: false,
                     });
-                    if (!todayReport || !Array.isArray(todayReport.villa)) {
+                    if (!todayReportNonR || !Array.isArray(todayReportNonR.villa)) {
                         return [];
                     }
-                    const night = todayReport.villa.map((villa) => villa.status3);
+                    const night = todayReportNonR.villa.map((villa) => villa.status3);
                     console.log(" Report Night :", night);
+                    const villa = [];
                     return res.status(200).json({
                         requestId: (0, uuid_1.v4)(),
                         data: todayReport,
                         data_room_status: RoomTypeInToday,
                         data_night: night,
-                        message: 'No report found for today',
+                        message: 'No report found for today, room status today',
                         message2: `report room status from ${startOfDay} until ${endOfDay}`,
                         success: true
                     });
                 }
+                ;
                 // Kirim hasil response
                 return res.status(200).json({
                     requestId: (0, uuid_1.v4)(),
@@ -222,17 +224,17 @@ class ReportController {
                     isDeleted: false,
                 });
                 if (!todayReport) {
-                    const todayReport = yield models_report_1.default.findOne({
+                    const todayReportNonR = yield models_report_1.default.findOne({
                         createdAt: {
                             $gte: startOfDayNonR,
                             $lte: endOfDayNonR,
                         },
                         isDeleted: false,
                     });
-                    if (!todayReport || !Array.isArray(todayReport.villa)) {
+                    if (!todayReportNonR || !Array.isArray(todayReportNonR.villa)) {
                         return [];
                     }
-                    const night = todayReport.villa.map((villa) => villa.status3);
+                    const night = todayReportNonR.villa.map((villa) => villa.status3);
                     console.log(" Report Night :", night);
                     return res.status(200).json({
                         requestId: (0, uuid_1.v4)(),
@@ -312,17 +314,17 @@ class ReportController {
                     isDeleted: false,
                 });
                 if (!todayReport) {
-                    const todayReport = yield models_report_1.default.findOne({
+                    const todayReportNonR = yield models_report_1.default.findOne({
                         createdAt: {
                             $gte: startOfDayNonR,
                             $lte: endOfDayNonR,
                         },
                         isDeleted: false,
                     });
-                    if (!todayReport || !Array.isArray(todayReport.villa)) {
+                    if (!todayReportNonR || !Array.isArray(todayReportNonR.villa)) {
                         return [];
                     }
-                    const night = todayReport.villa.map((villa) => villa.status3);
+                    const night = todayReportNonR.villa.map((villa) => villa.status3);
                     console.log(" Report Night :", night);
                     return res.status(200).json({
                         requestId: (0, uuid_1.v4)(),
@@ -356,6 +358,26 @@ class ReportController {
         });
     }
     ;
+    //     static async GetReportByPrevNext (req: Request, res: Response){
+    //     try {
+    //       const { date } = req.params;
+    //         // Kirim hasil response
+    //         return res.status(200).json({
+    //           requestId: uuidv4(),
+    //           data: date,
+    //           date_req: date,
+    //           success: true
+    //         });
+    //     } catch (error) {
+    //         console.error('Error fetching today report:', error);
+    //         return res.status(400).json({
+    //             requestId: uuidv4(),
+    //             data: null,
+    //             message: (error as Error).message || "Internal Server Error",
+    //             success: false
+    //         });
+    //     }
+    // };
     static GetReportBooking(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
