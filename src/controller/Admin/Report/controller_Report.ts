@@ -534,6 +534,8 @@ export class ReportController {
 
         const { code, start, end, code2 } = req.params;
 
+        console.log("Data GetReportBookingByDate : ", code, start, end, code2 );
+        
         // Validasi parameter tanggal
         if (!start || !end || isNaN(Date.parse(start)) || isNaN(Date.parse(end))) {
           return res.status(400).json({
@@ -596,7 +598,7 @@ export class ReportController {
             isDeleted: false,
           }).populate("roomStatusKey");
 
-        } else if (code === "CI") {
+        } else if (code === "CI" && code2 === "SL") {
 
           todayReport = await BookingModel.find({
             checkIn: {

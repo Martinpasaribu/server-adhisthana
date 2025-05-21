@@ -433,6 +433,7 @@ class ReportController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { code, start, end, code2 } = req.params;
+                console.log("Data GetReportBookingByDate : ", code, start, end, code2);
                 // Validasi parameter tanggal
                 if (!start || !end || isNaN(Date.parse(start)) || isNaN(Date.parse(end))) {
                     return res.status(400).json({
@@ -480,7 +481,7 @@ class ReportController {
                         isDeleted: false,
                     }).populate("roomStatusKey");
                 }
-                else if (code === "CI") {
+                else if (code === "CI" && code2 === "SL") {
                     todayReport = yield models_booking_1.BookingModel.find({
                         checkIn: {
                             $gte: startOfDay,
