@@ -17,8 +17,10 @@ const models_LogActivity_1 = require("../models/LogActivity/models_LogActivity")
 const models_admin_1 = __importDefault(require("../models/Admin/models_admin"));
 const models_user_1 = __importDefault(require("../models/User/models_user"));
 const models_booking_1 = require("../models/Booking/models_booking");
+const mongoose_1 = __importDefault(require("mongoose"));
 const CekUser = (id) => __awaiter(void 0, void 0, void 0, function* () {
-    let user = yield models_user_1.default.findOne({ _id: id, isDeleted: false }).select("title name email phone");
+    const _id = new mongoose_1.default.Types.ObjectId(id);
+    let user = yield models_user_1.default.findOne({ _id, isDeleted: false }).select("title name email phone");
     console.log("Update Data user di LOG :", user);
     return user;
 });

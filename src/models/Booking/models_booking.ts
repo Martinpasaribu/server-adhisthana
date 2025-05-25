@@ -22,6 +22,8 @@ export interface Reschedule {
     checkOut: Date | string;
   };
 
+  type: string;
+
   key_reschedule?: string;    // Optional karena bisa null/undefined
   reschedule_fee?: number | null;
   price_prev?: number | null;
@@ -113,7 +115,7 @@ interface IBooking extends Document {
     checkOut: string;
     verified: IVerified;
     reservation: boolean;
-    reschedule: Reschedule[];
+    reschedule: Reschedule;
     adult: number;
     night: number;
     children: number;
@@ -197,6 +199,11 @@ const BookingSchema: Schema = new Schema(
             status: { 
                 type: Boolean, 
                 default: false,  
+            },
+
+            type:{                  // SRC (Source) || RES (Result)
+                type : String,
+                default: null
             },
 
             schedule_new: {

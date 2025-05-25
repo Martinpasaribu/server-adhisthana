@@ -61,7 +61,7 @@ export class InvoiceController {
   static async CreateInvoiceBooking(req: Request, res: Response) {
     
     try {
-      const { id_Booking, id_Product, code, less, totalPrice , subject } = req.body;
+      const { id_Booking, id_Product, code, code2 , less, totalPrice , subject } = req.body;
   
       if (!id_Booking || !id_Product || !code || !less || !totalPrice) {
         return res.status(400).json({
@@ -78,7 +78,8 @@ export class InvoiceController {
         note: 'Suspended',
         less,
         totalPrice,
-        code
+        code,
+        code2,
       };
   
       const updatedInvoice = await BookingModel.findByIdAndUpdate(
@@ -102,7 +103,6 @@ export class InvoiceController {
       });
     }
   }
-  
 
 
   static async PayInvoice(req: Request, res: Response) {

@@ -23,5 +23,8 @@ SiteMinderRouter.get("/set-price-weekend", VerifyAdminId_1.verifyAdmin, controll
 SiteMinderRouter.get("/set-price-holiday", VerifyAdminId_1.verifyAdmin, controller_minder_1.SetMinderController.SetPriceForHolidays);
 SiteMinderRouter.put("/edit-date-transaction", VerifyAdminId_1.verifyAdmin, (0, LogAdmin_1.logActivity)("Refund Date Booking"), controller_minder_1.SetMinderController.UpdateTransactionDate);
 SiteMinderRouter.put("/update-stock-room", VerifyAdminId_1.verifyAdmin, (0, LogAdmin_1.logActivity)("Update Stock Romm"), controller_minder_1.SetMinderController.UpdateStockRooms);
+SiteMinderRouter.put("/chancel-reschedule", VerifyAdminId_1.verifyAdmin, (0, LogAdmin_1.logActivity)("Chancel reschedule "), controller_minder_1.SetMinderController.ChancelReschedule);
+SiteMinderRouter.get("/del-reschedule/:IdBooking", VerifyAdminId_1.verifyAdmin, (0, LogAdmin_1.logActivity)("Chancel Reschedule"), controller_minder_1.SetMinderController.ChancelReschedule);
+SiteMinderRouter.get("/get-list-reschedule", VerifyAdminId_1.verifyAdmin, controller_minder_1.SetMinderController.GetListReschedule);
 SiteMinderRouter.put("/set-price-custom", VerifyAdminId_1.verifyAdmin, (0, LogAdmin_1.logActivity)("Set-Up Price Custom Date"), controller_minder_1.SetMinderController.SetPriceForCustomDate);
 exports.default = SiteMinderRouter;

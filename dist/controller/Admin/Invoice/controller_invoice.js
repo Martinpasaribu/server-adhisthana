@@ -57,7 +57,7 @@ class InvoiceController {
     static CreateInvoiceBooking(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { id_Booking, id_Product, code, less, totalPrice, subject } = req.body;
+                const { id_Booking, id_Product, code, code2, less, totalPrice, subject } = req.body;
                 if (!id_Booking || !id_Product || !code || !less || !totalPrice) {
                     return res.status(400).json({
                         status: false,
@@ -72,7 +72,8 @@ class InvoiceController {
                     note: 'Suspended',
                     less,
                     totalPrice,
-                    code
+                    code,
+                    code2,
                 };
                 const updatedInvoice = yield models_booking_1.BookingModel.findByIdAndUpdate({ _id: new mongoose_1.default.Types.ObjectId(id_Booking), isDeleted: false }, { $push: { invoice } }, { new: true, runValidators: true });
                 return res.status(200).json({

@@ -16,6 +16,8 @@ import { ActivityLogModel } from '../../../models/LogActivity/models_LogActivity
 import { BookingModel } from '../../../models/Booking/models_booking';
 import { UpdateRefund } from './components/UpdateRefundBooking';
 import { RoomStatusModel } from '../../../models/RoomStatus/models_RoomStatus';
+import { DeletedDataALL, RefReschedule } from './components/RefReschedule';
+const { ObjectId } = mongoose.Types;
 
 
 export class SetMinderController {
@@ -50,7 +52,7 @@ export class SetMinderController {
                 res.status(200).json({
                   requestId: uuidv4(),
                   data: null,
-                  message: `Prices saved`,
+                  message: `Saved Price`,
                   success: true,
 
               });
@@ -61,7 +63,6 @@ export class SetMinderController {
               }
 
         }
-
 
         static async SetPriceForHolidays(req: Request, res: Response) {
           try {
@@ -180,7 +181,7 @@ export class SetMinderController {
                   success: false,
               });
           }
-      }
+        }
 
         static async SetPriceWeekDay(req: Request, res: Response) {
           try {
@@ -234,6 +235,7 @@ export class SetMinderController {
                   message: `Prices updated for all weekdays except Fridays and Saturdays`,
                   success: true,
               });
+
           } catch (error) {
               res.status(500).json({
                   requestId: uuidv4(),
@@ -301,7 +303,6 @@ export class SetMinderController {
           }
         }
            
-
         static async GetAllPriceByYear(req: Request, res: Response) {
 
             try {
@@ -343,8 +344,7 @@ export class SetMinderController {
               }
 
         }
-       
-        
+             
         static async GetAllPrice(req: Request, res: Response) {
 
             try {
@@ -386,8 +386,7 @@ export class SetMinderController {
               }
 
         }
-       
-       
+           
         static async GetAllRoomWithAvailable(req: Request, res: Response) {
           try {
             const { year, month } = req.query;
@@ -476,7 +475,6 @@ export class SetMinderController {
           }
         }
         
-
         static async GetAllRoomWithUnAvailable(req: Request, res: Response) {
           try {
             const { year, month } = req.query;
@@ -581,8 +579,7 @@ export class SetMinderController {
             res.status(500).json({ message: "Failed to fetch Room", error });
           }
         }
-        
-        
+                
         static async GetAllTransactionFromYearAndMonth(req: Request, res: Response) {
           try {
             const { year, month } = req.query;
@@ -793,6 +790,7 @@ export class SetMinderController {
         static async DeletedBooking(req: Request, res: Response){
 
           try {
+
             let ShortAvailable ;
             let Transaction ;
             let Booking ;
@@ -813,72 +811,98 @@ export class SetMinderController {
 
             }
             
-            ShortAvailable = await ShortAvailableModel.findOneAndUpdate({transactionId :  id},{ isDeleted: false },{ new: true, runValidators: true });
-          
-            // if (!ShortAvailable) {
-            //     return res.status(404).json({
-            //         requestId: uuidv4(),
-            //         data: null,
-            //         message: "Data ShortAvailable not found.",
-            //         success: false
-            //     });
-            // }
+            const idParam = id;
 
-             await ShortAvailableModel.updateMany(
-                { transactionId: id },
-                { isDeleted: true }
-              );
+            // Pengecekan Apakah ini bookingan main atau reschedule 
 
-            Transaction = await TransactionModel.findOneAndUpdate({bookingId :  id},{ isDeleted: false },{ new: true, runValidators: true });
-          
-            if (!Transaction) {
-                return res.status(404).json({
-                    requestId: uuidv4(),
-                    data: null,
-                    message: "Transaction not found.",
-                    success: false
-                });
+            const InfoRefReschedule = await RefReschedule(idParam);
+
+            // Hapus Data Main Booking setalah Booking reschedule telah di hapus
+            
+            if( InfoRefReschedule.BookingMain)
+
+              {
+                  
+                  Booking = await BookingModel.findOneAndUpdate({orderId :  id},{ isDeleted: false },{ new: true, runValidators: true });
+
+                  if (!Booking) {
+                      return res.status(404).json({
+                          requestId: uuidv4(),
+                          data: null,
+                          message: "Booking not found.",
+                          success: false
+                      });
+                  }
+
+                  await BookingModel.updateMany(
+
+                    { orderId: id },
+                    { isDeleted: true }
+
+                  );
+
+
+
+                  ShortAvailable = await ShortAvailableModel.findOneAndUpdate({transactionId :  id},{ isDeleted: false },{ new: true, runValidators: true });
+                
+                  if (!ShortAvailable) {
+                      return res.status(404).json({
+                          requestId: uuidv4(),
+                          data: null,
+                          message: "Data ShortAvailable not found.",
+                          success: false
+                      });
+                  }
+
+                  await ShortAvailableModel.updateMany(
+                      { transactionId: id },
+                      { isDeleted: true }
+                    );
+
+                  Transaction = await TransactionModel.findOneAndUpdate({bookingId :  id},{ isDeleted: false },{ new: true, runValidators: true });
+                
+                  if (!Transaction) {
+                      return res.status(404).json({
+                          requestId: uuidv4(),
+                          data: null,
+                          message: "Transaction not found.",
+                          success: false
+                      });
+                  }
+
+                  await TransactionModel.updateMany(
+                    { bookingId: id },
+                    { isDeleted: true }
+                  );
+
+
+                  RoomStatus = await RoomStatusModel.findOneAndUpdate({id_Trx :  id},{ isDeleted: false },{ new: true, runValidators: true });
+
+
+                  await RoomStatusModel.updateMany(
+                    { id_Trx: id },
+                    { isDeleted: true }
+                  );
+
+
+              }
+
+            // Hapus Property Reschedule Pada main booking
+            
+            if( InfoRefReschedule.BookingReschedule ){
+
+                  await BookingModel.updateOne(
+                    { _id: idParam },
+                    { $unset: { reschedule: "" } }
+                  );
+
             }
-            await TransactionModel.updateMany(
-              { bookingId: id },
-              { isDeleted: true }
-            );
-
-            Booking = await BookingModel.findOneAndUpdate({orderId :  id},{ isDeleted: false },{ new: true, runValidators: true });
-          
-            if (!Booking) {
-                return res.status(404).json({
-                    requestId: uuidv4(),
-                    data: null,
-                    message: "Booking not found.",
-                    success: false
-                });
-            }
-            await BookingModel.updateMany(
-              { orderId: id },
-              { isDeleted: true }
-            );
-
-            RoomStatus = await RoomStatusModel.findOneAndUpdate({id_Trx :  id},{ isDeleted: false },{ new: true, runValidators: true });
-          
-            // if (!RoomStatus) {
-            //     return res.status(404).json({
-            //         requestId: uuidv4(),
-            //         data: null,
-            //         message: "RoomStatus not found.",
-            //         success: false
-            //     });
-            // }
-            await RoomStatusModel.updateMany(
-              { id_Trx: id },
-              { isDeleted: true }
-            );
 
             res.status(201).json(
                 {
                     requestId: uuidv4(), 
                     data: [],
-                    message: `Successfully Deleted Booking : ${Booking.name}  `,
+                    message: `Successfully Deleted Booking : ${Booking?.name}  `,
                     success: true
                 }
             );
@@ -897,6 +921,125 @@ export class SetMinderController {
 
           }
 
+        }
+
+        static async ChancelReschedule(req: Request, res: Response){
+              
+              
+          const { IdBooking } = req.params;
+
+          try {
+
+                if(!IdBooking) {
+                  res.status(400).json(
+                      {
+                          requestId: uuidv4(), 
+                          data: null,
+                          message:  ' Id Booking reschedule not found',
+                          success: false
+                      }
+                  );
+                }
+
+                const orderId = IdBooking
+              
+                const BookingReschedule = await BookingModel.findOne(
+                  
+                  {
+                    orderId, 
+                    isDeleted : false,
+                    "reschedule.status": true
+                  
+                  });
+
+
+                let key = BookingReschedule?.reschedule.key_reschedule ;
+                
+                if(!BookingReschedule){
+
+                  return res.status(400).json(
+                      {
+                          requestId: uuidv4(), 
+                          data: null,
+                          message:  ' Data booking not found',
+                          success: false
+                      }
+                  );
+
+                }
+
+                // Hapus data reschedule
+                await DeletedDataALL(IdBooking);
+
+                // Hapus property reschedule dari main booking
+                await BookingModel.updateOne(
+                  { _id: key },
+                  { $unset: { reschedule: "" } }
+                );
+
+
+                
+            res.status(200).json({
+              requestId: uuidv4(),
+              data: BookingReschedule, // Kembalikan data terbaru
+              message: `Data reschedule! ${IdBooking} has been deleted`,
+              success: true,
+            });
+
+          
+
+            
+          } catch (error) {
+            
+            res.status(400).json(
+                {
+                    requestId: uuidv4(), 
+                    data: null,
+                    message:  (error as Error).message,
+                    success: false
+                }
+            );
+
+          }
+
+
+        }
+
+        static async GetListReschedule(req: Request, res: Response) {
+
+          try {
+
+            // $expr digunakan untuk menulis ekspresi yang membandingkan antar field dalam 1 dokumen.
+            // $eq: ["$reschedule.key_reschedule", "$_id"] artinya: hanya ambil dokumen kalau nilai reschedule.key_reschedule == _id (main booking-nya)
+
+            const ListReschedule = await BookingModel.find({
+              // $expr: { $eq: ["$reschedule.key_reschedule", "$_id"] },
+              isDeleted: false,
+              "reschedule.status": true
+            }); 
+
+            if (ListReschedule.length === 0) {
+              return res.status(404).json({
+                requestId: uuidv4(),
+                data: null,
+                message: "Tidak ada data list reschedule ditemukan",
+                success: false
+              });
+            }
+
+            
+
+            // Kirim hasil response
+            res.status(200).json({
+              requestId: uuidv4(),
+              data: ListReschedule,
+              total_data: ListReschedule.length,
+              success: true
+            });
+        
+          } catch (error) {
+            res.status(500).json({ message: "Failed to fetch transactions", error });
+          }
         }
 
         static async UpdateTransactionDate(req: Request, res: Response){
@@ -1004,7 +1147,6 @@ export class SetMinderController {
           }
 
         }
-       
 
         static async UpdateStockRooms(req: Request, res: Response) {
           try {

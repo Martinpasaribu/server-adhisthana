@@ -92,6 +92,10 @@ const BookingSchema = new mongoose_1.Schema({
             type: Boolean,
             default: false,
         },
+        type: {
+            type: String,
+            default: null
+        },
         schedule_new: {
             checkIn: {
                 type: Date,

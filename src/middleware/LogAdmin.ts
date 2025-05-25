@@ -3,18 +3,22 @@ import { ActivityLogModel, IChangedPrices } from "../models/LogActivity/models_L
 import AdminModel from "../models/Admin/models_admin";
 import UserModel from "../models/User/models_user";
 import { BookingModel } from "../models/Booking/models_booking";
+import mongoose from "mongoose";
 
 
 
 const CekUser = async (id: any) => {
 
-  let user = await UserModel.findOne({ _id: id, isDeleted: false }).select("title name email phone");  
+  const _id = new mongoose.Types.ObjectId(id);
+
+  let user = await UserModel.findOne({ _id, isDeleted: false }).select("title name email phone");  
   console.log("Update Data user di LOG :", user );
 
   return user;
 };
 
 const CekBooking= async (id: any) => {
+
 
   let booking = await BookingModel.findOne({ orderId: id, isDeleted: false }).select("name email phone orderId checkIn checkOut verified reservation night amountTotal otaTotal room createdAt");
   console.log("Update Data user di LOG :", booking );

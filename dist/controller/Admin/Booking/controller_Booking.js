@@ -18,6 +18,7 @@ const uuid_1 = require("uuid");
 const models_transaksi_1 = require("../../../models/Transaction/models_transaksi");
 const models_booking_1 = require("../../../models/Booking/models_booking");
 const controller_invoice_1 = require("../Invoice/controller_invoice");
+// import { InvoiceController } from '../Invoice/controller_invoice';
 class AdminBookingController {
     static GetAllBooking(req, res) {
         return __awaiter(this, void 0, void 0, function* () {

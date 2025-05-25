@@ -26,6 +26,8 @@ const GenerateDateRange_1 = require("./components/GenerateDateRange");
 const models_booking_1 = require("../../../models/Booking/models_booking");
 const UpdateRefundBooking_1 = require("./components/UpdateRefundBooking");
 const models_RoomStatus_1 = require("../../../models/RoomStatus/models_RoomStatus");
+const RefReschedule_1 = require("./components/RefReschedule");
+const { ObjectId } = mongoose_1.default.Types;
 class SetMinderController {
     static SetUpPrice(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -51,7 +53,7 @@ class SetMinderController {
                 res.status(200).json({
                     requestId: (0, uuid_1.v4)(),
                     data: null,
-                    message: `Prices saved`,
+                    message: `Saved Price`,
                     success: true,
                 });
             }
@@ -655,50 +657,52 @@ class SetMinderController {
                         success: false
                     });
                 }
-                ShortAvailable = yield models_ShortAvailable_1.ShortAvailableModel.findOneAndUpdate({ transactionId: id }, { isDeleted: false }, { new: true, runValidators: true });
-                // if (!ShortAvailable) {
-                //     return res.status(404).json({
-                //         requestId: uuidv4(),
-                //         data: null,
-                //         message: "Data ShortAvailable not found.",
-                //         success: false
-                //     });
-                // }
-                yield models_ShortAvailable_1.ShortAvailableModel.updateMany({ transactionId: id }, { isDeleted: true });
-                Transaction = yield models_transaksi_1.TransactionModel.findOneAndUpdate({ bookingId: id }, { isDeleted: false }, { new: true, runValidators: true });
-                if (!Transaction) {
-                    return res.status(404).json({
-                        requestId: (0, uuid_1.v4)(),
-                        data: null,
-                        message: "Transaction not found.",
-                        success: false
-                    });
+                const idParam = id;
+                // Pengecekan Apakah ini bookingan main atau reschedule 
+                const InfoRefReschedule = yield (0, RefReschedule_1.RefReschedule)(idParam);
+                // Hapus Data Main Booking setalah Booking reschedule telah di hapus
+                if (InfoRefReschedule.BookingMain) {
+                    Booking = yield models_booking_1.BookingModel.findOneAndUpdate({ orderId: id }, { isDeleted: false }, { new: true, runValidators: true });
+                    if (!Booking) {
+                        return res.status(404).json({
+                            requestId: (0, uuid_1.v4)(),
+                            data: null,
+                            message: "Booking not found.",
+                            success: false
+                        });
+                    }
+                    yield models_booking_1.BookingModel.updateMany({ orderId: id }, { isDeleted: true });
+                    ShortAvailable = yield models_ShortAvailable_1.ShortAvailableModel.findOneAndUpdate({ transactionId: id }, { isDeleted: false }, { new: true, runValidators: true });
+                    if (!ShortAvailable) {
+                        return res.status(404).json({
+                            requestId: (0, uuid_1.v4)(),
+                            data: null,
+                            message: "Data ShortAvailable not found.",
+                            success: false
+                        });
+                    }
+                    yield models_ShortAvailable_1.ShortAvailableModel.updateMany({ transactionId: id }, { isDeleted: true });
+                    Transaction = yield models_transaksi_1.TransactionModel.findOneAndUpdate({ bookingId: id }, { isDeleted: false }, { new: true, runValidators: true });
+                    if (!Transaction) {
+                        return res.status(404).json({
+                            requestId: (0, uuid_1.v4)(),
+                            data: null,
+                            message: "Transaction not found.",
+                            success: false
+                        });
+                    }
+                    yield models_transaksi_1.TransactionModel.updateMany({ bookingId: id }, { isDeleted: true });
+                    RoomStatus = yield models_RoomStatus_1.RoomStatusModel.findOneAndUpdate({ id_Trx: id }, { isDeleted: false }, { new: true, runValidators: true });
+                    yield models_RoomStatus_1.RoomStatusModel.updateMany({ id_Trx: id }, { isDeleted: true });
                 }
-                yield models_transaksi_1.TransactionModel.updateMany({ bookingId: id }, { isDeleted: true });
-                Booking = yield models_booking_1.BookingModel.findOneAndUpdate({ orderId: id }, { isDeleted: false }, { new: true, runValidators: true });
-                if (!Booking) {
-                    return res.status(404).json({
-                        requestId: (0, uuid_1.v4)(),
-                        data: null,
-                        message: "Booking not found.",
-                        success: false
-                    });
+                // Hapus Property Reschedule Pada main booking
+                if (InfoRefReschedule.BookingReschedule) {
+                    yield models_booking_1.BookingModel.updateOne({ _id: idParam }, { $unset: { reschedule: "" } });
                 }
-                yield models_booking_1.BookingModel.updateMany({ orderId: id }, { isDeleted: true });
-                RoomStatus = yield models_RoomStatus_1.RoomStatusModel.findOneAndUpdate({ id_Trx: id }, { isDeleted: false }, { new: true, runValidators: true });
-                // if (!RoomStatus) {
-                //     return res.status(404).json({
-                //         requestId: uuidv4(),
-                //         data: null,
-                //         message: "RoomStatus not found.",
-                //         success: false
-                //     });
-                // }
-                yield models_RoomStatus_1.RoomStatusModel.updateMany({ id_Trx: id }, { isDeleted: true });
                 res.status(201).json({
                     requestId: (0, uuid_1.v4)(),
                     data: [],
-                    message: `Successfully Deleted Booking : ${Booking.name}  `,
+                    message: `Successfully Deleted Booking : ${Booking === null || Booking === void 0 ? void 0 : Booking.name}  `,
                     success: true
                 });
             }
@@ -709,6 +713,85 @@ class SetMinderController {
                     message: error.message,
                     success: false
                 });
+            }
+        });
+    }
+    static ChancelReschedule(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { IdBooking } = req.params;
+            try {
+                if (!IdBooking) {
+                    res.status(400).json({
+                        requestId: (0, uuid_1.v4)(),
+                        data: null,
+                        message: ' Id Booking reschedule not found',
+                        success: false
+                    });
+                }
+                const orderId = IdBooking;
+                const BookingReschedule = yield models_booking_1.BookingModel.findOne({
+                    orderId,
+                    isDeleted: false,
+                    "reschedule.status": true
+                });
+                let key = BookingReschedule === null || BookingReschedule === void 0 ? void 0 : BookingReschedule.reschedule.key_reschedule;
+                if (!BookingReschedule) {
+                    return res.status(400).json({
+                        requestId: (0, uuid_1.v4)(),
+                        data: null,
+                        message: ' Data booking not found',
+                        success: false
+                    });
+                }
+                // Hapus data reschedule
+                yield (0, RefReschedule_1.DeletedDataALL)(IdBooking);
+                // Hapus property reschedule dari main booking
+                yield models_booking_1.BookingModel.updateOne({ _id: key }, { $unset: { reschedule: "" } });
+                res.status(200).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: BookingReschedule, // Kembalikan data terbaru
+                    message: `Data reschedule! ${IdBooking} has been deleted`,
+                    success: true,
+                });
+            }
+            catch (error) {
+                res.status(400).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: null,
+                    message: error.message,
+                    success: false
+                });
+            }
+        });
+    }
+    static GetListReschedule(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                // $expr digunakan untuk menulis ekspresi yang membandingkan antar field dalam 1 dokumen.
+                // $eq: ["$reschedule.key_reschedule", "$_id"] artinya: hanya ambil dokumen kalau nilai reschedule.key_reschedule == _id (main booking-nya)
+                const ListReschedule = yield models_booking_1.BookingModel.find({
+                    // $expr: { $eq: ["$reschedule.key_reschedule", "$_id"] },
+                    isDeleted: false,
+                    "reschedule.status": true
+                });
+                if (ListReschedule.length === 0) {
+                    return res.status(404).json({
+                        requestId: (0, uuid_1.v4)(),
+                        data: null,
+                        message: "Tidak ada data list reschedule ditemukan",
+                        success: false
+                    });
+                }
+                // Kirim hasil response
+                res.status(200).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: ListReschedule,
+                    total_data: ListReschedule.length,
+                    success: true
+                });
+            }
+            catch (error) {
+                res.status(500).json({ message: "Failed to fetch transactions", error });
             }
         });
     }
