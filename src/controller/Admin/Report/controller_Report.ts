@@ -559,6 +559,9 @@ export class ReportController {
         console.log("startOfDay:", startOfDay); // 2025-05-01T00:00:00.000+07:00
         console.log("endOfDay:", endOfDay);     // 2025-05-05T23:59:59.999+07:00
 
+        const dataDate = {
+          startOfDay,endOfDay
+        }
 
         let todayReport: string | any[];
 
@@ -629,12 +632,16 @@ export class ReportController {
         }
 
         return res.status(200).json({
+          
           requestId: uuidv4(),
           data: todayReport,
           dataLength: todayReport.length,
+          date: dataDate,
           message: `Data Report: ${startOfDay} - ${endOfDay}`,
           success: true,
+
         });
+
       } catch (error) {
         console.error("Error fetching report:", error);
         return res.status(500).json({
@@ -675,6 +682,9 @@ export class ReportController {
 
         return res.status(200).json({
           requestId: uuidv4(),
+          dataDate: {
+            startOfDay, endOfDay
+          },
           data: todayReport,
           dataLength: todayReport.length,
           message: `Data Report: ${startOfDay} - ${endOfDay}`,

@@ -154,10 +154,12 @@ const RoomSchema: Schema = new Schema(
             type: Number,
             default: Date.now
         },
+
         creatorId: {
             type: String,
             required: false
         },
+        
         isDeleted: {
             type: Boolean,
             default: false  

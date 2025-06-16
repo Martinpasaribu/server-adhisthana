@@ -7,6 +7,8 @@ dotenv.config();
 
 // URI MongoDB dari environment variable
 const mongoURI: string = process.env.MongoDB_cloud || "";
+const mongoUser: string = process.env.MongoDB_user || "";
+const mongoPass: string = process.env.MongoDB_pass || "";
 
 // console.log(" Env : ", process.env.MongoDB_cloud);
 
@@ -18,8 +20,8 @@ if (!mongoURI) {
 export const connectToMongoDB = async (): Promise<void> => {
   try {
     await mongoose.connect(mongoURI, {
-        user:'martin12082000',
-        pass:'Martin1208__+',
+        user: mongoUser,
+        pass: mongoPass,
     });
     console.log("MongoDB berhasil terhubung.");
   } catch (error) {

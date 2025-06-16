@@ -452,6 +452,9 @@ class ReportController {
                 console.log("end:", end);
                 console.log("startOfDay:", startOfDay); // 2025-05-01T00:00:00.000+07:00
                 console.log("endOfDay:", endOfDay); // 2025-05-05T23:59:59.999+07:00
+                const dataDate = {
+                    startOfDay, endOfDay
+                };
                 let todayReport;
                 if (code === "BO") {
                     todayReport = yield models_booking_1.BookingModel.find({
@@ -513,6 +516,7 @@ class ReportController {
                     requestId: (0, uuid_1.v4)(),
                     data: todayReport,
                     dataLength: todayReport.length,
+                    date: dataDate,
                     message: `Data Report: ${startOfDay} - ${endOfDay}`,
                     success: true,
                 });
@@ -550,6 +554,9 @@ class ReportController {
                 }).populate("roomStatusKey");
                 return res.status(200).json({
                     requestId: (0, uuid_1.v4)(),
+                    dataDate: {
+                        startOfDay, endOfDay
+                    },
                     data: todayReport,
                     dataLength: todayReport.length,
                     message: `Data Report: ${startOfDay} - ${endOfDay}`,

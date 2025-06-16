@@ -19,6 +19,8 @@ const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 // URI MongoDB dari environment variable
 const mongoURI = process.env.MongoDB_cloud || "";
+const mongoUser = process.env.MongoDB_user || "";
+const mongoPass = process.env.MongoDB_pass || "";
 // console.log(" Env : ", process.env.MongoDB_cloud);
 if (!mongoURI) {
     throw new Error("MongoDB URI tidak ditemukan di environment variables.");
@@ -27,8 +29,8 @@ if (!mongoURI) {
 const connectToMongoDB = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield mongoose_1.default.connect(mongoURI, {
-            user: 'martin12082000',
-            pass: 'Martin1208__+',
+            user: mongoUser,
+            pass: mongoPass,
         });
         console.log("MongoDB berhasil terhubung.");
     }
