@@ -17,6 +17,7 @@ import { BookingModel } from '../../../models/Booking/models_booking';
 import { UpdateRefund } from './components/UpdateRefundBooking';
 import { RoomStatusModel } from '../../../models/RoomStatus/models_RoomStatus';
 import { DeletedDataALL, RefReschedule } from './components/RefReschedule';
+import { PendingRoomModel } from '../../../models/PendingRoom/models_PendingRoom';
 const { ObjectId } = mongoose.Types;
 
 
@@ -692,29 +693,17 @@ export class SetMinderController {
         static async DeletedTransaction(req: Request, res: Response){
 
           try {
+
             let ShortAvailable ;
             let Transaction ;
             let Booking;
             let RoomStatus;
+            let Respone = [];
 
             const { id } = req.query;
             
-            ShortAvailable= await ShortAvailableModel.findOneAndUpdate({transactionId :  id},{ isDeleted: false },{ new: true, runValidators: true });
-          
-            if (!ShortAvailable) {
-                return res.status(404).json({
-                    requestId: uuidv4(),
-                    data: null,
-                    message: "Data ShortAvailable not found.",
-                    success: false
-                });
-            }
 
-             await ShortAvailableModel.updateMany(
-                { transactionId: id },
-                { isDeleted: true }
-              );
-
+            // Transaction
             Transaction = await TransactionModel.findOneAndUpdate({bookingId :  id},{ isDeleted: false },{ new: true, runValidators: true });
           
             if (!Transaction) {
@@ -725,11 +714,13 @@ export class SetMinderController {
                     success: false
                 });
             }
+            
             await TransactionModel.updateMany(
               { bookingId: id },
               { isDeleted: true }
             );
 
+            // Booking
             Booking = await BookingModel.findOneAndUpdate({orderId :  id},{ isDeleted: false },{ new: true, runValidators: true });
           
             if (!Booking) {
@@ -745,6 +736,7 @@ export class SetMinderController {
               { isDeleted: true }
             );
 
+            // Room Status
             RoomStatus = await RoomStatusModel.findOneAndUpdate({id_Trx :  id},{ isDeleted: false },{ new: true, runValidators: true });
           
             // if (!RoomStatus) {
@@ -761,12 +753,40 @@ export class SetMinderController {
               { isDeleted: true }
             );
 
+            // Room Pending
+            RoomStatus = await PendingRoomModel.findOneAndUpdate({bookingId :  id},{ isDeleted: false },{ new: true, runValidators: true });
+
+            await PendingRoomModel.updateMany(
+              { bookingId: id },
+              { isDeleted: true }
+            );
+
+            // Short Available
+            ShortAvailable= await ShortAvailableModel.findOneAndUpdate({transactionId :  id},{ isDeleted: false },{ new: true, runValidators: true });
+          
+            if (!ShortAvailable) {
+                    Respone.push(
+
+                      {
+                          requestId: uuidv4(),
+                          data: null,
+                          message: "Data ShortAvailable not found -deleted booking- .",
+                          success: false
+                      }
+                    )
+            }
+
+            await ShortAvailableModel.updateMany(
+              { transactionId: id },
+              { isDeleted: true }
+            );
 
             res.status(201).json(
                 {
                     requestId: uuidv4(), 
                     data: [],
                     message: `Successfully Deleted Transaction : ${Transaction.name}  `,
+                    message_error: `Respone Else : ${JSON.stringify(Respone, null, 2)}`,
                     success: true
                 }
             );
@@ -795,7 +815,7 @@ export class SetMinderController {
             let Transaction ;
             let Booking ;
             let RoomStatus ;
-
+            let Respone = [] ;
             const { id } = req.query;
 
             if(!id){
@@ -822,14 +842,14 @@ export class SetMinderController {
             if( InfoRefReschedule.BookingMain)
 
               {
-                  
+                  // Booking  
                   Booking = await BookingModel.findOneAndUpdate({orderId :  id},{ isDeleted: false },{ new: true, runValidators: true });
 
                   if (!Booking) {
                       return res.status(404).json({
                           requestId: uuidv4(),
                           data: null,
-                          message: "Booking not found.",
+                          message: "Booking not found -deleted booking-",
                           success: false
                       });
                   }
@@ -841,24 +861,7 @@ export class SetMinderController {
 
                   );
 
-
-
-                  ShortAvailable = await ShortAvailableModel.findOneAndUpdate({transactionId :  id},{ isDeleted: false },{ new: true, runValidators: true });
-                
-                  if (!ShortAvailable) {
-                      return res.status(404).json({
-                          requestId: uuidv4(),
-                          data: null,
-                          message: "Data ShortAvailable not found.",
-                          success: false
-                      });
-                  }
-
-                  await ShortAvailableModel.updateMany(
-                      { transactionId: id },
-                      { isDeleted: true }
-                    );
-
+                  // Transaction  
                   Transaction = await TransactionModel.findOneAndUpdate({bookingId :  id},{ isDeleted: false },{ new: true, runValidators: true });
                 
                   if (!Transaction) {
@@ -876,6 +879,7 @@ export class SetMinderController {
                   );
 
 
+                  // Room Status
                   RoomStatus = await RoomStatusModel.findOneAndUpdate({id_Trx :  id},{ isDeleted: false },{ new: true, runValidators: true });
 
 
@@ -884,12 +888,41 @@ export class SetMinderController {
                     { isDeleted: true }
                   );
 
+                  // Room Pending
+                  RoomStatus = await PendingRoomModel.findOneAndUpdate({bookingId :  id},{ isDeleted: false },{ new: true, runValidators: true });
+
+                  await PendingRoomModel.updateMany(
+                    { bookingId: id },
+                    { isDeleted: true }
+                  );
+
+                  // Short Available
+                  ShortAvailable = await ShortAvailableModel.findOneAndUpdate({transactionId :  id},{ isDeleted: false },{ new: true, runValidators: true });
+                
+                  if (!ShortAvailable) {
+
+                    Respone.push(
+
+                      {
+                          requestId: uuidv4(),
+                          data: null,
+                          message: "Data ShortAvailable not found -deleted booking- .",
+                          success: false
+                      }
+                    )
+                  }
+
+                  await ShortAvailableModel.updateMany(
+                    { transactionId: id },
+                    { isDeleted: true }
+                  );
+
 
               }
 
             // Hapus Property Reschedule Pada main booking
             
-            if( InfoRefReschedule.BookingReschedule ){
+            if ( InfoRefReschedule.BookingReschedule ){
 
                   await BookingModel.updateOne(
                     { _id: idParam },
@@ -903,6 +936,7 @@ export class SetMinderController {
                     requestId: uuidv4(), 
                     data: [],
                     message: `Successfully Deleted Booking : ${Booking?.name}  `,
+                    message_error: `Respone Else : ${JSON.stringify(Respone, null, 2)}`,
                     success: true
                 }
             );

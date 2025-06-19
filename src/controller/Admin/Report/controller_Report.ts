@@ -323,7 +323,7 @@ export class ReportController {
               success: false
           });
       }
-  };
+    };
   
     static async GetReportByPrevNext (req: Request, res: Response){
         
@@ -573,7 +573,22 @@ export class ReportController {
               $lte: endOfDay,
             },
             isDeleted: false,
+            
           }).populate("roomStatusKey");
+
+        } else if (code === "BC") {
+
+          todayReport = await BookingModel.find({
+            checkOut: {
+              $gte: startOfDay, // CO >= 1 Juni
+              $lte: endOfDay,   // CO <= 5 Juni
+            },
+            checkIn: {
+              $lte: endOfDay,   // CI <= 5 Juni
+            },
+            isDeleted: false,
+          }).populate("roomStatusKey");
+
 
         } else if (code2 === "SP" && code === "CI") {
 
@@ -653,7 +668,7 @@ export class ReportController {
       }
     }
 
-
+    // Saved Price 
     static async UpdatePriceTotalByDate(req: Request, res: Response) {
 
       try {

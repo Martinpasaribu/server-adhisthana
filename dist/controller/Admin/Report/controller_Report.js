@@ -465,6 +465,18 @@ class ReportController {
                         isDeleted: false,
                     }).populate("roomStatusKey");
                 }
+                else if (code === "BC") {
+                    todayReport = yield models_booking_1.BookingModel.find({
+                        checkOut: {
+                            $gte: startOfDay, // CO >= 1 Juni
+                            $lte: endOfDay, // CO <= 5 Juni
+                        },
+                        checkIn: {
+                            $lte: endOfDay, // CI <= 5 Juni
+                        },
+                        isDeleted: false,
+                    }).populate("roomStatusKey");
+                }
                 else if (code2 === "SP" && code === "CI") {
                     yield models_option_1.default.updateOne({ isDeleted: false }, {
                         $set: {
@@ -532,6 +544,7 @@ class ReportController {
             }
         });
     }
+    // Saved Price 
     static UpdatePriceTotalByDate(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
