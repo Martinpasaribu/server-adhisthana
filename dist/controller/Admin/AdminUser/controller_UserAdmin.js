@@ -33,7 +33,7 @@ class AdminUserController {
     }
     static RegisterAdmin(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { title, username, password, status, role } = req.body;
+            const { title, username, password, status, role, userID } = req.body;
             try {
                 if (!title || !username || !password || !status || !role) {
                     return res.status(400).json({
@@ -48,6 +48,7 @@ class AdminUserController {
                 const user = yield models_admin_1.default.create({
                     title: title,
                     username: username,
+                    userID: userID,
                     role: role,
                     status: status,
                     active: true,

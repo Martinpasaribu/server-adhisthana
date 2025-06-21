@@ -10,7 +10,7 @@ const LogAdmin_1 = require("../../middleware/LogAdmin");
 const ReservationRouter = express_1.default.Router();
 // semantic meaning
 ReservationRouter.post("/add-reservation", VerifyAdminId_1.verifyAdmin, (0, LogAdmin_1.logActivity)("Create Reservation"), controller_reservation_1.ReservationController.AddTransaction);
-ReservationRouter.post("/add-reservation/reschedule", VerifyAdminId_1.verifyAdmin, (0, LogAdmin_1.logActivity)("Create Reservation Reschedule"), controller_reservation_1.ReservationController.AddTransactionToReschedule);
+ReservationRouter.post("/create-schedule", VerifyAdminId_1.verifyAdmin, (0, LogAdmin_1.logActivity)("Create Reservation Reschedule"), controller_reservation_1.ReservationController.AddTransactionToReschedule);
 ReservationRouter.get("/get-reservation", VerifyAdminId_1.verifyAdmin, controller_reservation_1.ReservationController.GetAllTransactionReservation);
 ReservationRouter.put("/pay-transaction/:TransactionId/:code", VerifyAdminId_1.verifyAdmin, (0, LogAdmin_1.logActivity)("Transaction PAID"), controller_reservation_1.ReservationController.SetPayment);
 exports.default = ReservationRouter;

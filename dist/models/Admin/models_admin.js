@@ -45,6 +45,11 @@ const AdminSchema = new mongoose_1.Schema({
         // required: [true, "name cannot be empty"],
         trim: true
     },
+    userID: {
+        type: String,
+        // required: [true, "name cannot be empty"],
+        trim: true
+    },
     role: {
         type: String,
         enum: ["admin", "coSuperAdmin", "superAdmin"], // Sesuaikan dengan role yang diperlukan

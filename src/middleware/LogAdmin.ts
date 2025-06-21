@@ -36,8 +36,8 @@ export const logActivity = (action: string) => {
 
     try {
 
-      let user = await CekUser(req.params.id || req.params.MessageId || req.params.UserId);
-      let booking = await CekBooking(req.params.TransactionId || req.query.id || req.body.id_TRX);
+      let user = await CekUser(req.params.id || req.params.MessageId || req.params.UserId  );
+      let booking = await CekBooking(req.params.TransactionId || req.query.id || req.body.id_TRX || req.params.IdBooking);
       let adminId = req.body.adminId || req.session.userId; 
       const ipAddress = req.ip || req.socket.remoteAddress;
       const routePath = req.originalUrl; // Dapatkan route yang diakses
@@ -172,13 +172,39 @@ export const logActivity = (action: string) => {
           data = `${booking}`
           break;
 
+        case routePath.startsWith("/api/v1/site/minder/del-reschedule"):
+          type = "Management"
+          target = booking ? (`ID : ${booking.orderId} ,  Name : ${booking.name}`) : "-";
+          statement1 = "Reschedule in cancel"; 
+          data = `Data reschedule : ${booking}`
+        break;
+
+        case routePath.startsWith("/api/v1/reservation/create-schedule"):
+                                  
+          type = "Reservation";
+          target = req.body.name || [];
+          const oldSchedule = req.body?.reschedule?.schedule_old;
+          statement1 = `Schedule_old : ${ oldSchedule ? JSON.stringify(oldSchedule, null, 2) : 'No old schedule'}`;
+          statement2 = "Add Reschedule"; 
+          data = `Schedule_new : ${JSON.stringify(req.body, null, 2)} `;
+          
+        break;
+
+
+        case routePath.startsWith("/api/v1/admin/report/add-report"):
+          
+          type = "Report"
+          target = `Date : ${req.params.date} `;
+          data = `Room Status : ${JSON.stringify(req.body, null, 2)} `|| '-';
+          
+        break;
+          
         case routePath.startsWith("/api/v1/site/minder/edit-date-transaction"):
           type = "Transaction"
           target = booking ? (`ID : ${booking.orderId} ,  Name : ${booking.name}`) : "-";
           statement1 = `New Date : ${JSON.stringify(req.body.Edit_Date, null, 2)}`;
           statement2 = `Old Date :  In [ ${booking?.checkIn} ] -  Out [ ${booking?.checkOut} ]`
           break;
-
 
 
         default:

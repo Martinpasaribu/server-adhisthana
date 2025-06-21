@@ -31,9 +31,10 @@ const CekBooking = (id) => __awaiter(void 0, void 0, void 0, function* () {
 });
 const logActivity = (action) => {
     return (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        var _a, _b;
         try {
             let user = yield CekUser(req.params.id || req.params.MessageId || req.params.UserId);
-            let booking = yield CekBooking(req.params.TransactionId || req.query.id || req.body.id_TRX);
+            let booking = yield CekBooking(req.params.TransactionId || req.query.id || req.body.id_TRX || req.params.IdBooking);
             let adminId = req.body.adminId || req.session.userId;
             const ipAddress = req.ip || req.socket.remoteAddress;
             const routePath = req.originalUrl; // Dapatkan route yang diakses
@@ -138,6 +139,25 @@ const logActivity = (action) => {
                     type = "Management";
                     target = booking ? (`ID : ${booking.orderId} ,  Name : ${booking.name}`) : "-";
                     data = `${booking}`;
+                    break;
+                case routePath.startsWith("/api/v1/site/minder/del-reschedule"):
+                    type = "Management";
+                    target = booking ? (`ID : ${booking.orderId} ,  Name : ${booking.name}`) : "-";
+                    statement1 = "Reschedule in cancel";
+                    data = `Data reschedule : ${booking}`;
+                    break;
+                case routePath.startsWith("/api/v1/reservation/create-schedule"):
+                    type = "Reservation";
+                    target = req.body.name || [];
+                    const oldSchedule = (_b = (_a = req.body) === null || _a === void 0 ? void 0 : _a.reschedule) === null || _b === void 0 ? void 0 : _b.schedule_old;
+                    statement1 = `Schedule_old : ${oldSchedule ? JSON.stringify(oldSchedule, null, 2) : 'No old schedule'}`;
+                    statement2 = "Add Reschedule";
+                    data = `Schedule_new : ${JSON.stringify(req.body, null, 2)} `;
+                    break;
+                case routePath.startsWith("/api/v1/admin/report/add-report"):
+                    type = "Report";
+                    target = `Date : ${req.params.date} `;
+                    data = `Room Status : ${JSON.stringify(req.body, null, 2)} ` || '-';
                     break;
                 case routePath.startsWith("/api/v1/site/minder/edit-date-transaction"):
                     type = "Transaction";

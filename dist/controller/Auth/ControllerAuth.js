@@ -379,7 +379,7 @@ class AuthController {
                     return res.status(404).json({ message: 'User not found' });
                 const CekActive = yield models_admin_1.default.findOne({ username: admin.username, active: true, isDeleted: false });
                 if (!CekActive)
-                    return res.status(404).json({ message: 'User is not active' });
+                    return res.status(403).json({ message: 'User is not active' });
                 // 3. Periksa status akun admin
                 const statusMessages = {
                     block: 'User InActive',

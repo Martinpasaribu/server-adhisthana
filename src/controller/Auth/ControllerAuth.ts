@@ -475,7 +475,7 @@ export class AuthController {
 
           const CekActive = await AdminModel.findOne({ username: admin.username, active:true, isDeleted : false  });
 
-          if (!CekActive) return res.status(404).json({ message: 'User is not active' });
+          if (!CekActive) return res.status(403).json({ message: 'User is not active' });
     
           // 3. Periksa status akun admin
           const statusMessages: Record<string, string> = {

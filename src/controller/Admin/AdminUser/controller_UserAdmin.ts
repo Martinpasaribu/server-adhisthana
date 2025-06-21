@@ -25,7 +25,7 @@ export class AdminUserController {
 
     static async  RegisterAdmin  (req : any , res:any)  {
 
-        const { title , username, password, status, role } = req.body;
+        const { title , username, password, status, role, userID } = req.body;
 
         try {
 
@@ -45,6 +45,7 @@ export class AdminUserController {
             const user = await AdminModel.create({
                 title: title,
                 username: username,
+                userID: userID, 
                 role : role,
                 status: status,
                 active: true,
