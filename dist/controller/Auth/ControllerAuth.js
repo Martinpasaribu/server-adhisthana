@@ -435,8 +435,9 @@ class AuthController {
                     requestId: (0, uuid_1.v4)(),
                     data: {
                         accessToken,
-                        expiresIn,
+                        expiresIn
                     },
+                    user: usernameAdmin,
                     message: 'Successfully Logged In',
                     success: true
                 });

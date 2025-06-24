@@ -557,8 +557,9 @@ export class AuthController {
             requestId: uuidv4(),
             data: {
               accessToken,
-              expiresIn,
+              expiresIn
             },
+            user: usernameAdmin,
             message: 'Successfully Logged In',
             success: true
           });

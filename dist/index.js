@@ -19,6 +19,8 @@ const helmet_1 = __importDefault(require("helmet"));
 const express_session_1 = __importDefault(require("express-session"));
 const connect_mongodb_session_1 = __importDefault(require("connect-mongodb-session"));
 require("./controller/PendingRoom/Cron_job");
+const http_1 = __importDefault(require("http"));
+const socket_1 = require("./socket/socket");
 const router_instagram_1 = __importDefault(require("./router/router_instagram"));
 const router_contact_1 = __importDefault(require("./router/router_contact"));
 const router_booking_1 = __importDefault(require("./router/router_booking"));
@@ -138,15 +140,21 @@ const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
         // await connectToDatabase();
         yield (0, mongoDbCloud_1.connectToMongoDB)();
         console.log('Server Read Database');
-        app.listen(process.env.PORT, () => {
-            console.log(`Server Active on Port ${process.env.PORT}`);
+        const server = http_1.default.createServer(app);
+        // ✅ Inisialisasi Socket.IO di sini
+        (0, socket_1.initializeSocket)(server);
+        // app.listen(process.env.PORT, () => {
+        //     console.log(`Server Active on Port ${process.env.PORT}`);
+        // });
+        server.listen(process.env.PORT, () => {
+            console.log(`Server running on port ${process.env.PORT}`);
         });
+        server.keepAliveTimeout = 60000;
+        server.headersTimeout = 65000;
     }
     catch (error) {
         console.error("Failed to connect to MongoDB:", error);
         process.exit(1);
     }
 });
-startServer.keepAliveTimeout = 60000; // 60 detik
-startServer.headersTimeout = 65000;
 startServer();

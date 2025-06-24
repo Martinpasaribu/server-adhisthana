@@ -13,6 +13,7 @@ interface IAdmin extends Document {
     refresh_token: string;
     createAt : number;
     creatorId: string;
+    lastSeen: Date;
 }
 
 
@@ -63,6 +64,10 @@ const AdminSchema: Schema = new Schema(
         refresh_token: {
             type: String,
             required: false
+        },
+        lastSeen: { 
+            type: Date, 
+            default: null
         },
 
         isDeleted: {

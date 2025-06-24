@@ -6,6 +6,8 @@ import session from 'express-session';
 import MongoDBStore from 'connect-mongodb-session';
 import './controller/PendingRoom/Cron_job'
 import { connectToDatabase } from "./config/mongodbLocal";
+import http from 'http';
+import { initializeSocket } from './socket/socket';
 
 import InstagramRouter from "./router/router_instagram";
 import ContactRouter from "./router/router_contact";
@@ -36,7 +38,8 @@ const app: express.Application = express();
 dotenv.config()
 
 app.use(cors({
-    origin:   [
+
+    origin: [
       
                 "http://localhost:3000","http://localhost:3001",
                 "https://adhistahan.vercel.app","https://adhisthanavillas.com",
@@ -201,18 +204,28 @@ const startServer = async () => {
         // await connectToDatabase();
 
         await connectToMongoDB()
+
         console.log('Server Read Database');
-        
-        app.listen(process.env.PORT, () => {
-            console.log(`Server Active on Port ${process.env.PORT}`);
+        const server = http.createServer(app);
+
+        // ✅ Inisialisasi Socket.IO di sini
+        initializeSocket(server);
+
+        // app.listen(process.env.PORT, () => {
+        //     console.log(`Server Active on Port ${process.env.PORT}`);
+        // });
+        server.listen(process.env.PORT, () => {
+          console.log(`Server running on port ${process.env.PORT}`);
         });
+
+        server.keepAliveTimeout = 60000;
+        server.headersTimeout = 65000;
+
     } catch (error) {
         console.error("Failed to connect to MongoDB:", error);
         process.exit(1); 
     }
 };
 
-startServer.keepAliveTimeout = 60000; // 60 detik
-startServer.headersTimeout = 65000; 
 
 startServer();

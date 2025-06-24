@@ -80,6 +80,10 @@ const AdminSchema = new mongoose_1.Schema({
         type: String,
         required: false
     },
+    lastSeen: {
+        type: Date,
+        default: null
+    },
     isDeleted: {
         type: Boolean,
         default: false
