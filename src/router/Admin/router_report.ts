@@ -15,6 +15,7 @@ ReportRouter.post("/add-report/:date",  logActivity("Create Report"), ReportCont
 ReportRouter.get("/room_status/today", ReportController.GetRoomStatusToday); 
 ReportRouter.get("/get/booking", ReportController.GetReportBooking); 
 ReportRouter.get("/get/total_price/saved", ReportController.UpdatePriceTotalByDate); 
+ReportRouter.get("/profit-month", ReportController.GetProfitOnMonth); 
 ReportRouter.get("/get/booking/date/:code/:start/:end/:code2", ReportController.GetReportBookingByDate); 
 ReportRouter.get("/get-reportby-day/:date", ReportController.GetReportByDate); 
 ReportRouter.get("/get/next_prev/:date", ReportController.GetReportByPrevNext); 

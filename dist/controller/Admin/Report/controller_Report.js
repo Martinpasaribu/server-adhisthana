@@ -590,5 +590,165 @@ class ReportController {
             }
         });
     }
+    // Pagination
+    // static async GetReportBookingByDate(req: Request, res: Response) {
+    //   try {
+    //     const { code, start, end } = req.params;
+    //     if( !code || !start || !end){
+    //       return res.status(400).json({
+    //         requestId: uuidv4(),
+    //         data: null,
+    //         message: "Date and Type date can't empty",
+    //         success: false,
+    //       });
+    //     }
+    //     // Validasi parameter tanggal
+    //     if (!start || !end || isNaN(new Date(start).getTime()) || isNaN(new Date(end).getTime())) {
+    //       return res.status(400).json({
+    //         requestId: uuidv4(),
+    //         data: null,
+    //         message: "Invalid Date",
+    //         success: false,
+    //       });
+    //     }
+    //     // Atur rentang waktu hari tersebut (dari jam 00:00 sampai 23:59)
+    //     const startOfDay = new Date(start);
+    //     startOfDay.setHours(0, 0, 0, 0);
+    //     const endOfDay = new Date(end);
+    //     endOfDay.setHours(23, 59, 59, 999);
+    //     let todayReport: string | any[] 
+    //     if (code === "BO") {
+    //       // Filter berdasarkan createdAt untuk CI
+    //       todayReport = await BookingModel.find({
+    //         createdAt: {
+    //           $gte: startOfDay,
+    //           $lte: endOfDay,
+    //         },
+    //         isDeleted: false,
+    //       });
+    //     } else if (code === "CI") {
+    //       // Filter berdasarkan checkIn untuk BO
+    //       // Pastikan field checkIn dalam format ISO date
+    //       todayReport = await BookingModel.find({
+    //         checkIn: {
+    //           $gte: startOfDay.toISOString(),
+    //           $lte: endOfDay.toISOString(),
+    //         },
+    //         isDeleted: false,
+    //       });
+    //     } else if (code === "PY") {
+    //       // Logika khusus untuk kode PY bisa ditambahkan di sini
+    //       todayReport = []; // Misalnya sementara kosong
+    //     } else {
+    //       return res.status(400).json({
+    //         requestId: uuidv4(),
+    //         data: null,
+    //         message: "Invalid code type",
+    //         success: false,
+    //       });
+    //     }
+    //     if (!todayReport || todayReport.length === 0) {
+    //       return res.status(200).json({
+    //         requestId: uuidv4(),
+    //         data: [],
+    //         message: `No report found from ${startOfDay.toISOString()} - ${startOfDay.toISOString()}}`,
+    //         success: true,
+    //       });
+    //     }
+    //     return res.status(200).json({
+    //       requestId: uuidv4(),
+    //       data: todayReport,
+    //       dataLength: todayReport.length,
+    //       message: `Data Report: ${startOfDay.toISOString()} - ${endOfDay.toISOString()}`,
+    //       success: true,
+    //     });
+    //   } catch (error) {
+    //     console.error("Error fetching report:", error);
+    //     return res.status(500).json({
+    //       requestId: uuidv4(),
+    //       data: null,
+    //       message: (error as Error).message || "Internal Server Error",
+    //       success: false,
+    //     });
+    //   }
+    // }
+    static GetProfitOnMonth(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                dayjs_1.default.extend(utc_js_1.default);
+                dayjs_1.default.extend(timezone_js_1.default);
+                const zone = 'Asia/Jakarta';
+                // Ambil tanggal awal dan akhir bulan ini (format tanggal saja)
+                const startOfMonth = (0, dayjs_1.default)().tz(zone).startOf('month').format('YYYY-MM-DD');
+                const endOfMonth = (0, dayjs_1.default)().tz(zone).endOf('month').format('YYYY-MM-DD');
+                // Awal dan akhir hari dalam timezone Jakarta
+                // const startOfMonthF = dayjs().tz(zone).startOf('month').utc().toISOString(); // convert to UTC ISO
+                const localStartOfMonth = (0, dayjs_1.default)().tz(zone).startOf('month'); // Jakarta time
+                const startOfMonthF = localStartOfMonth.utc().toISOString();
+                const endOfMonthF = (0, dayjs_1.default)().tz(zone).endOf('month').utc().toISOString();
+                // console.log('Tanggal awal bulan ini:', startOfMonth);
+                // console.log('Tanggal akhir bulan ini:', endOfMonth);
+                // console.log('Tanggal awal bulan ini F:', startOfMonthF);
+                // console.log('Tanggal akhir bulan ini F:', endOfMonthF);
+                const ProfitMonth = yield models_booking_1.BookingModel.find({
+                    checkIn: {
+                        $gte: startOfMonthF,
+                        $lte: endOfMonthF,
+                    },
+                    isDeleted: false,
+                }).lean();
+                const CountLessVilla = (data) => {
+                    const AmountLess = data
+                        .filter((cek) => cek.code === "VLA")
+                        .reduce((total, cek) => total + (cek.less || 0), 0); // tambahkan nilai awal = 0
+                    return AmountLess;
+                };
+                const TotalPrice = ProfitMonth.reduce((sum, item) => {
+                    const reschedule = item.reschedule;
+                    const voucher = item.voucher;
+                    const amountTotal = item.amountTotal || 0;
+                    const otaTotal = item.otaTotal || 0;
+                    const countLess = CountLessVilla(item.invoice) || 0;
+                    let valueToAdd = 0;
+                    if (reschedule === null || reschedule === void 0 ? void 0 : reschedule.status) {
+                        if (reschedule.key_reschedule !== item._id) {
+                            valueToAdd = reschedule.reschedule_fee || 0;
+                        }
+                        else {
+                            valueToAdd = amountTotal - otaTotal - countLess;
+                        }
+                    }
+                    else {
+                        if (voucher.personal_voucher) {
+                            valueToAdd = 0;
+                        }
+                        else {
+                            valueToAdd = amountTotal - otaTotal - countLess;
+                        }
+                    }
+                    return sum + valueToAdd;
+                }, 0);
+                return res.status(200).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: TotalPrice,
+                    dataDate: {
+                        startOfMonthF,
+                        endOfMonthF
+                    },
+                    message: `Data Report: ${startOfMonthF} - ${endOfMonthF}`,
+                    success: true,
+                });
+            }
+            catch (error) {
+                console.error("Error fetching report:", error);
+                return res.status(500).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: null,
+                    message: error.message || "Internal Server Error",
+                    success: false,
+                });
+            }
+        });
+    }
 }
 exports.ReportController = ReportController;

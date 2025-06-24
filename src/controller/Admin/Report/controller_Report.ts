@@ -10,8 +10,7 @@ import timezone from 'dayjs/plugin/timezone.js';
 import { RoomStatusModel } from '../../../models/RoomStatus/models_RoomStatus';
 import { DateTime } from "luxon";
 import OptionModel from '../../../models/Option/models_option';
-
-
+        
 export class ReportController {
 
     static async SaveReport (req: Request, res: Response) {
@@ -816,6 +815,104 @@ export class ReportController {
   //     });
   //   }
   // }
+
+    static async GetProfitOnMonth(req: Request, res: Response) {
+
+      try {
+
+          dayjs.extend(utc);
+          dayjs.extend(timezone);
+
+          const zone = 'Asia/Jakarta';
+
+          // Ambil tanggal awal dan akhir bulan ini (format tanggal saja)
+          const startOfMonth = dayjs().tz(zone).startOf('month').format('YYYY-MM-DD');
+          const endOfMonth = dayjs().tz(zone).endOf('month').format('YYYY-MM-DD');
+
+          // Awal dan akhir hari dalam timezone Jakarta
+          // const startOfMonthF = dayjs().tz(zone).startOf('month').utc().toISOString(); // convert to UTC ISO
+          const localStartOfMonth = dayjs().tz(zone).startOf('month');  // Jakarta time
+          const startOfMonthF = localStartOfMonth.utc().toISOString();
+          const endOfMonthF = dayjs().tz(zone).endOf('month').utc().toISOString();
+
+          // console.log('Tanggal awal bulan ini:', startOfMonth);
+          // console.log('Tanggal akhir bulan ini:', endOfMonth);
+          // console.log('Tanggal awal bulan ini F:', startOfMonthF);
+          // console.log('Tanggal akhir bulan ini F:', endOfMonthF);
+
+  
+        const ProfitMonth = await BookingModel.find({
+
+          checkIn: {
+                $gte: startOfMonthF,
+                $lte: endOfMonthF,
+          },
+
+          isDeleted: false,
+          
+        }).lean();
+
+        const CountLessVilla = (data : any) =>  {
+            const AmountLess = data
+                .filter((cek : any) => cek.code === "VLA")
+                .reduce((total : any, cek : any) => total + (cek.less || 0), 0); // tambahkan nilai awal = 0
+
+            return AmountLess
+        }
+
+        const TotalPrice = ProfitMonth.reduce((sum, item) => {
+
+          const reschedule = item.reschedule;
+          const voucher = item.voucher;
+          const amountTotal = item.amountTotal || 0;
+          const otaTotal = item.otaTotal || 0;
+          const countLess = CountLessVilla(item.invoice) || 0;
+
+          let valueToAdd = 0;
+
+          if (reschedule?.status) {
+            
+            if (reschedule.key_reschedule !== item._id) {
+            
+              valueToAdd = reschedule.reschedule_fee || 0;
+
+            } else {
+              valueToAdd = amountTotal - otaTotal - countLess;
+            }
+          } else {
+
+            if(voucher.personal_voucher){
+                valueToAdd = 0
+            }else{
+                valueToAdd = amountTotal - otaTotal - countLess;
+            }
+          }
+          return sum + valueToAdd;
+        }, 0);
+
+        return res.status(200).json({
+          requestId: uuidv4(),
+          data: TotalPrice,
+          dataDate: {
+            startOfMonthF, 
+            endOfMonthF
+          },
+          message: `Data Report: ${startOfMonthF} - ${endOfMonthF}`,
+          success: true,
+        });
+
+      } catch (error) {
+
+        console.error("Error fetching report:", error);
+
+        return res.status(500).json({
+          requestId: uuidv4(),
+          data: null,
+          message: (error as Error).message || "Internal Server Error",
+          success: false,
+        });
+      }
+    }
   
 }
 

@@ -12,6 +12,7 @@ ReportRouter.post("/add-report/:date", (0, LogAdmin_1.logActivity)("Create Repor
 ReportRouter.get("/room_status/today", controller_Report_1.ReportController.GetRoomStatusToday);
 ReportRouter.get("/get/booking", controller_Report_1.ReportController.GetReportBooking);
 ReportRouter.get("/get/total_price/saved", controller_Report_1.ReportController.UpdatePriceTotalByDate);
+ReportRouter.get("/profit-month", controller_Report_1.ReportController.GetProfitOnMonth);
 ReportRouter.get("/get/booking/date/:code/:start/:end/:code2", controller_Report_1.ReportController.GetReportBookingByDate);
 ReportRouter.get("/get-reportby-day/:date", controller_Report_1.ReportController.GetReportByDate);
 ReportRouter.get("/get/next_prev/:date", controller_Report_1.ReportController.GetReportByPrevNext);
