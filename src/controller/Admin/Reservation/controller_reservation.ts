@@ -69,6 +69,80 @@ export class ReservationController {
           }
         }
 
+        static async CountReservation(req: Request, res: Response) {
+          try {
+            const filterQuery = {
+              status: { $in: [PAYMENT_ADMIN, PAID_ADMIN] },
+              reservation: true,
+              isDeleted: false
+            };
+            
+            // HITUNG JUMLAH DOKUMEN TANPA MENGAMBIL DATA
+            const count = await TransactionModel.countDocuments(filterQuery);
+            
+            res.status(200).json({
+              requestId: uuidv4(),
+              data: count,  // KIRIM JUMLAH SAJA
+              success: true
+            });
+
+          } catch (error) {
+            res.status(500).json({ 
+              message: "Failed to count reservations",
+              error: error instanceof Error ? error.message : error 
+            });
+          }
+        }
+
+        // static async CountReservationDetails(req: Request, res: Response) {
+        //   try {
+        //     const result = await TransactionModel.aggregate([
+        //       {
+        //         $match: {
+        //           reservation: true,
+        //           isDeleted: false,
+        //           status: { $in: [PAYMENT_ADMIN, PAID_ADMIN] }
+        //         }
+        //       },
+        //       {
+        //         $group: {
+        //           _id: "$status",
+        //           count: { $sum: 1 }
+        //         }
+        //       }
+        //     ]);
+
+        //     // Konversi hasil agregasi ke format lebih mudah
+        //     const counts = result.reduce((acc, curr) => {
+        //       acc[curr._id] = curr.count;
+        //       return acc;
+        //     }, {});
+
+        //     res.status(200).json({
+        //       requestId: uuidv4(),
+        //       counts: {
+        //         total: result.reduce((sum, curr) => sum + curr.count, 0),
+        //         ...counts
+        //       },
+        //       success: true
+        //     });
+
+        //   } catch (error) {
+        //     res.status(500).json({ 
+        //       message: "Failed to count reservations",
+        //       error: error instanceof Error ? error.message : error 
+        //     });
+        //   }
+        // }
+
+        // {
+        //   "counts": {
+        //     "total": 15,
+        //     "PAYMENT_ADMIN": 10,
+        //     "PAID_ADMIN": 5
+        //   }
+        // }
+
         static async AddTransaction(req: Request, res: Response) {
           try {
               // Destructure req.body

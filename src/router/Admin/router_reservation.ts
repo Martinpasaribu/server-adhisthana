@@ -14,6 +14,7 @@ const ReservationRouter: express.Router = express.Router();
 ReservationRouter.post("/add-reservation",  verifyAdmin, logActivity("Create Reservation"), ReservationController.AddTransaction);
 ReservationRouter.post("/create-schedule",  verifyAdmin, logActivity("Create Reservation Reschedule"), ReservationController.AddTransactionToReschedule);
 ReservationRouter.get("/get-reservation",verifyAdmin , ReservationController.GetAllTransactionReservation); 
+ReservationRouter.get("/count-reservation", ReservationController.CountReservation); 
 ReservationRouter.put("/pay-transaction/:TransactionId/:code", verifyAdmin , logActivity("Transaction PAID"), ReservationController.SetPayment); 
 
 

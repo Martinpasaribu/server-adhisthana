@@ -466,12 +466,16 @@ export class ReportController {
     //         });
     //     }
     // };
+;
+
+    //  Data awal yang dipanggil 
 
     static async GetReportBooking (req: Request, res: Response){
 
         try {
 
-            const ReportBooking = await BookingModel.find({isDeleted:false}).populate('roomStatusKey');
+            const ReportBooking = await BookingModel.find({isDeleted:false})
+            .populate('roomStatusKey').lean();
 
             // Kirim hasil response
             return res.status(200).json({
@@ -718,8 +722,6 @@ export class ReportController {
         });
       }
     }
-
-
 
   // Pagination
 

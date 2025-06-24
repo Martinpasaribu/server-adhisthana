@@ -17,8 +17,9 @@ AdminBookingRouter.patch("/set-oder-dish/:id", logActivity("Set Oder Dish") , Ad
 
 AdminBookingRouter.delete("/delete/invoice/:id_Booking/:id_Invoice", logActivity("Set Oder Dish") , AdminBookingController.DeletedInvoiceBooking)  
 
-AdminBookingRouter.get("/get-transaction/:TransactionId", AdminBookingController.GetTransactionById)
-AdminBookingRouter.get("/get-booking/:id", AdminBookingController.GetBookingById)
+AdminBookingRouter.get("/get-transaction/:TransactionId", AdminBookingController.GetTransactionById);
+AdminBookingRouter.get("/get-booking/:id", AdminBookingController.GetBookingById);
+AdminBookingRouter.get("/count-booking", AdminBookingController.CountBooking)
 
 
 
