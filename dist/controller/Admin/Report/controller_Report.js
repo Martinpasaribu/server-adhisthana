@@ -378,10 +378,13 @@ class ReportController {
     //         });
     //     }
     // };
+    ;
+    //  Data awal yang dipanggil 
     static GetReportBooking(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const ReportBooking = yield models_booking_1.BookingModel.find({ isDeleted: false }).populate('roomStatusKey');
+                const ReportBooking = yield models_booking_1.BookingModel.find({ isDeleted: false })
+                    .populate('roomStatusKey').lean();
                 // Kirim hasil response
                 return res.status(200).json({
                     requestId: (0, uuid_1.v4)(),

@@ -23,12 +23,24 @@ class AdminBookingController {
     static GetAllBooking(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const bookings = yield models_booking_1.BookingModel.find({ isDeleted: false }).populate('roomStatusKey');
-                const result = yield Promise.all(bookings.map((booking) => __awaiter(this, void 0, void 0, function* () {
-                    const transaction = yield models_transaksi_1.TransactionModel.findOne({ booking_keyId: booking._id, isDeleted: false });
-                    return Object.assign(Object.assign({}, booking.toObject()), { transactionStatus: transaction ? transaction.status : 'Suspended' });
-                })));
-                // Kirim hasil response
+                // 1. Ambil semua booking + relasi roomStatusKey
+                const bookings = yield models_booking_1.BookingModel
+                    .find({ isDeleted: false })
+                    .populate('roomStatusKey')
+                    .lean(); // Penting: agar plain JS object, bukan Mongoose Document
+                // 2. Ambil semua transaction sekaligus
+                const bookingIds = bookings.map(b => b._id);
+                const transactions = yield models_transaksi_1.TransactionModel
+                    .find({ booking_keyId: { $in: bookingIds }, isDeleted: false })
+                    .lean();
+                // 3. Buat Map untuk pencocokan cepat
+                const txMap = new Map(transactions.map(tx => [tx.booking_keyId.toString(), tx]));
+                // 4. Gabungkan data booking + status transaksi
+                const result = bookings.map(booking => {
+                    const tx = txMap.get(booking._id.toString());
+                    return Object.assign(Object.assign({}, booking), { transactionStatus: tx ? tx.status : 'Suspended' });
+                });
+                // 5. Kirim response
                 res.status(200).json({
                     requestId: (0, uuid_1.v4)(),
                     data: result,
@@ -40,6 +52,66 @@ class AdminBookingController {
             }
         });
     }
+    static CountBooking(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                // Hitung jumlah booking langsung di database
+                const count = yield models_booking_1.BookingModel.countDocuments({ isDeleted: false });
+                // Kirim response
+                res.status(200).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: count,
+                    success: true
+                });
+            }
+            catch (error) {
+                res.status(500).json({
+                    message: "Failed to count booking",
+                    error: error instanceof Error ? error.message : error
+                });
+            }
+        });
+    }
+    // static async CountBookingByStatus(req: Request, res: Response) {
+    //   try {
+    //     // Dapatkan semua booking sekaligus
+    //     const bookings = await BookingModel.find({ isDeleted: false }).lean();
+    //     // Kumpulkan semua booking ID
+    //     const bookingIds = bookings.map(b => b._id);
+    //     // Ambil semua transaksi terkait dalam 1 query
+    //     const transactions = await TransactionModel.find({
+    //       booking_keyId: { $in: bookingIds },
+    //       isDeleted: false
+    //     });
+    //     // Buat mapping status transaksi
+    //     const statusMap = new Map();
+    //     transactions.forEach(t => {
+    //       statusMap.set(t.booking_keyId.toString(), t.status);
+    //     });
+    //     // Hitung berdasarkan status
+    //     const counts = {
+    //       total: bookings.length,
+    //       suspended: 0,
+    //       confirmed: 0,
+    //       // tambahkan status lain sesuai kebutuhan
+    //     };
+    //     bookings.forEach(booking => {
+    //       const status = statusMap.get(booking._id.toString()) || 'Suspended';
+    //       if (status === 'Confirmed') counts.confirmed++;
+    //       if (status === 'Suspended') counts.suspended++;
+    //     });
+    //     res.status(200).json({
+    //       requestId: uuidv4(),
+    //       counts,
+    //       success: true
+    //     });
+    //   } catch (error) {
+    //     res.status(500).json({ 
+    //       message: "Failed to count booking", 
+    //       error: error instanceof Error ? error.message : error 
+    //     });
+    //   }
+    // }
     static SetVerified(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
