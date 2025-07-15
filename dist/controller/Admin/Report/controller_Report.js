@@ -479,6 +479,20 @@ class ReportController {
                         },
                         isDeleted: false,
                     }).populate("roomStatusKey");
+                    // For Data Saved Price 
+                }
+                else if (code === "TV") {
+                    todayReport = yield models_booking_1.BookingModel.find({
+                        checkOut: {
+                            $gte: startOfDay, // CO >= 1 Juni
+                            $lte: endOfDay, // CO <= 5 Juni
+                        },
+                        checkIn: {
+                            $lte: endOfDay, // CI <= 5 Juni
+                        },
+                        isDeleted: false,
+                    }).populate("roomStatusKey");
+                    // For Data Saved Price 
                 }
                 else if (code2 === "SP" && code === "CI") {
                     yield models_option_1.default.updateOne({ isDeleted: false }, {
@@ -490,7 +504,7 @@ class ReportController {
                             },
                         },
                     }, { upsert: true });
-                    console.log(' Save Price Date In update !');
+                    console.log(' (SP) Save Price Date In update !');
                     todayReport = yield models_booking_1.BookingModel.find({
                         checkIn: {
                             $gte: startOfDay,
@@ -498,6 +512,7 @@ class ReportController {
                         },
                         isDeleted: false,
                     }).populate("roomStatusKey");
+                    // For Data search default
                 }
                 else if (code === "CI" && code2 === "SL") {
                     todayReport = yield models_booking_1.BookingModel.find({

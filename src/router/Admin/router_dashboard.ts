@@ -15,6 +15,10 @@ DashboardRouter.get("/get-total-user", verifyAdmin , DashboardController.TotalUs
 DashboardRouter.get("/get-total-user-admin", verifyAdmin , DashboardController.TotalUserAdmin);
 DashboardRouter.get("/get-cart-transaction", verifyAdmin, DashboardController.ChartTransaction); 
 DashboardRouter.get("/get-most-purchased", DashboardController.MostPurchased); 
+DashboardRouter.get("/get-modal-room-available", DashboardController.ModalRoomAvailable); 
+DashboardRouter.post("/room-condition", DashboardController.SaveRoomCondition); 
+DashboardRouter.get("/room-condition", DashboardController.GetRoomConditions); 
+DashboardRouter.get("/info-dashboard-one", DashboardController.InfoDashboardOne); 
 
 DashboardRouter.put("/pay-transaction/:TransactionId", verifyAdmin , ReservationController.SetPayment); 
 

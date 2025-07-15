@@ -16,7 +16,7 @@ import { ActivityLogModel } from '../../../models/LogActivity/models_LogActivity
 import { BookingModel } from '../../../models/Booking/models_booking';
 import { UpdateRefund } from './components/UpdateRefundBooking';
 import { RoomStatusModel } from '../../../models/RoomStatus/models_RoomStatus';
-import { DeletedDataALL, RefReschedule } from './components/RefReschedule';
+import { DeletedDataALLByIDTransaction, RefReschedule } from './components/RefReschedule';
 import { PendingRoomModel } from '../../../models/PendingRoom/models_PendingRoom';
 const { ObjectId } = mongoose.Types;
 
@@ -1003,7 +1003,7 @@ export class SetMinderController {
                 }
 
                 // Hapus data reschedule
-                await DeletedDataALL(IdBooking);
+                await DeletedDataALLByIDTransaction(IdBooking);
 
                 // Hapus property reschedule dari main booking
                 await BookingModel.updateOne(

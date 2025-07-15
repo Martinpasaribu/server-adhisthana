@@ -9,6 +9,16 @@ export interface Room {
     ota:number;
     quantity:number;
 }
+export default interface IPayment {
+  name: string;                                // contoh: 'BCA', 'GoPay', 'DANA'
+  type: 'bank_transfer' | 'virtual_account' | 'e_wallet' | 'qris' | 'retail' | 'etc'| 'traveloka' | 'booking.com';
+  amount: number;                              // contoh: 150000
+  foreign_key: string;                              // contoh: 150000
+  code: string;                              // contoh: 150000
+  note?: string;
+  createAt:string;                               // contoh: 'tanggal Pembayaran awal'
+}
+
 export interface Reschedule {
   status: boolean;
   
@@ -118,6 +128,7 @@ interface IBooking extends Document {
     reschedule: Reschedule;
     adult: number;
     night: number;
+    payment: IPayment[];
     children: number;
     amountTotal: number;
     otaTotal: number;
@@ -238,6 +249,7 @@ const BookingSchema: Schema = new Schema(
                 default: null      
             },
 
+
             price_prev: {
                 type: Number,
                 default: null
@@ -260,6 +272,43 @@ const BookingSchema: Schema = new Schema(
             },
         },
 
+        payment: [{
+            name: {               // Nama bank atau provider (contoh: BCA, DANA, GoPay)
+                type: String,
+                required: true,
+                trim: true,
+            },
+            type: {               // Kategori metode pembayaran
+                type: String,
+                enum: ['bank_transfer', 'virtual_account', 'e_wallet', 'qris', 'retail', 'etc','booking.com','traveloka'],
+                required: true,
+                lowercase: true,
+            },
+            amount: {             // Jumlah yang dibayarkan
+                type: Number,
+                required: true,
+                min: 0,
+            },
+            code: {               // Catatan tambahan, misal "dari user A", atau "pembayaran awal"
+                type: String,
+                default: '',
+                trim: true,
+            },
+            foreign_key: {               // Catatan tambahan, misal "dari user A", atau "pembayaran awal"
+                type: String,
+                default: '',
+                trim: true,
+            },
+            note: {               // Catatan tambahan, misal "dari user A", atau "pembayaran awal"
+                type: String,
+                default: '',
+                trim: true,
+            },
+            createAt: {
+                type: Number,
+                default: Date.now
+            },
+        }],
 
         reservation: {
             type: Boolean,

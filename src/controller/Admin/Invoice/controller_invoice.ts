@@ -10,6 +10,7 @@ import { BookingModel } from '../../../models/Booking/models_booking';
 import crypto from 'crypto';
 import { Invoice } from '../../../models/Invoice/models_invoice';
 import { time } from 'console';
+import { AddPayment } from '../Reservation/components/AddPayment';
 
 export class InvoiceController {
 
@@ -106,9 +107,10 @@ export class InvoiceController {
 
 
   static async PayInvoice(req: Request, res: Response) {
+
     try {
       const { id_Booking, code } = req.params;
-      const { id_Invoice, paid } = req.body;
+      const { id_Invoice, paid, payment } = req.body;
   
       if (!id_Booking || !id_Invoice || paid === undefined) {
         return res.status(400).json({
@@ -120,7 +122,7 @@ export class InvoiceController {
       const booking = await BookingModel.findOne({
         _id: new mongoose.Types.ObjectId(id_Booking),
         isDeleted: false,
-      });
+      });    
   
       if (!booking) {
         return res.status(404).json({ message: 'Booking not found' });
@@ -160,15 +162,17 @@ export class InvoiceController {
           booking.dish[dishIndex].status = dishResult !== 0;
           booking.dish[dishIndex].note = dishResult === 0 ? "Paid" : "Suspended";
         }
-      }
-      
-      
+      }    
 
       await booking.save();
   
+      const StatusAddPayment = await AddPayment(payment, id_Booking)
+                  
+
       return res.status(200).json({
         message: 'Invoice updated successfully',
         responseInvoice: ResponseInvoice,
+        messageAddPayment:`Status : ${StatusAddPayment}`,
         DataInvoice: DataInvoice,
         data: booking.invoice[invoiceIndex],
       });

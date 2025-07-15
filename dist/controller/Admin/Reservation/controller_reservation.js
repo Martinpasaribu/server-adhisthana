@@ -27,6 +27,7 @@ const models_booking_1 = require("../../../models/Booking/models_booking");
 const controller_invoice_1 = require("../Invoice/controller_invoice");
 const Filter_1 = require("../RoomStatus/components/Filter");
 const Service_1 = require("../RoomStatus/components/Service");
+const RefReschedule_1 = require("../SiteMinder/components/RefReschedule");
 class ReservationController {
     static GetAllTransactionReservation(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -266,6 +267,7 @@ class ReservationController {
             }
         });
     }
+    // Membuat Reschedule 
     static AddTransactionToReschedule(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -388,6 +390,8 @@ class ReservationController {
                     }
                 }, { new: true } // Opsional: untuk return data yang sudah di-update
                 );
+                // Pada saat Reschedule sudah dibuat Set Isdalate True ( Agar Qty room sebelumnya dilepas )
+                yield (0, RefReschedule_1.DeletedDataALL)(reschedule.key_reschedule);
                 // ✅ Berikan respon sukses
                 return res.status(201).json({
                     requestId: (0, uuid_1.v4)(),
@@ -404,9 +408,10 @@ class ReservationController {
                 console.error("Error creating transaction:", error);
                 return res.status(500).json({
                     requestId: (0, uuid_1.v4)(),
-                    message: error.message || "Internal Server Error",
-                    success: false,
                     data: null,
+                    message: error.message || "Internal Server Error",
+                    requestMessage: 'Error creating Reschedule',
+                    success: false,
                 });
             }
         });

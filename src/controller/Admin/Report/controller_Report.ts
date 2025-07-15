@@ -3,6 +3,7 @@
 import ReportModel from '../../../models/Report/models_report';
 import { v4 as uuidv4 } from 'uuid';
 import { Request, Response } from 'express';
+
 import { BookingModel } from '../../../models/Booking/models_booking';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
@@ -10,6 +11,10 @@ import timezone from 'dayjs/plugin/timezone.js';
 import { RoomStatusModel } from '../../../models/RoomStatus/models_RoomStatus';
 import { DateTime } from "luxon";
 import OptionModel from '../../../models/Option/models_option';
+import { getRoomsWithIssues } from './components/GetRoomsWithIssues';
+import { GetReportFromAdmin } from './components/GetReportFromAdmin';
+import ReportDailyModel from '../../../models/Report/models_reportDaily';
+import mongoose from 'mongoose';
         
 export class ReportController {
 
@@ -568,6 +573,7 @@ export class ReportController {
 
         let todayReport: string | any[];
 
+        // Berdasarkan tgl Booking dibuat
         if (code === "BO") {
 
           todayReport = await BookingModel.find({
@@ -579,6 +585,7 @@ export class ReportController {
             
           }).populate("roomStatusKey");
 
+           // Berdasarkan tgl Booking.com dibayarkan
         } else if (code === "BC") {
 
           todayReport = await BookingModel.find({
@@ -592,8 +599,22 @@ export class ReportController {
             isDeleted: false,
           }).populate("roomStatusKey");
 
+           // Berdasarkan tgl Traveloka dibayarkan
+        } else if (code === "TV") {
 
-        } else if (code2 === "SP" && code === "CI") {
+          todayReport = await BookingModel.find({
+            checkOut: {
+              $gte: startOfDay, // CO >= 1 Juni
+              $lte: endOfDay,   // CO <= 5 Juni
+            },
+            checkIn: {
+              $lte: endOfDay,   // CI <= 5 Juni
+            },
+            isDeleted: false,
+          }).populate("roomStatusKey");
+
+          // For Data Saved Price 
+        }else if (code2 === "SP" && code === "CI") {
 
           await OptionModel.updateOne(
             { isDeleted: false },
@@ -609,7 +630,7 @@ export class ReportController {
             { upsert: true }
           );
 
-          console.log(' Save Price Date In update !')
+          console.log(' (SP) Save Price Date In update !')
 
           todayReport = await BookingModel.find({
             checkIn: {
@@ -619,6 +640,7 @@ export class ReportController {
             isDeleted: false,
           }).populate("roomStatusKey");
 
+        // For Data search default
         } else if (code === "CI" && code2 === "SL") {
 
           todayReport = await BookingModel.find({
@@ -913,6 +935,97 @@ export class ReportController {
         });
       }
     }
-  
+
+    static async CreateDailyReportFromAdmin(req: any, res: any) {
+      const { title, category, content, creator } = req.body
+
+      if (!title || !category || !content || !creator) {
+        return res.status(400).json({ success: false, message: 'Data tidak lengkap' })
+      }
+
+      try {
+        const report = await ReportDailyModel.create({ title, content, category, creator })
+
+        return res.status(201).json({
+          requestId: uuidv4(),
+          success: true,
+          data: report,
+          message: '✅ Laporan berhasil dibuat'
+        })
+      } catch (err) {
+        console.error('[❌ DailyReport POST Error]', err)
+        return res.status(500).json({ success: false, message: 'Terjadi kesalahan di server' })
+      }
+    }
+
+    static async DeletedDailyReportFromAdmin(req: Request, res: Response) {
+      
+      try {
+
+       const { id } = req.params;
+
+        if (!id) {
+          return res.status(400).json({
+            requestId: uuidv4(),
+            data: null,
+            message: "UserId is required!",
+            success: false
+          });
+        }
+
+        const Report = await ReportDailyModel.findOneAndUpdate( 
+          { _id : new mongoose.Types.ObjectId(id), isDeleted: false },
+          { isDeleted: true },
+          { new: true } // Mengembalikan data yang diperbarui
+        );
+
+        if (!Report) {
+            return res.status(404).json({
+              requestId: uuidv4(),
+              data: null,
+              message: "User Data not found!",
+              success: false
+            });
+        }     
+            
+        return res.status(200).json({
+          requestId: uuidv4(),
+          data: { acknowledged: true },
+          message: `Successfully deleted Report Daily: ${Report.title}`,
+          success: true
+        });
+
+      } catch (error) {
+
+        console.error("Error deleted Report Daily:", error);
+          return res.status(500).json({
+            requestId: uuidv4(),
+            data: null,
+            message: (error as Error).message || "Internal Server Error",
+            success: false
+        });
+
+      }
+    }    
+
+    static async DailyReport(req: any, res: any) {
+      try {
+        const dataByRoom = await getRoomsWithIssues() // Status kamar (❌ rusak, 🛠 dll)
+        const dataByAdmin = await ReportDailyModel.find({ isDeleted:false}).sort({ createdAt: -1 }) // Laporan admin
+
+        return res.status(200).json({
+          requestId: uuidv4(),
+          success: true,
+          dataByRoom,
+          dataByAdmin,
+          message: '✅ Laporan harian berhasil diambil'
+        })
+      } catch (err) {
+        console.error('[❌ RoomCondition GET Error]', err)
+        return res.status(500).json({ success: false, message: 'Terjadi kesalahan di server' })
+      }
+    }
+
+    
 }
 

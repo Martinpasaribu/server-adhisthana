@@ -1,5 +1,8 @@
 
 // Helper function untuk generate date range
+import mongoose from 'mongoose';
+const { ObjectId } = mongoose.Types;
+import { ObjectId, isValidObjectId } from 'mongoose';
 
 import { BookingModel } from "../../../../models/Booking/models_booking";
 import { RoomStatusModel } from "../../../../models/RoomStatus/models_RoomStatus";
@@ -56,7 +59,7 @@ export const RefReschedule =  async (id :  any | '') => {
 
 
                         // Panggil fungsi untuk menghapus seluruh data rescheduleBooking terkait
-                        await DeletedDataALL(rescheduleBooking);
+                        await DeletedDataALLByIDTransaction(rescheduleBooking);
 
                         BookingMain = true;
 
@@ -70,7 +73,7 @@ export const RefReschedule =  async (id :  any | '') => {
 
                         // Hapus data booking reschedulenya 
 
-                        await DeletedDataALL(Booking.reschedule.key_reschedule);
+                        await DeletedDataALLByIDTransaction(Booking.reschedule.key_reschedule);
 
                         // await DeletedDataALL(Booking.resc || "");
                         
@@ -101,26 +104,140 @@ export const RefReschedule =  async (id :  any | '') => {
 
 
 
-export const DeletedDataALL = async (id: any ) => {
+export const DeletedDataALLByIDTransaction = async (id: any): Promise<boolean> => {
+  try {
+ 
+    const trxRes = await TransactionModel.updateMany(
+      { bookingId: id },
+      { isDeleted: true }
+    );
 
-        await TransactionModel.updateMany(
-            { bookingId: id },
-            { isDeleted: true }
-        );
-        
-        await ShortAvailableModel.updateMany(
-            { transactionId: id },
-            { isDeleted: true }
-        );
+    const shortRes = await ShortAvailableModel.updateMany(
+      { transactionId: id },
+      { isDeleted: true }
+    );
 
-        await BookingModel.updateMany(
-            { orderId: id },
-            { isDeleted: true }
-        );
+    const bookingRes = await BookingModel.updateMany(
+      { orderId: id },
+      { isDeleted: true }
+    );
 
-        await RoomStatusModel.updateMany(
-            { id_Trx: id },
-            { isDeleted: true }
-        );
+    const roomStatusRes = await RoomStatusModel.updateMany(
+      { id_Trx: id },
+      { isDeleted: true }
+    );
 
-}
+    console.log("🏝 TransactionModel updated:", trxRes.modifiedCount);
+    console.log("🏝 ShortAvailableModel updated:", shortRes.modifiedCount);
+    console.log("🏝 BookingModel updated:", bookingRes.modifiedCount);
+    console.log("🏝 RoomStatusModel updated:", roomStatusRes.modifiedCount);
+    console.log("🗽 ID Transaction Yang digunakan :", id,);
+
+    return true;
+  } catch (error) {
+    console.error('❌ Error in DeletedDataALL:', error, 'and ID Use :', id);
+    return false;
+  }
+};
+
+
+export const DeletedDataALLByID = async (id: any): Promise<boolean> => {
+  try {
+    // Validasi dulu sebelum new ObjectId
+    if (typeof id !== 'string' || !ObjectId.isValid(id)) {
+      throw new Error("❌ Invalid ObjectId format");
+    }
+
+    const objectId = new ObjectId(id);
+
+    // Ambil dulu booking untuk dapatkan orderId
+    const booking = await BookingModel.findOne({ _id: objectId });
+    if (!booking) {
+      throw new Error("❌ Booking tidak ditemukan");
+    }
+
+    const id_Trx = booking.orderId;
+
+    // Update booking
+    const bookingRes = await BookingModel.updateOne(
+      { _id: objectId },
+      { isDeleted: true }
+    );
+
+    // Update lainnya berdasarkan orderId
+    const trxRes = await TransactionModel.updateMany(
+      { bookingId: id_Trx },
+      { isDeleted: true }
+    );
+
+    const shortRes = await ShortAvailableModel.updateMany(
+      { transactionId: id_Trx },
+      { isDeleted: true }
+    );
+
+    const roomStatusRes = await RoomStatusModel.updateMany(
+      { id_Trx: id_Trx },
+      { isDeleted: true }
+    );
+
+    console.log("🏝 TransactionModel updated:", trxRes.modifiedCount);
+    console.log("🏝 ShortAvailableModel updated:", shortRes.modifiedCount);
+    console.log("🏝 BookingModel updated:", bookingRes.modifiedCount);
+    console.log("🏝 RoomStatusModel updated:", roomStatusRes.modifiedCount);
+    console.log(`✏️ ID Use : ${objectId}`);
+
+    return true;
+
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error('❌ Error in DeletedDataALLByID:', error.message);
+    } else {
+      console.error('❌ Unknown error in DeletedDataALLByID:', error);
+    }
+    return false;
+  }
+};
+
+export const FreeRoomAndAvailable = async (id: any): Promise<boolean> => {
+  try {
+    // Validasi dulu sebelum new ObjectId
+    if (typeof id !== 'string' || !ObjectId.isValid(id)) {
+      throw new Error("❌ Invalid ObjectId format");
+    }
+
+    const objectId = new ObjectId(id);
+
+    // Ambil dulu booking untuk dapatkan orderId
+    const booking = await BookingModel.findOne({ _id: objectId });
+    if (!booking) {
+      throw new Error("❌ Booking tidak ditemukan");
+    }
+
+    const id_Trx = booking.orderId;
+
+
+    const shortRes = await ShortAvailableModel.updateMany(
+      { transactionId: id_Trx },
+      { isDeleted: true }
+    );
+
+    const roomStatusRes = await RoomStatusModel.updateMany(
+      { id_Trx: id_Trx },
+      { isDeleted: true }
+    );
+
+    console.log("🏝 ShortAvailableModel updated:", shortRes.modifiedCount);
+    console.log("🏝 RoomStatusModel updated:", roomStatusRes.modifiedCount);
+    console.log(`✏️ ID Use : ${objectId}`);
+
+    return true;
+
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error('❌ Error in FreeRoomAndAvailable:', error.message);
+    } else {
+      console.error('❌ Unknown error in FreeRoomAndAvailable:', error);
+    }
+    return false;
+  }
+};

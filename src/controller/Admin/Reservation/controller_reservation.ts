@@ -17,6 +17,8 @@ import { InvoiceController } from '../Invoice/controller_invoice';
 import { Invoice } from '../../../models/Invoice/models_invoice';
 import { CompareDataHasBeenUsedWithRoomStatus, CompareSameDataWithRoomStatus, FilterAvailableWithRoomStatus } from '../RoomStatus/components/Filter';
 import { RoomStatusService } from '../RoomStatus/components/Service';
+import { DeletedDataALLByID, DeletedDataALLByIDTransaction, FreeRoomAndAvailable } from '../SiteMinder/components/RefReschedule';
+import { AddPayment } from './components/AddPayment';
 
 // types/invoice.ts
 
@@ -71,6 +73,7 @@ export class ReservationController {
 
         static async CountReservation(req: Request, res: Response) {
           try {
+            
             const filterQuery = {
               status: { $in: [PAYMENT_ADMIN, PAID_ADMIN] },
               reservation: true,
@@ -179,7 +182,7 @@ export class ReservationController {
                 });
               }
 
-              console.log(`Ini data payload room dari reservation: ${JSON.stringify(products, null, 2)}`);
+              // console.log(`Ini data payload room dari reservation: ${JSON.stringify(products, null, 2)}`);
 
               // ✅ Validasi data sebelum disimpan
               if (!title || !name || !email || !phone || !grossAmount || !checkIn || !checkOut || !selectOta) {
@@ -254,7 +257,7 @@ export class ReservationController {
               const savedBooking = await newBooking.save();
 
 
-              console.log(" add transaction with reservation : ", savedBooking)
+              // console.log(" add transaction with reservation : ", savedBooking)
 
               // ✅ Buat objek baru berdasarkan schema
               const newTransaction = new TransactionModel({
@@ -338,6 +341,8 @@ export class ReservationController {
           }
         }
 
+        // Membuat Reschedule 
+
         static async AddTransactionToReschedule(req: Request, res: Response) {
           try {
               // Destructure req.body
@@ -375,7 +380,7 @@ export class ReservationController {
                 });
               }
 
-              console.log(`Ini data payload room dari reservation: ${JSON.stringify(products, null, 2)}`);
+              // console.log(`Ini data payload room dari reservation: ${JSON.stringify(products, null, 2)}`);
 
               // ✅ Validasi data sebelum disimpan
               if (!title || !name || !email || !phone || !grossAmount || !checkIn || !checkOut || !selectOta) {
@@ -451,7 +456,7 @@ export class ReservationController {
               const savedBooking = await newBooking.save();
 
 
-              console.log(" add transaction with reservation : ", savedBooking)
+              // console.log(" add transaction with reservation : ", savedBooking)
 
               // ✅ Buat objek baru berdasarkan schema
               const newTransaction = new TransactionModel({
@@ -521,11 +526,21 @@ export class ReservationController {
                 { new: true } // Opsional: untuk return data yang sudah di-update
               );
 
+              // Pada saat Reschedule sudah dibuat Set Isdalate True ( Agar Qty room sebelumnya dilepas )
+             const deleted = await FreeRoomAndAvailable(reschedule.key_reschedule);
+
+              if (deleted) {
+                console.log('✅ Semua FreeRoomAndAvailable berhasil dihapus.');
+              } else {
+                console.log('🔴  Gagal menghapus beberapa FreeRoomAndAvailable.');
+              }
+
 
               // ✅ Berikan respon sukses
               return res.status(201).json({
                   requestId: uuidv4(),
-                  message: "Successfully add transaction to reservation.",
+                  message: "Successfully add Reschedule to Reservation.",
+                  messageDeletedAll: ` statusnya : ${deleted},  ID Use : ${reschedule.key_reschedule}`,
                   success: true,
                   data: {
                       acknowledged: true,
@@ -539,9 +554,10 @@ export class ReservationController {
 
               return res.status(500).json({
                   requestId: uuidv4(),
-                  message: (error as Error).message || "Internal Server Error",
-                  success: false,
                   data: null,
+                  message: (error as Error).message || "Internal Server Error",
+                  requestMessage: 'Error creating Reschedule',
+                  success: false,
               });
           }
         }
@@ -551,7 +567,7 @@ export class ReservationController {
           try {
               // Destructure req.body
               const { TransactionId, code } = req.params;
-              const { invoice } = req.body;
+              const { invoice, payment } = req.body;
 
               console.log(" invoice : ", invoice)
 
@@ -593,7 +609,7 @@ export class ReservationController {
                     return res.status(400).json({
                       requestId: uuidv4(),
                       data: null,
-                      message: "Transaction no found !",
+                      message: "Transaction no found or Has Paid!",
                       success: false
                   });
               }
@@ -634,7 +650,10 @@ export class ReservationController {
               // Perbaharui Room Pending pada saat user sudah melakukan transaction atau pembayaran gagal 
               const messagePendingRoom = await PendingRoomController.UpdatePending(TransactionId);
 
+              const id_booking = IsTransaction.booking_keyId
 
+              const StatusAddPayment = await AddPayment(payment, id_booking)
+                
 
               // ✅ Berikan respon sukses
               return res.status(201).json({
@@ -644,6 +663,7 @@ export class ReservationController {
                   },
                   resultInvoice: invoiceResult?.data ?? [],
                   message: `Successfully payment transaction : ${TransactionId}`,
+                  messagePayment: `Data : ${JSON.stringify(payment)}, Status : ${StatusAddPayment}`,
                   messagePendingRoom: messagePendingRoom,
                   success: true
               });

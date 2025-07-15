@@ -27,6 +27,13 @@ interface IReport extends Document {
     creatorId: string;  
     
 }
+interface IReportDaily extends Document {
+    title: string
+    category: string;
+    content: string;
+    creatorId: string;  
+    
+}
 
 
 const ReportSchema: Schema = new Schema(
@@ -99,3 +106,5 @@ const ReportSchema: Schema = new Schema(
 const ReportModel = mongoose.model<IReport>('ReportRoom', ReportSchema,'ReportRoom');
 
 export default ReportModel;
+
+

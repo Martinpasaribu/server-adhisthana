@@ -12,7 +12,7 @@ const CekUser = async (id: any) => {
   const _id = new mongoose.Types.ObjectId(id);
 
   let user = await UserModel.findOne({ _id, isDeleted: false }).select("title name email phone");  
-  console.log("Update Data user di LOG :", user );
+  // console.log("Update Data user di LOG :", user );
 
   return user;
 };
@@ -21,7 +21,7 @@ const CekBooking= async (id: any) => {
 
 
   let booking = await BookingModel.findOne({ orderId: id, isDeleted: false }).select("name email phone orderId checkIn checkOut verified reservation night amountTotal otaTotal room createdAt");
-  console.log("Update Data user di LOG :", booking );
+  // console.log("Update Data user di LOG :", booking );
 
   return booking;
 };
@@ -32,8 +32,7 @@ const CekBooking= async (id: any) => {
 export const logActivity = (action: string) => {
   return async (req: Request, res: Response, next: NextFunction) => {
 
-    
-
+  
     try {
 
       let user = await CekUser(req.params.id || req.params.MessageId || req.params.UserId  );
@@ -62,7 +61,7 @@ export const logActivity = (action: string) => {
       if (!adminId) return next();
 
       // Ambil data admin
-      const DataAdmin = await AdminModel.findOne({ _id: adminId });
+      const DataAdmin = await AdminModel.findOne({ _id:new mongoose.Types.ObjectId(adminId) });
       if (!DataAdmin) {
         console.log("Data admin tidak ditemukan");
         return next();
@@ -146,10 +145,13 @@ export const logActivity = (action: string) => {
           target = booking ? (`ID : ${booking.orderId} ,  Name : ${booking.name}`) : "-";
 
           break;
+          
+// Membuat Reservation
 
         case routePath.startsWith("/api/v1/reservation/add-reservation"):
           type = "Reservation"
-          target = req.body.name || []
+          target = req.body.name || [],
+          date = [`ChekIn : ${req.body.checkIn},  CheckOut : ${req.body.checkOut}`],
           data = `${JSON.stringify(req.body, null, 2)} `|| '-';
           break;
 
@@ -229,20 +231,20 @@ export const logActivity = (action: string) => {
         routePath, // Tambahkan jalur yang diakses
       });
 
-      console.log("Log Activity:", {
-        adminId,
-        type,
-        username: DataAdmin.username,
-        role: DataAdmin.role,
-        action,
-        statement1,
-        statement2,
-        date,
-        data,
-        target,
-        ipAddress,
-        routePath,
-      });
+      // console.log("Log Activity:", {
+      //   adminId,
+      //   type,
+      //   username: DataAdmin.username,
+      //   role: DataAdmin.role,
+      //   action,
+      //   statement1,
+      //   statement2,
+      //   date,
+      //   data,
+      //   target,
+      //   ipAddress,
+      //   routePath,
+      // });
 
       next();
     } catch (error) {

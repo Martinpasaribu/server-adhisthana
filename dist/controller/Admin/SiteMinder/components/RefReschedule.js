@@ -74,9 +74,34 @@ const RefReschedule = (id) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.RefReschedule = RefReschedule;
 const DeletedDataALL = (id) => __awaiter(void 0, void 0, void 0, function* () {
-    yield models_transaksi_1.TransactionModel.updateMany({ bookingId: id }, { isDeleted: true });
-    yield models_ShortAvailable_1.ShortAvailableModel.updateMany({ transactionId: id }, { isDeleted: true });
-    yield models_booking_1.BookingModel.updateMany({ orderId: id }, { isDeleted: true });
-    yield models_RoomStatus_1.RoomStatusModel.updateMany({ id_Trx: id }, { isDeleted: true });
+    try {
+        yield models_transaksi_1.TransactionModel.updateMany({ bookingId: id }, { isDeleted: true });
+        yield models_ShortAvailable_1.ShortAvailableModel.updateMany({ transactionId: id }, { isDeleted: true });
+        yield models_booking_1.BookingModel.updateMany({ orderId: id }, { isDeleted: true });
+        yield models_RoomStatus_1.RoomStatusModel.updateMany({ id_Trx: id }, { isDeleted: true });
+        return true; // ✅ Semua berhasil
+    }
+    catch (error) {
+        console.error('Error in DeletedDataALL:', error);
+        return false; // ❌ Ada yang gagal
+    }
 });
 exports.DeletedDataALL = DeletedDataALL;
+// export const DeletedDataALL = async (id: any ) => {
+//         await TransactionModel.updateMany(
+//             { bookingId: id },
+//             { isDeleted: true }
+//         );
+//         await ShortAvailableModel.updateMany(
+//             { transactionId: id },
+//             { isDeleted: true }
+//         );
+//         await BookingModel.updateMany(
+//             { orderId: id },
+//             { isDeleted: true }
+//         );
+//         await RoomStatusModel.updateMany(
+//             { id_Trx: id },
+//             { isDeleted: true }
+//         );
+// }
