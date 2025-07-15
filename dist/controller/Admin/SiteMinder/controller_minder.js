@@ -763,7 +763,7 @@ class SetMinderController {
                     });
                 }
                 // Hapus data reschedule
-                yield (0, RefReschedule_1.DeletedDataALL)(IdBooking);
+                yield (0, RefReschedule_1.DeletedDataALLByIDTransaction)(IdBooking);
                 // Hapus property reschedule dari main booking
                 yield models_booking_1.BookingModel.updateOne({ _id: key }, { $unset: { reschedule: "" } });
                 res.status(200).json({

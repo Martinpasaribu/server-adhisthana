@@ -28,6 +28,7 @@ const controller_invoice_1 = require("../Invoice/controller_invoice");
 const Filter_1 = require("../RoomStatus/components/Filter");
 const Service_1 = require("../RoomStatus/components/Service");
 const RefReschedule_1 = require("../SiteMinder/components/RefReschedule");
+const AddPayment_1 = require("./components/AddPayment");
 class ReservationController {
     static GetAllTransactionReservation(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -147,7 +148,7 @@ class ReservationController {
                         data: CekRoomInUse,
                     });
                 }
-                console.log(`Ini data payload room dari reservation: ${JSON.stringify(products, null, 2)}`);
+                // console.log(`Ini data payload room dari reservation: ${JSON.stringify(products, null, 2)}`);
                 // ✅ Validasi data sebelum disimpan
                 if (!title || !name || !email || !phone || !grossAmount || !checkIn || !checkOut || !selectOta) {
                     return res.status(400).json({
@@ -202,7 +203,7 @@ class ReservationController {
                 });
                 // ✅ Simpan ke database Booking
                 const savedBooking = yield newBooking.save();
-                console.log(" add transaction with reservation : ", savedBooking);
+                // console.log(" add transaction with reservation : ", savedBooking)
                 // ✅ Buat objek baru berdasarkan schema
                 const newTransaction = new models_transaksi_1.TransactionModel({
                     booking_keyId: savedBooking._id,
@@ -285,7 +286,7 @@ class ReservationController {
                         data: CekRoomInUse,
                     });
                 }
-                console.log(`Ini data payload room dari reservation: ${JSON.stringify(products, null, 2)}`);
+                // console.log(`Ini data payload room dari reservation: ${JSON.stringify(products, null, 2)}`);
                 // ✅ Validasi data sebelum disimpan
                 if (!title || !name || !email || !phone || !grossAmount || !checkIn || !checkOut || !selectOta) {
                     return res.status(400).json({
@@ -341,7 +342,7 @@ class ReservationController {
                 });
                 // ✅ Simpan ke database Booking
                 const savedBooking = yield newBooking.save();
-                console.log(" add transaction with reservation : ", savedBooking);
+                // console.log(" add transaction with reservation : ", savedBooking)
                 // ✅ Buat objek baru berdasarkan schema
                 const newTransaction = new models_transaksi_1.TransactionModel({
                     booking_keyId: savedBooking._id,
@@ -391,11 +392,18 @@ class ReservationController {
                 }, { new: true } // Opsional: untuk return data yang sudah di-update
                 );
                 // Pada saat Reschedule sudah dibuat Set Isdalate True ( Agar Qty room sebelumnya dilepas )
-                yield (0, RefReschedule_1.DeletedDataALL)(reschedule.key_reschedule);
+                const deleted = yield (0, RefReschedule_1.FreeRoomAndAvailable)(reschedule.key_reschedule);
+                if (deleted) {
+                    console.log('✅ Semua FreeRoomAndAvailable berhasil dihapus.');
+                }
+                else {
+                    console.log('🔴  Gagal menghapus beberapa FreeRoomAndAvailable.');
+                }
                 // ✅ Berikan respon sukses
                 return res.status(201).json({
                     requestId: (0, uuid_1.v4)(),
-                    message: "Successfully add transaction to reservation.",
+                    message: "Successfully add Reschedule to Reservation.",
+                    messageDeletedAll: ` statusnya : ${deleted},  ID Use : ${reschedule.key_reschedule}`,
                     success: true,
                     data: {
                         acknowledged: true,
@@ -422,7 +430,7 @@ class ReservationController {
             try {
                 // Destructure req.body
                 const { TransactionId, code } = req.params;
-                const { invoice } = req.body;
+                const { invoice, payment } = req.body;
                 console.log(" invoice : ", invoice);
                 // ✅ Validasi data sebelum disimpan
                 if (!TransactionId) {
@@ -451,7 +459,7 @@ class ReservationController {
                     return res.status(400).json({
                         requestId: (0, uuid_1.v4)(),
                         data: null,
-                        message: "Transaction no found !",
+                        message: "Transaction no found or Has Paid!",
                         success: false
                     });
                 }
@@ -482,6 +490,8 @@ class ReservationController {
                 }, res);
                 // Perbaharui Room Pending pada saat user sudah melakukan transaction atau pembayaran gagal 
                 const messagePendingRoom = yield Controller_PendingRoom_1.PendingRoomController.UpdatePending(TransactionId);
+                const id_booking = IsTransaction.booking_keyId;
+                const StatusAddPayment = yield (0, AddPayment_1.AddPayment)(payment, id_booking);
                 // ✅ Berikan respon sukses
                 return res.status(201).json({
                     requestId: (0, uuid_1.v4)(),
@@ -490,6 +500,7 @@ class ReservationController {
                     },
                     resultInvoice: (_a = invoiceResult === null || invoiceResult === void 0 ? void 0 : invoiceResult.data) !== null && _a !== void 0 ? _a : [],
                     message: `Successfully payment transaction : ${TransactionId}`,
+                    messagePayment: `Data : ${JSON.stringify(payment)}, Status : ${StatusAddPayment}`,
                     messagePendingRoom: messagePendingRoom,
                     success: true
                 });

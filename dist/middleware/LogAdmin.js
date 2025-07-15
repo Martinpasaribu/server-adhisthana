@@ -21,12 +21,12 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const CekUser = (id) => __awaiter(void 0, void 0, void 0, function* () {
     const _id = new mongoose_1.default.Types.ObjectId(id);
     let user = yield models_user_1.default.findOne({ _id, isDeleted: false }).select("title name email phone");
-    console.log("Update Data user di LOG :", user);
+    // console.log("Update Data user di LOG :", user );
     return user;
 });
 const CekBooking = (id) => __awaiter(void 0, void 0, void 0, function* () {
     let booking = yield models_booking_1.BookingModel.findOne({ orderId: id, isDeleted: false }).select("name email phone orderId checkIn checkOut verified reservation night amountTotal otaTotal room createdAt");
-    console.log("Update Data user di LOG :", booking);
+    // console.log("Update Data user di LOG :", booking );
     return booking;
 });
 const logActivity = (action) => {
@@ -58,7 +58,7 @@ const logActivity = (action) => {
             if (!adminId)
                 return next();
             // Ambil data admin
-            const DataAdmin = yield models_admin_1.default.findOne({ _id: adminId });
+            const DataAdmin = yield models_admin_1.default.findOne({ _id: new mongoose_1.default.Types.ObjectId(adminId) });
             if (!DataAdmin) {
                 console.log("Data admin tidak ditemukan");
                 return next();
@@ -120,10 +120,12 @@ const logActivity = (action) => {
                     // const user = await CekUser(req.params.TransactionId);
                     target = booking ? (`ID : ${booking.orderId} ,  Name : ${booking.name}`) : "-";
                     break;
+                // Membuat Reservation
                 case routePath.startsWith("/api/v1/reservation/add-reservation"):
                     type = "Reservation";
-                    target = req.body.name || [];
-                    data = `${JSON.stringify(req.body, null, 2)} ` || '-';
+                    target = req.body.name || [],
+                        date = [`ChekIn : ${req.body.checkIn},  CheckOut : ${req.body.checkOut}`],
+                        data = `${JSON.stringify(req.body, null, 2)} ` || '-';
                     break;
                 case routePath.startsWith("/api/v1/reservation/pay-transaction"):
                     type = "Reservation";
@@ -185,20 +187,20 @@ const logActivity = (action) => {
                 ipAddress,
                 routePath, // Tambahkan jalur yang diakses
             });
-            console.log("Log Activity:", {
-                adminId,
-                type,
-                username: DataAdmin.username,
-                role: DataAdmin.role,
-                action,
-                statement1,
-                statement2,
-                date,
-                data,
-                target,
-                ipAddress,
-                routePath,
-            });
+            // console.log("Log Activity:", {
+            //   adminId,
+            //   type,
+            //   username: DataAdmin.username,
+            //   role: DataAdmin.role,
+            //   action,
+            //   statement1,
+            //   statement2,
+            //   date,
+            //   data,
+            //   target,
+            //   ipAddress,
+            //   routePath,
+            // });
             next();
         }
         catch (error) {

@@ -214,10 +214,10 @@ class PendingRoomController {
                     WithoutPending,
                     PendingRoom
                 };
-                console.log('WKWKWKWKWKW : ', DataPendingRoom);
-                console.log('WKWKWKWKWKW PendingRoom: ', result.PendingRoom);
-                console.log('WKWKWKWKWKW WithoutPending : ', result.WithoutPending);
-                console.log('WKWKWKWKWKW Rooms Req : ', rooms);
+                // console.log('WKWKWKWKWKW : ', DataPendingRoom);
+                // console.log('WKWKWKWKWKW PendingRoom: ', result.PendingRoom);
+                // console.log('WKWKWKWKWKW WithoutPending : ', result.WithoutPending);
+                // console.log('WKWKWKWKWKW Rooms Req : ', rooms);
                 return result;
             }
             catch (error) {

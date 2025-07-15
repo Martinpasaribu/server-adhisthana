@@ -23,6 +23,9 @@ const timezone_js_1 = __importDefault(require("dayjs/plugin/timezone.js"));
 const models_RoomStatus_1 = require("../../../models/RoomStatus/models_RoomStatus");
 const luxon_1 = require("luxon");
 const models_option_1 = __importDefault(require("../../../models/Option/models_option"));
+const GetRoomsWithIssues_1 = require("./components/GetRoomsWithIssues");
+const models_reportDaily_1 = __importDefault(require("../../../models/Report/models_reportDaily"));
+const mongoose_1 = __importDefault(require("mongoose"));
 class ReportController {
     static SaveReport(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -459,6 +462,7 @@ class ReportController {
                     startOfDay, endOfDay
                 };
                 let todayReport;
+                // Berdasarkan tgl Booking dibuat
                 if (code === "BO") {
                     todayReport = yield models_booking_1.BookingModel.find({
                         createdAt: {
@@ -467,6 +471,7 @@ class ReportController {
                         },
                         isDeleted: false,
                     }).populate("roomStatusKey");
+                    // Berdasarkan tgl Booking.com dibayarkan
                 }
                 else if (code === "BC") {
                     todayReport = yield models_booking_1.BookingModel.find({
@@ -479,7 +484,7 @@ class ReportController {
                         },
                         isDeleted: false,
                     }).populate("roomStatusKey");
-                    // For Data Saved Price 
+                    // Berdasarkan tgl Traveloka dibayarkan
                 }
                 else if (code === "TV") {
                     todayReport = yield models_booking_1.BookingModel.find({
@@ -762,6 +767,86 @@ class ReportController {
                     message: error.message || "Internal Server Error",
                     success: false,
                 });
+            }
+        });
+    }
+    static CreateDailyReportFromAdmin(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { title, category, content, creator } = req.body;
+            if (!title || !category || !content || !creator) {
+                return res.status(400).json({ success: false, message: 'Data tidak lengkap' });
+            }
+            try {
+                const report = yield models_reportDaily_1.default.create({ title, content, category, creator });
+                return res.status(201).json({
+                    requestId: (0, uuid_1.v4)(),
+                    success: true,
+                    data: report,
+                    message: '✅ Laporan berhasil dibuat'
+                });
+            }
+            catch (err) {
+                console.error('[❌ DailyReport POST Error]', err);
+                return res.status(500).json({ success: false, message: 'Terjadi kesalahan di server' });
+            }
+        });
+    }
+    static DeletedDailyReportFromAdmin(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { id } = req.params;
+                if (!id) {
+                    return res.status(400).json({
+                        requestId: (0, uuid_1.v4)(),
+                        data: null,
+                        message: "UserId is required!",
+                        success: false
+                    });
+                }
+                const Report = yield models_reportDaily_1.default.findOneAndUpdate({ _id: new mongoose_1.default.Types.ObjectId(id), isDeleted: false }, { isDeleted: true }, { new: true } // Mengembalikan data yang diperbarui
+                );
+                if (!Report) {
+                    return res.status(404).json({
+                        requestId: (0, uuid_1.v4)(),
+                        data: null,
+                        message: "User Data not found!",
+                        success: false
+                    });
+                }
+                return res.status(200).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: { acknowledged: true },
+                    message: `Successfully deleted Report Daily: ${Report.title}`,
+                    success: true
+                });
+            }
+            catch (error) {
+                console.error("Error deleted Report Daily:", error);
+                return res.status(500).json({
+                    requestId: (0, uuid_1.v4)(),
+                    data: null,
+                    message: error.message || "Internal Server Error",
+                    success: false
+                });
+            }
+        });
+    }
+    static DailyReport(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const dataByRoom = yield (0, GetRoomsWithIssues_1.getRoomsWithIssues)(); // Status kamar (❌ rusak, 🛠 dll)
+                const dataByAdmin = yield models_reportDaily_1.default.find({ isDeleted: false }).sort({ createdAt: -1 }); // Laporan admin
+                return res.status(200).json({
+                    requestId: (0, uuid_1.v4)(),
+                    success: true,
+                    dataByRoom,
+                    dataByAdmin,
+                    message: '✅ Laporan harian berhasil diambil'
+                });
+            }
+            catch (err) {
+                console.error('[❌ RoomCondition GET Error]', err);
+                return res.status(500).json({ success: false, message: 'Terjadi kesalahan di server' });
             }
         });
     }

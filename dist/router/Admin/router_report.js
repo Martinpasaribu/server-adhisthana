@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
+const VerifyAdminId_1 = require("../../middleware/VerifyAdminId");
 const LogAdmin_1 = require("../../middleware/LogAdmin");
 const controller_Report_1 = require("../../controller/Admin/Report/controller_Report");
 const ReportRouter = express_1.default.Router();
@@ -16,4 +17,7 @@ ReportRouter.get("/profit-month", controller_Report_1.ReportController.GetProfit
 ReportRouter.get("/get/booking/date/:code/:start/:end/:code2", controller_Report_1.ReportController.GetReportBookingByDate);
 ReportRouter.get("/get-reportby-day/:date", controller_Report_1.ReportController.GetReportByDate);
 ReportRouter.get("/get/next_prev/:date", controller_Report_1.ReportController.GetReportByPrevNext);
+ReportRouter.get("/daily-report", controller_Report_1.ReportController.DailyReport);
+ReportRouter.post("/daily-report", controller_Report_1.ReportController.CreateDailyReportFromAdmin);
+ReportRouter.put("/deleted-daily-report/:id", VerifyAdminId_1.verifyAdmin, (0, LogAdmin_1.logActivity)("Deleted Daily report"), controller_Report_1.ReportController.DeletedDailyReportFromAdmin);
 exports.default = ReportRouter;

@@ -142,6 +142,43 @@ const BookingSchema = new mongoose_1.Schema({
             default: Date.now
         },
     },
+    payment: [{
+            name: {
+                type: String,
+                required: true,
+                trim: true,
+            },
+            type: {
+                type: String,
+                enum: ['bank_transfer', 'virtual_account', 'e_wallet', 'qris', 'retail', 'etc', 'booking.com', 'traveloka'],
+                required: true,
+                lowercase: true,
+            },
+            amount: {
+                type: Number,
+                required: true,
+                min: 0,
+            },
+            code: {
+                type: String,
+                default: '',
+                trim: true,
+            },
+            foreign_key: {
+                type: String,
+                default: '',
+                trim: true,
+            },
+            note: {
+                type: String,
+                default: '',
+                trim: true,
+            },
+            createAt: {
+                type: Number,
+                default: Date.now
+            },
+        }],
     reservation: {
         type: Boolean,
         trim: true,

@@ -16,6 +16,7 @@ exports.InvoiceController = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const models_booking_1 = require("../../../models/Booking/models_booking");
 const crypto_1 = __importDefault(require("crypto"));
+const AddPayment_1 = require("../Reservation/components/AddPayment");
 class InvoiceController {
     static SetInvoice(data) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -96,7 +97,7 @@ class InvoiceController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { id_Booking, code } = req.params;
-                const { id_Invoice, paid } = req.body;
+                const { id_Invoice, paid, payment } = req.body;
                 if (!id_Booking || !id_Invoice || paid === undefined) {
                     return res.status(400).json({
                         status: false,
@@ -138,9 +139,11 @@ class InvoiceController {
                     }
                 }
                 yield booking.save();
+                const StatusAddPayment = yield (0, AddPayment_1.AddPayment)(payment, id_Booking);
                 return res.status(200).json({
                     message: 'Invoice updated successfully',
                     responseInvoice: ResponseInvoice,
+                    messageAddPayment: `Status : ${StatusAddPayment}`,
                     DataInvoice: DataInvoice,
                     data: booking.invoice[invoiceIndex],
                 });
