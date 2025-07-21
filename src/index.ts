@@ -199,8 +199,8 @@ app.use("/api/v1/session", SessionRouter)
 
 
 const startServer = async () => {
+
     try {
-        
         // await connectToDatabase();
 
         await connectToMongoDB()
