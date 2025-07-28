@@ -11,7 +11,7 @@ export interface Room {
 }
 export default interface IPayment {
   name: string;                                // contoh: 'BCA', 'GoPay', 'DANA'
-  type: 'bank_transfer' | 'virtual_account' | 'e_wallet' | 'qris' | 'retail' | 'etc'| 'traveloka' | 'booking.com';
+  type: 'bank_transfer' | 'virtual_account' | 'e_wallet' | 'qris' | 'retail' | 'etc'| 'traveloka' | 'booking.com' | 'edc';
   amount: number;                              // contoh: 150000
   foreign_key: string;                              // contoh: 150000
   code: string;                              // contoh: 150000
