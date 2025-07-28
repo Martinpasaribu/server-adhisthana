@@ -157,6 +157,7 @@ class RoomController {
                     isDeleted: false,
                 }, {
                     name: true,
+                    nameAdditional: true,
                     _id: true,
                     available: true
                 });

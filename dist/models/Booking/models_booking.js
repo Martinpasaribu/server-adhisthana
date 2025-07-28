@@ -145,7 +145,7 @@ const BookingSchema = new mongoose_1.Schema({
     payment: [{
             name: {
                 type: String,
-                required: true,
+                required: false,
                 trim: true,
             },
             type: {
@@ -156,7 +156,7 @@ const BookingSchema = new mongoose_1.Schema({
             },
             amount: {
                 type: Number,
-                required: true,
+                required: false,
                 min: 0,
             },
             code: {

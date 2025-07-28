@@ -7,16 +7,11 @@ import { verifyToken } from "../middleware/VerifyToken";
 const BookingRouter: express.Router = express.Router();
 
 
-
-
 // semantic meaning
 
-BookingRouter.post("/addBooking",verifyID, verifyToken, BookingController.addBooking);
-
-
-
-
-
+    BookingRouter.post("/addBooking",verifyID, verifyToken, BookingController.addBooking);
+    BookingRouter.post("/change-room/:id_transaction", BookingController.ChangeRoom);
+    BookingRouter.post("/get-room-available", BookingController.GetDataRoomAvailable);
 
 
 // BookingRouter.post("/notification", BookingController.TrxNotif);

@@ -203,6 +203,7 @@ export class RoomController {
 
                     {
                         name: true,
+                        nameAdditional: true,
                         _id:true,
                         available: true
                     }

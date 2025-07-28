@@ -275,7 +275,7 @@ const BookingSchema: Schema = new Schema(
         payment: [{
             name: {               // Nama bank atau provider (contoh: BCA, DANA, GoPay)
                 type: String,
-                required: true,
+                required: false,
                 trim: true,
             },
             type: {               // Kategori metode pembayaran
@@ -286,7 +286,7 @@ const BookingSchema: Schema = new Schema(
             },
             amount: {             // Jumlah yang dibayarkan
                 type: Number,
-                required: true,
+                required: false,
                 min: 0,
             },
             code: {               // Catatan tambahan, misal "dari user A", atau "pembayaran awal"
