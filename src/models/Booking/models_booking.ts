@@ -280,7 +280,7 @@ const BookingSchema: Schema = new Schema(
             },
             type: {               // Kategori metode pembayaran
                 type: String,
-                enum: ['bank_transfer', 'virtual_account', 'e_wallet', 'qris', 'retail', 'etc','booking.com','traveloka'],
+                enum: ['bank_transfer', 'virtual_account', 'e_wallet', 'qris', 'retail', 'etc','booking.com','traveloka','edc'],
                 required: true,
                 lowercase: true,
             },
