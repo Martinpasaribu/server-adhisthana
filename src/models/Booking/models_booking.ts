@@ -11,7 +11,7 @@ export interface Room {
 }
 export default interface IPayment {
   name: string;                                // contoh: 'BCA', 'GoPay', 'DANA'
-  type: 'bank_transfer' | 'virtual_account' | 'e_wallet' | 'qris' | 'retail' | 'etc'| 'traveloka' | 'booking.com' | 'edc';
+  type: 'bank_transfer' | 'virtual_account' | 'e_wallet' | 'qris' | 'retail' | 'etc'| 'traveloka' | 'booking.com' | 'edc' | 'cash' ;
   amount: number;                              // contoh: 150000
   foreign_key: string;                              // contoh: 150000
   code: string;                              // contoh: 150000
@@ -280,7 +280,7 @@ const BookingSchema: Schema = new Schema(
             },
             type: {               // Kategori metode pembayaran
                 type: String,
-                enum: ['bank_transfer', 'virtual_account', 'e_wallet', 'qris', 'retail', 'etc','booking.com','traveloka','edc'],
+                enum: ['bank_transfer', 'virtual_account', 'e_wallet', 'qris', 'retail', 'etc','booking.com','traveloka','edc', 'cash'],
                 required: true,
                 lowercase: true,
             },

@@ -82,7 +82,7 @@ app.use((0, express_session_1.default)({
         //  ==========  Development  ============
         // secure: false,
         // httpOnly: true,      
-        // maxAge: 1000 * 60 * 60 * 24, // 1 hari
+        // maxAge: 1000 * 60 * 60 * 24, // 1 hari     
         // ===========  Chrome , edge , fireFox Production  ==============
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'none',

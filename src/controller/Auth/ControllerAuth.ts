@@ -454,7 +454,8 @@ export class AuthController {
     };
 
     static async LoginAdmin(req: any, res: any) {
-        try {
+        
+      try {
           const { username, password, ConfirmPassword, recaptchaToken } = req.body;
     
           // 1. Verifikasi reCAPTCHA dengan score yang lebih tinggi
@@ -579,6 +580,7 @@ export class AuthController {
                 success: false
             });
         }
+        
     }
 
     static async LogoutAdmin(req: any, res: any) {

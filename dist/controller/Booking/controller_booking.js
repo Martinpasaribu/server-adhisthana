@@ -26,6 +26,9 @@ const Controller_PendingRoom_1 = require("../PendingRoom/Controller_PendingRoom"
 const SetAvailableCounts_1 = require("./SetAvailableCounts");
 const TransactionService_1 = require("../Transaction/TransactionService");
 const models_RoomStatus_1 = require("../../models/RoomStatus/models_RoomStatus");
+const luxon_1 = require("luxon");
+const models_booking_1 = require("../../models/Booking/models_booking");
+const models_transaksi_1 = require("../../models/Transaction/models_transaksi");
 class BookingController {
     static addBooking(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -301,6 +304,52 @@ class BookingController {
             catch (error) {
                 console.error('Error:', error);
                 return res.status(500).json('Server error');
+            }
+        });
+    }
+    static GetInfoBookingByDate(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { start, end } = req.params;
+                console.log('Start param:', start);
+                console.log('End param:', end);
+                const startWIB = luxon_1.DateTime.fromISO(start, { zone: 'Asia/Jakarta' });
+                const endWIB = luxon_1.DateTime.fromISO(end, { zone: 'Asia/Jakarta' });
+                if (!startWIB.isValid || !endWIB.isValid) {
+                    return res.status(400).json({ message: "Invalid date format" });
+                }
+                // Ambil booking sesuai range tanggal
+                const bookings = yield models_booking_1.BookingModel.find({
+                    isDeleted: false,
+                    checkIn: {
+                        $gte: startWIB.startOf('day').toISO(), // minimal tanggal awal
+                        $lte: endWIB.endOf('day').toISO(), // maksimal tanggal akhir
+                    }
+                })
+                    .populate('roomStatusKey')
+                    .lean();
+                // Ambil semua transaction terkait booking yang diambil
+                const bookingIds = bookings.map(b => b._id);
+                const transactions = yield models_transaksi_1.TransactionModel.find({
+                    booking_keyId: { $in: bookingIds },
+                    isDeleted: false
+                }).lean();
+                // Buat map untuk lookup status transaksi
+                const txMap = new Map(transactions.map(tx => [tx.booking_keyId.toString(), tx]));
+                // Gabungkan transactionStatus ke booking
+                const result = bookings.map(booking => {
+                    const tx = txMap.get(booking._id.toString());
+                    return Object.assign(Object.assign({}, booking), { transactionStatus: tx ? tx.status : 'Suspended' });
+                });
+                return res.status(200).json({
+                    data: result,
+                    message: `Data Report from ${startWIB.toISO()} to ${endWIB.toISO()}`,
+                    success: true
+                });
+            }
+            catch (error) {
+                console.error('Error:', error);
+                return res.status(500).json({ message: 'Server error' });
             }
         });
     }

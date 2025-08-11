@@ -17,6 +17,9 @@ import { PendingRoomController } from '../PendingRoom/Controller_PendingRoom';
 import { SetAvailableCount } from './SetAvailableCounts';
 import { transactionService } from '../Transaction/TransactionService';
 import { RoomStatusModel } from '../../models/RoomStatus/models_RoomStatus';
+import { DateTime } from 'luxon';
+import { BookingModel } from '../../models/Booking/models_booking';
+import { TransactionModel } from '../../models/Transaction/models_transaksi';
 
 export class BookingController {
 
@@ -381,6 +384,67 @@ export class BookingController {
             console.error('Error:', error);
             return res.status(500).json('Server error');
 
+          }
+        }
+
+        static async GetInfoBookingByDate(req: Request, res: Response) {
+          
+          try {
+            const { start, end } = req.params;
+
+            console.log('Start param:', start);
+            console.log('End param:', end);
+
+            const startWIB = DateTime.fromISO(start, { zone: 'Asia/Jakarta' });
+            const endWIB = DateTime.fromISO(end, { zone: 'Asia/Jakarta' });
+
+            if (!startWIB.isValid || !endWIB.isValid) {
+              return res.status(400).json({ message: "Invalid date format" });
+            }
+
+            // Ambil booking sesuai range tanggal
+            const bookings = await BookingModel.find({
+
+              isDeleted: false,
+              checkIn: {
+                $gte: startWIB.startOf('day').toISO(), // minimal tanggal awal
+                $lte: endWIB.endOf('day').toISO(),     // maksimal tanggal akhir
+              }
+            })
+
+              .populate('roomStatusKey')
+              .lean();
+
+            // Ambil semua transaction terkait booking yang diambil
+            const bookingIds = bookings.map(b => b._id);
+            const transactions = await TransactionModel.find({
+              booking_keyId: { $in: bookingIds },
+              isDeleted: false
+            }).lean();
+
+            // Buat map untuk lookup status transaksi
+            const txMap = new Map(
+              transactions.map(tx => [tx.booking_keyId.toString(), tx])
+            );
+
+            // Gabungkan transactionStatus ke booking
+            const result = bookings.map(booking => {
+              const tx = txMap.get(booking._id.toString());
+              return {
+                ...booking,
+                transactionStatus: tx ? tx.status : 'Suspended'
+              };
+            });
+
+            return res.status(200).json({
+              data: result,
+              message: `Data Report from ${startWIB.toISO()} to ${endWIB.toISO()}`,
+              success: true
+            });
+
+          } catch (error) {
+            console.error('Error:', error);
+            return res.status(500).json({ message: 'Server error' });
           }
         }
 

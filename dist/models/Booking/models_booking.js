@@ -150,7 +150,7 @@ const BookingSchema = new mongoose_1.Schema({
             },
             type: {
                 type: String,
-                enum: ['bank_transfer', 'virtual_account', 'e_wallet', 'qris', 'retail', 'etc', 'booking.com', 'traveloka', 'edc'],
+                enum: ['bank_transfer', 'virtual_account', 'e_wallet', 'qris', 'retail', 'etc', 'booking.com', 'traveloka', 'edc', 'cash'],
                 required: true,
                 lowercase: true,
             },

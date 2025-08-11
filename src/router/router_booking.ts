@@ -12,6 +12,7 @@ const BookingRouter: express.Router = express.Router();
     BookingRouter.post("/addBooking",verifyID, verifyToken, BookingController.addBooking);
     BookingRouter.post("/change-room/:id_transaction", BookingController.ChangeRoom);
     BookingRouter.post("/get-room-available", BookingController.GetDataRoomAvailable);
+    BookingRouter.get("/get-info/:start/:end", BookingController.GetInfoBookingByDate);
 
 
 // BookingRouter.post("/notification", BookingController.TrxNotif);
