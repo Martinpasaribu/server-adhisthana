@@ -194,73 +194,67 @@ class BookingController {
     }
     static ChangeRoom(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            let id_transaction = req.params.id_transaction;
-            let dataUpdate = req.body.dataUpdate;
-            if (!dataUpdate || !Array.isArray(dataUpdate)) {
-                return res.status(400).json('dataUpdate not found or invalid');
-            }
+            var _a;
+            const id_transaction = req.params.id_transaction;
+            const dataUpdate = req.body.dataUpdate;
+            if (!Array.isArray(dataUpdate) || !dataUpdate.length)
+                return res.status(400).json("dataUpdate not found or invalid");
             try {
                 const findresult = yield models_RoomStatus_1.RoomStatusModel.find({
                     isDeleted: false,
                     id_Trx: id_transaction
-                }).select("code number name");
-                const codesInDB = findresult.map(item => item.code);
-                const codesInUpdate = dataUpdate.map(item => item.code);
-                // Cek jika TIDAK ADA SATUPUN yang sama
-                const hasAnySame = codesInUpdate.some(code => codesInDB.includes(code));
-                if (!hasAnySame) {
-                    // 🔁 GANTI SEMUA DATA
-                    for (let i = 0; i < findresult.length; i++) {
-                        const oldData = findresult[i];
-                        const newData = dataUpdate[i];
-                        // await RoomStatusModel.findByIdAndUpdate(oldData._id, {
-                        //   name: newData.name,
-                        //   code: newData.code,
-                        //   updatedAt: new Date()
-                        // });
-                        console.log('Data yang semuanya baru : ', hasAnySame);
+                }).select("code number name nameVilla");
+                const detectClass = (nv) => {
+                    const n = (nv || "").replace(/\s+/g, "").toLowerCase();
+                    if (n.includes("deluxegarden"))
+                        return "Deluxe";
+                    if (n.includes("gardenpool"))
+                        return "Superior";
+                    if (n.includes("residence"))
+                        return "Residence";
+                    return "Unknown";
+                };
+                const dbRooms = findresult.map(r => (Object.assign(Object.assign({}, r.toObject()), { class: detectClass(r.nameVilla) })));
+                if (dbRooms.length !== dataUpdate.length)
+                    return res.status(400).json(`Jumlah room tidak sama. DB: ${dbRooms.length}, FE: ${dataUpdate.length}`);
+                let numberList = [
+                    { code: "RSW", number: 8 },
+                    { code: "RSR", number: 7 },
+                    { code: "RPW", number: 6 },
+                    { code: "RMD", number: 5 },
+                    { code: "RLB", number: 4 },
+                    { code: "RKL", number: 3 },
+                    { code: "RJW", number: 2 },
+                    { code: "RJG", number: 1 },
+                ];
+                const countByClass = (arr) => arr.reduce((a, r) => ((a[r.class] = (a[r.class] || 0) + 1), a), {});
+                const dbCount = countByClass(dbRooms);
+                const feCount = countByClass(dataUpdate);
+                for (let cls of Object.keys(dbCount))
+                    if (dbCount[cls] !== feCount[cls])
+                        return res.status(400).json(`Jumlah room untuk class ${cls} tidak sesuai. DB: ${dbCount[cls]}, FE: ${feCount[cls]}`);
+                // 🚀 Update per kelas tanpa urutan/index
+                for (let cls of Object.keys(dbCount)) {
+                    const dbClassRooms = dbRooms.filter(r => r.class === cls);
+                    const feClassRooms = dataUpdate.filter(r => r.class === cls);
+                    const toUpdate = dbClassRooms.filter(r => !feClassRooms.some(n => n.code === r.code));
+                    const newCodes = feClassRooms.filter(r => !dbClassRooms.some(o => o.code === r.code));
+                    for (let i = 0; i < toUpdate.length; i++) {
+                        const newRoom = newCodes[i];
+                        const matchedNumber = ((_a = numberList.find(n => n.code === newRoom.code)) === null || _a === void 0 ? void 0 : _a.number) || null;
+                        yield models_RoomStatus_1.RoomStatusModel.findByIdAndUpdate(toUpdate[i]._id, {
+                            name: newRoom.name,
+                            code: newRoom.code,
+                            number: matchedNumber,
+                            updatedAt: new Date()
+                        });
                     }
-                    return res.status(200).json({
-                        requestId: (0, uuid_1.v4)(),
-                        dataUpdate: dataUpdate,
-                        findresult: findresult,
-                        id_transaction: id_transaction,
-                        hasAnySame: hasAnySame,
-                        codesInDB: codesInDB,
-                        codesInUpdate: codesInUpdate,
-                        message: "All rooms replaced with new data",
-                        success: true,
-                    });
                 }
-                // 👇 HANDLE DATA YANG BERBEDA SAJA
-                const newItems = dataUpdate.filter(item => !codesInDB.includes(item.code));
-                const unusedDBItems = findresult.filter(item => !codesInUpdate.includes(item.code));
-                // Jika jumlah tidak cocok → error
-                if (newItems.length !== unusedDBItems.length) {
-                    return res.status(400).json('Mismatch between new items and items to replace');
-                }
-                for (let i = 0; i < newItems.length; i++) {
-                    const toUpdate = unusedDBItems[i];
-                    const newData = newItems[i];
-                    yield models_RoomStatus_1.RoomStatusModel.findByIdAndUpdate(toUpdate._id, {
-                        name: newData.name,
-                        code: newData.code,
-                        updatedAt: new Date()
-                    });
-                    console.log('Ada Data yang baru : ', newItems);
-                }
-                return res.status(200).json({
-                    requestId: (0, uuid_1.v4)(),
-                    dataUpdate: dataUpdate,
-                    findresult: findresult,
-                    newItems: newItems,
-                    message: "Room(s) updated successfully.",
-                    success: true,
-                });
+                return res.status(200).json({ requestId: (0, uuid_1.v4)(), message: "Rooms updated successfully", success: true });
             }
-            catch (error) {
-                console.error('Error:', error);
-                return res.status(500).json('Server error');
+            catch (err) {
+                console.error(err);
+                return res.status(500).json("Server error");
             }
         });
     }
@@ -279,25 +273,32 @@ class BookingController {
                     checkOut: { $gt: In.toISOString() },
                 }).select('number name code');
                 const allRooms = [
-                    { number: 1, name: "Jago", code: "RJG" },
-                    { number: 2, name: "Jawi", code: "RJW" },
-                    { number: 3, name: "Kalasan", code: "RKL" },
-                    { number: 4, name: "Lumbung", code: "RLB" },
-                    { number: 5, name: "Mendut", code: "RMD" },
-                    { number: 6, name: "Pawon", code: "RPW" },
-                    { number: 7, name: "Sari", code: "RSR" },
-                    { number: 8, name: "Sewu", code: "RSW" },
+                    // Deluxe
+                    { number: 1, name: "Jago", code: "RJG", class: "Deluxe" },
+                    { number: 2, name: "Jawi", code: "RJW", class: "Deluxe" },
+                    { number: 3, name: "Kalasan", code: "RKL", class: "Deluxe" },
+                    // Superior
+                    { number: 4, name: "Lumbung", code: "RLB", class: "Superior" },
+                    { number: 5, name: "Mendut", code: "RMD", class: "Superior" },
+                    { number: 6, name: "Pawon", code: "RPW", class: "Superior" },
+                    { number: 7, name: "Sari", code: "RSR", class: "Superior" },
+                    // Family
+                    { number: 8, name: "Sewu", code: "RSW", class: "Family" },
                 ];
-                if (!RoomAvailability) {
-                    return res.status(400).json('dataUpdate not found or invalid');
-                }
-                const unavailableCodes = RoomAvailability.map(room => room.code);
-                const availableRooms = allRooms.filter(room => !unavailableCodes.includes(room.code));
+                const unavailableCodes = RoomAvailability.map(r => r.code);
+                const availableRooms = allRooms.filter(r => !unavailableCodes.includes(r.code));
+                // Group by class
+                const grouped = availableRooms.reduce((acc, room) => {
+                    if (!acc[room.class])
+                        acc[room.class] = [];
+                    acc[room.class].push(room);
+                    return acc;
+                }, {});
                 return res.status(200).json({
                     requestId: (0, uuid_1.v4)(),
-                    data: availableRooms,
+                    data: grouped,
                     date: data,
-                    message: "data.",
+                    message: "Data grouped by class",
                     success: true,
                 });
             }
@@ -355,3 +356,515 @@ class BookingController {
     }
 }
 exports.BookingController = BookingController;
+// static async getOffers(req: Request, res: Response) {
+//     const { checkin, checkout } = req.query;
+//     try {
+//       // Validasi dan konversi parameter checkin dan checkout
+//       if (!checkin || !checkout) {
+//         return res.status(400).json({
+//           requestId: uuidv4(),
+//           data: null,
+//           message: "Check-in and check-out dates are required.",
+//           success: false,
+//         });
+//       }
+//       // Query ke MongoDB
+//       const data = await BookingModel.find({
+//         isDeleted: false,
+//         checkIn:  checkin ,
+//         checkOut:  checkout ,
+//       });
+//       res.status(200).json({
+//         requestId: uuidv4(),
+//         data: data,
+//         message: `Successfully get vila.`,
+//         success: true,
+//       });
+//     } catch (error) {
+//       res.status(500).json({
+//         requestId: uuidv4(),
+//         data: null,
+//         message: (error as Error).message,
+//         success: false,
+//       });
+//     }
+//   }
+// static async deletedRoomPermanent(req: Request, res: Response) {
+//     try {
+//         const { id } = req.params; 
+//         const deletedRoom = await RoomModel.findOneAndDelete({_id:id});
+//         res.status(201).json(
+//             {
+//                 requestId: uuidv4(), 
+//                 data: deletedRoom,
+//                 message: "Successfully DeletedPermanent Data Room as Cascade .",
+//                 success: true
+//             }
+//         );
+//     } catch (error) {
+//         res.status(400).json(
+//             {
+//                 requestId: uuidv4(), 
+//                 data: null,
+//                 message:  (error as Error).message,
+//                 success: false
+//             }
+//         );
+//     }
+// }
+// static async updateRoomPart(req: Request, res: Response) {
+//     const { id } = req.params; 
+//     const updateData = req.body; 
+//     // if (updateData._id) {
+//     //     delete updateData._id;
+//     // }
+//     try {
+//         const updatedRoom = await RoomModel.findOneAndUpdate(
+//             // new mongoose.Types.ObjectId(id),        
+//             {_id:id},
+//             updateData,            
+//             { new: true, runValidators: true } 
+//         );
+//         if (!updatedRoom) {
+//             return res.status(404).json({
+//                 requestId: uuidv4(), 
+//                 success: false,
+//                 message: "Room not found",
+//             });
+//         }
+//         res.status(200).json({
+//             requestId: uuidv4(), 
+//             success: true,
+//             message: "Successfully updated Room data",
+//             data: updatedRoom
+//         });
+//     } catch (error) {
+//         res.status(400).json({
+//             requestId: uuidv4(), 
+//             success: false,
+//             message: (error as Error).message,
+//         });
+//     }
+// };
+// static async TrxNotif(req: Request, res: Response) {
+//     try {
+//         const data = req.body;
+//         // console.log("Data from midtrans:", data);
+//         // Menghilangkan prefiks "order-" dari transaction_id
+//         const formattedTransactionId = data.order_id.replace(/^order-/, "");
+//         // console.log("Formatted Transaction ID:", formattedTransactionId);
+//         // Menunggu hasil findOne dengan bookingId yang sudah diformat
+//         const existingTransaction = await TransactionModel.findOne({ bookingId: formattedTransactionId });
+//         let resultUpdate : any 
+//         if (existingTransaction) {
+//             // Properti bookingId sekarang tersedia
+//             const result = await updateStatusBaseOnMidtransResponse(data.order_id, data, res);
+//             console.log('result = ', result);
+//             resultUpdate = result
+//         } else {
+//             console.log('Transaction not found in server, Data =', data);
+//         }
+//         res.status(200).json({
+//             status: 'success',
+//             message: "OK",
+//             data: resultUpdate
+//         })
+//     } catch (error) {
+//         console.error('Error handling transaction notification:', error);
+//         res.status(500).json({ 
+//             error: 'Internal Server Error' 
+//         });
+//     }
+// }
+// static async getRoomByParams(req: Request, res: Response) {
+//     let data ;
+//     const { id } = req.params; 
+//     try {
+//         new mongoose.Types.ObjectId(id), 
+//         data = await RoomModel.find({ _id : id , isDeleted: false});
+//         res.status(201).json(
+//             {
+//                 requestId: uuidv4(), 
+//                 data: data,
+//                 message: "Successfully Fetch Data Room by Params.",
+//                 success: true
+//             }
+//         );
+//     } catch (error) {
+//         res.status(400).json(
+//             {
+//                 requestId: uuidv4(), 
+//                 data: null,
+//                 message:  (error as Error).message,
+//                 RoomId: `Room id : ${id}`,
+//                 success: false
+//             }
+//         );
+//     }
+// }
+// static async deletedSoftRoom(req: Request, res: Response) {
+//     try {
+//         let data ;
+//         const { id } = req.params;
+//         data = await RoomModel.findByIdAndUpdate(id, { isDeleted: true },{ new: true, runValidators: true });
+//         if (!data) {
+//             return res.status(404).json({
+//                 requestId: uuidv4(),
+//                 data: null,
+//                 message: "Room not found.",
+//                 success: false
+//             });
+//         }
+//         await ModuleModel.updateMany(
+//             { RoomId: id },
+//             { isDeleted: true }
+//         );
+//         const modules = await ModuleModel.find({ RoomId: id });
+//         const moduleId = modules.map((mod) => mod._id);
+//         await ChapterModel.updateMany(
+//             { moduleId: { $in: moduleId } },
+//             { isDeleted: true }
+//         );
+//         const chapters = await ChapterModel.find({ moduleId: { $in: moduleId } });
+//         const chapterId = chapters.map((ch) => ch._id);
+//         await QuestionModel.updateMany(
+//             { chapterId: { $in: chapterId } },
+//             { isDeleted: true }
+//         );
+//         res.status(201).json(
+//             {
+//                 requestId: uuidv4(), 
+//                 data: data,
+//                 message: `Successfully SoftDeleted Data : ${data} as Cascade `,
+//                 success: true
+//             }
+//         );
+//     } catch (error) {
+//         res.status(400).json(
+//             {
+//                 requestId: uuidv4(), 
+//                 data: null,
+//                 message:  (error as Error).message,
+//                 success: false
+//             }
+//         );
+//     }
+// }
+// static async SetNight(req: Request, res: Response) {
+//     const { night } = req.body;
+//     // Validasi input
+//     if (!night || night <= 0) {
+//         return res.status(400).json(
+//             { message: 'Wrong in set night' }
+//         );
+//     }
+//     // Jika cart belum ada, inisialisasi
+//     if (!req.session.cart) {
+//         req.session.cart = [];
+//     }
+//     try {
+//         req.session.night = night
+//         req.session.save(err => {
+//         if (err) {
+//             console.error('Error saving session:', err);
+//             return res.status(500).json({ error: 'Failed to save session' });
+//         }
+//         res.json({
+//             message: night + ' Night adding ',                 
+//         });
+//     });
+//     } catch (error) {
+//         console.error('Error add Night', error);
+//         res.status(500).json({ message:  (error as Error).message,});
+//     }
+// }
+// static async PostChartRoom(req: Request, res: Response) {
+//     const { roomId, quantity } = req.body;
+//     // Validasi input
+//     if (!roomId || quantity <= 0) {
+//         return res.status(400).json({ error: 'Invalid input' });
+//     }
+//     // Jika cart belum ada, inisialisasi
+//     if (!req.session.cart) {
+//         req.session.cart = [];
+//     }
+//     try {
+//         // Cari data kamar berdasarkan roomId
+//         const room = await RoomModel.findById(roomId);
+//         if (!room) {
+//             return res.status(404).json({ error: 'Room not found' });
+//         }
+//         const availableQty = room.available; // Ambil jumlah kamar yang tersedia
+//         const price = room.price; // Ambil harga dari database
+//         // Cari apakah roomId sudah ada di cart
+//         const existingItem = req.session.cart.find(item => item.roomId === roomId);
+//         if (existingItem) {
+//             // Hitung jumlah total jika quantity ditambahkan
+//             const newQuantity = existingItem.quantity + quantity;
+//             if (newQuantity > availableQty) {
+//                 return res.status(400).json({ 
+//                     message: 'Quantity exceeds available rooms', 
+//                     available: availableQty 
+//                 });
+//             }
+//             // Tambahkan quantity jika valid
+//             existingItem.quantity = newQuantity;
+//         } else {
+//             // Periksa apakah jumlah yang diminta melebihi jumlah yang tersedia
+//             if (quantity > availableQty) {
+//                 return res.status(400).json({ 
+//                     message: 'Quantity exceeds available rooms', 
+//                     available: availableQty 
+//                 });
+//             }
+//             // Tambahkan sebagai item baru
+//             req.session.cart.push({ roomId, quantity, price });
+//             req.session.deviceInfo = {
+//                 userAgent: req.get('User-Agent'), // Menyimpan informasi tentang browser/perangkat
+//                 ipAddress: req.ip, // Menyimpan alamat IP pengguna
+//               };
+//         }
+//         // Hitung total harga
+//         const totalPrice = req.session.cart.reduce((total, item) => {
+//             const itemPrice = Number(item.price);
+//             const itemQuantity = Number(item.quantity);
+//             return total + itemPrice * itemQuantity;
+//         }, 0);
+//         // Simpan perubahan ke session
+//         req.session.save(err => {
+//             if (err) {
+//                 console.error('Error saving session:', err);
+//                 return res.status(500).json({ error: 'Failed to save session' });
+//             }
+//             res.json({
+//                 message: 'Item added to cart',
+//                 cart: req.session.cart,
+//                 totalPrice
+//             });
+//         });
+//     } catch (error) {
+//         console.error('Error fetching room data:', error);
+//         res.status(500).json({ error: 'Internal server error' });
+//     }
+// }
+// static async DelChartRoom(req: Request, res: Response) {
+//     const { itemId } = req.body; // Ambil itemId dari request body
+//     // Pastikan cart ada dan itemId diberikan
+//     if (!req.session.cart || !itemId) {
+//         return res.status(400).json({ message: 'Cart is empty or itemId not provided' });
+//     }
+//     // Temukan item yang ingin dihapus atau dikurangi quantity-nya
+//     const item = req.session.cart.find(item => item.roomId === itemId);
+//     if (!item) {
+//         return res.status(404).json({ message: 'Item not found in cart' });
+//     }
+//     // Jika quantity lebih dari 1, kurangi quantity-nya
+//     if (item.quantity > 1) {
+//         item.quantity -= 1;
+//     } else {
+//         // Jika quantity 1, hapus item dari cart
+//         req.session.cart = req.session.cart.filter(item => item.roomId !== itemId);
+//     }
+//     return res.json({ message: 'Item updated in cart', cart: req.session.cart });
+// }
+// static async GetChartRoom (req : Request, res : Response) {
+//  try {
+//     const sessionId = req.cookies["connect.sid"];
+//     if (!sessionId) {
+//         return res.status(400).json({ error: "Session ID not provided" });
+//     }
+//     const session = await SessionModel.findOne({ _id: sessionId });
+//     return res.status(200).json(
+//         { 
+//             data: session,
+//             message: 'Get Chart Sucsessfully'
+//         }
+//     );
+//  } catch (error) {
+//     console.error('Error in GetChart:', error);
+//     return res.status(500).json({ error: 'Internal server error' });
+//  }
+// };
+// static async GetTotalPrice(req: Request, res: Response) {
+//     try {
+//         // Debugging: Lihat session yang ada di setiap permintaan
+//         console.log('Session:', req.session);
+//         // Cek apakah cart ada di session
+//         if (!req.session.cart) {
+//             req.session.cart = [];
+//         }
+//         // Ambil data cart dari session
+//         const cart = req.session.cart;
+//         const night = req.session.night;
+//         console.log('Cart in server:', cart); // Debugging
+//         // Jika cart kosong, kirimkan respons error
+//         if (cart.length === 0) {
+//             return res.status(404).json({ message: 'There are problems in sessions charts' });
+//         }
+//         if (!night) {
+//             return res.status(404).json({ message: 'There are problems in sessions night set' });
+//         }
+//         // Hitung total harga: price * quantity untuk setiap item, lalu jumlahkan
+//         const totalPrice = cart.reduce((total, item) => {
+//             const price = Number(item.price);
+//             const malam = Number(night);
+//             const quantity = Number(item.quantity);
+//             return total + price * quantity * malam ;
+//         }, 0);
+//         const tax = totalPrice * 0.12;
+//         // Debugging totalPrice
+//         console.log('Total Price:', totalPrice); // Debugging
+//         // Kirim respons dengan cart dan total harga
+//         return res.status(200).json({
+//             requestId: uuidv4(),
+//             data: cart,
+//             totalPrice: totalPrice + tax,
+//             amountNight: night,
+//             message: 'Successfully calculated total price.',
+//             success: true,
+//         });
+//     } catch (error) {
+//         console.error('Error in GetTotalPrice:', error);
+//         res.status(500).json({
+//             requestId: uuidv4(),
+//             data: null,
+//             // message: (error as Error).message,
+//             message: 'Error to acumulation price'+ (error as Error).message, 
+//             success: false,
+//         });
+//     }
+// }
+// Will hit midtrans after payment
+// static async CekSessions (req : Request, res : Response) {
+//     console.log('Session data:', req.session);
+//     res.json(req.session);
+// };
+// static async Checkout  (req : Request, res : Response) {
+//     const cart = req.session.cart;
+//     // Pastikan cart tidak kosong
+//     if (!cart || cart.length === 0) {
+//       return res.status(400).json({ error: 'Cart is empty' });
+//     }
+//     // Validasi ulang data di server (contoh: cek harga dan ketersediaan)
+//     // const isValid = await validateCart(cart); // Implementasi validasi tergantung kebutuhan
+//     // if (!isValid) {
+//     //   return res.status(400).json({ error: 'Invalid cart data' });
+//     // }
+//     // Simpan transaksi ke database
+//     // const transaction = await saveTransaction(cart);
+//     // Bersihkan session setelah checkout berhasil
+//     req.session.cart = [];
+//     // res.json({ message: 'Checkout successful', transactionId: transaction.id });
+// };
+// static async RemoveCart(req: Request, res: Response) {
+//     try {
+//         req.session.destroy((err) => {
+//             if (err) {
+//                 console.error('Error destroying session:', err);
+//                 return res.status(500).json({
+//                     requestId: uuidv4(),
+//                     data: null,
+//                     message: 'Failed to delete session.',
+//                     success: false,
+//                 });
+//             }
+//             // Hapus cookie session
+//             res.clearCookie('connect.sid'); // Ganti 'connect.sid' dengan nama cookie session Anda
+//             res.status(200).json({
+//                 requestId: uuidv4(),
+//                 message: 'Session successfully deleted in server.',
+//                 success: true,
+//             });
+//         });
+//     } catch (error) {
+//         console.error('Error in RemoveCart:', error);
+//         res.status(500).json({
+//             requestId: uuidv4(),
+//             data: null,
+//             message: (error as Error).message,
+//             success: false,
+//         });
+//     }
+// }
+// static async DelChartInSession(req: Request, res: Response) {
+//     // Pastikan cart ada dan itemId diberikan
+//     if (!req.session.cart ) {
+//         return res.status(400).json({ message: 'Cart is empty ' });
+//     }
+//     req.session.cart = []
+//     return res.status(200).json( 
+//             { 
+//                 message: 'Field Chart has Deleted', 
+//                 cart: req.session.cart 
+//             }
+//     );
+// }
+// }        static async ChangeRoom(req: Request, res: Response) {
+//           let id_transaction = req.params.id_transaction;
+//           let dataUpdate = req.body.dataUpdate;
+//           if (!dataUpdate || !Array.isArray(dataUpdate)) {
+//             return res.status(400).json('dataUpdate not found or invalid');
+//           }
+//           try {
+//             const findresult = await RoomStatusModel.find({
+//               isDeleted: false,
+//               id_Trx: id_transaction
+//             }).select("code number name");
+//             const codesInDB = findresult.map(item => item.code);
+//             const codesInUpdate = dataUpdate.map(item => item.code);
+//             // Cek jika TIDAK ADA SATUPUN yang sama
+//             const hasAnySame = codesInUpdate.some(code => codesInDB.includes(code));
+//             if (!hasAnySame) {
+//               // 🔁 GANTI SEMUA DATA
+//               for (let i = 0; i < findresult.length; i++) {
+//                 const oldData = findresult[i];
+//                 const newData = dataUpdate[i];
+//                 // await RoomStatusModel.findByIdAndUpdate(oldData._id, {
+//                 //   name: newData.name,
+//                 //   code: newData.code,
+//                 //   updatedAt: new Date()
+//                 // });
+//                 console.log('Data yang semuanya baru : ', hasAnySame);
+//               }
+//               return res.status(200).json({
+//                 requestId: uuidv4(),
+//                 dataUpdate: dataUpdate,
+//                 findresult:findresult,
+//                 id_transaction:id_transaction,
+//                 hasAnySame: hasAnySame,
+//                 codesInDB:codesInDB,
+//                 codesInUpdate:codesInUpdate,
+//                 message: "All rooms replaced with new data",
+//                 success: true,
+//               });
+//             }
+//             // 👇 HANDLE DATA YANG BERBEDA SAJA
+//             const newItems = dataUpdate.filter(item => !codesInDB.includes(item.code));
+//             const unusedDBItems = findresult.filter(item => !codesInUpdate.includes(item.code));
+//             // Jika jumlah tidak cocok → error
+//             if (newItems.length !== unusedDBItems.length) {
+//               return res.status(400).json('Mismatch between new items and items to replace');
+//             }
+//             for (let i = 0; i < newItems.length; i++) {
+//               const toUpdate = unusedDBItems[i];
+//               const newData = newItems[i];
+//               await RoomStatusModel.findByIdAndUpdate(toUpdate._id, {
+//                 name: newData.name,
+//                 code: newData.code,
+//                 updatedAt: new Date()
+//               });
+//               console.log('Ada Data yang baru : ', newItems);
+//             }
+//             return res.status(200).json({
+//               requestId: uuidv4(),
+//               dataUpdate: dataUpdate,
+//               findresult:findresult,
+//               newItems: newItems,
+//               message: "Room(s) updated successfully.",
+//               success: true,
+//             });
+//           } catch (error) {
+//             console.error('Error:', error);
+//             return res.status(500).json('Server error');
+//           }
+//         }

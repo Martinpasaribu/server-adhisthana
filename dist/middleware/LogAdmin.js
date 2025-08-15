@@ -25,7 +25,9 @@ const CekUser = (id) => __awaiter(void 0, void 0, void 0, function* () {
     return user;
 });
 const CekBooking = (id) => __awaiter(void 0, void 0, void 0, function* () {
-    let booking = yield models_booking_1.BookingModel.findOne({ orderId: id, isDeleted: false }).select("name email phone orderId checkIn checkOut verified reservation night amountTotal otaTotal room createdAt");
+    let booking = yield models_booking_1.BookingModel.findOne({ orderId: id, isDeleted: false })
+        .select("name email roomStatusKey phone orderId checkIn checkOut verified reservation night amountTotal otaTotal room createdAt")
+        .populate("roomStatusKey", "number name code nameVilla -_id");
     // console.log("Update Data user di LOG :", booking );
     return booking;
 });
@@ -34,7 +36,7 @@ const logActivity = (action) => {
         var _a, _b;
         try {
             let user = yield CekUser(req.params.id || req.params.MessageId || req.params.UserId);
-            let booking = yield CekBooking(req.params.TransactionId || req.query.id || req.body.id_TRX || req.params.IdBooking);
+            let booking = yield CekBooking(req.params.TransactionId || req.query.id || req.body.id_TRX || req.params.IdBooking || req.params.id_transaction);
             let adminId = req.body.adminId || req.session.userId;
             const ipAddress = req.ip || req.socket.remoteAddress;
             const routePath = req.originalUrl; // Dapatkan route yang diakses
@@ -110,15 +112,29 @@ const logActivity = (action) => {
                     statement1 = `New Data : ${JSON.stringify(filteredData, null, 2)}`;
                     statement2 = `Old Data : ${user}`;
                     break;
+                // Booking 
                 case routePath.startsWith("/api/v1/admin/booking/set-verified"):
                     type = "Booking";
-                    // const user = await CekUser(req.params.TransactionId);
                     target = booking ? (`ID  : ${booking.orderId} ,  Name : ${booking.name}`) : "-";
                     break;
                 case routePath.startsWith("/api/v1/admin/booking/set-checkout"):
                     type = "Booking";
                     // const user = await CekUser(req.params.TransactionId);
                     target = booking ? (`ID : ${booking.orderId} ,  Name : ${booking.name}`) : "-";
+                    break;
+                case routePath.startsWith("/api/v1/booking/change-room"):
+                    type = "Booking";
+                    // const user = await CekUser(req.params.TransactionId);
+                    target = booking ? (`ID : ${booking.orderId} ,  Name : ${booking.name}`) : "-";
+                    statement1 = booking
+                        ? `data_old : ${booking.roomStatusKey
+                            ? JSON.stringify(booking.roomStatusKey, null, 2)
+                            : "No old data"}`
+                        : "";
+                    data = JSON.stringify({
+                        "data request": req.body
+                    }, null, 2);
+                    console.log('lupakan dada 🟢');
                     break;
                 // Membuat Reservation
                 case routePath.startsWith("/api/v1/reservation/add-reservation"):
@@ -131,6 +147,14 @@ const logActivity = (action) => {
                     type = "Reservation";
                     target = booking ? (`ID : ${booking.orderId} ,  Name : ${booking.name}`) : "-";
                     data = `${booking}`;
+                    break;
+                case routePath.startsWith("/api/v1/reservation/create-schedule"):
+                    type = "Reservation";
+                    target = req.body.name || [];
+                    const oldSchedule = (_b = (_a = req.body) === null || _a === void 0 ? void 0 : _a.reschedule) === null || _b === void 0 ? void 0 : _b.schedule_old;
+                    statement1 = `Schedule_old : ${oldSchedule ? JSON.stringify(oldSchedule, null, 2) : 'No old schedule'}`;
+                    statement2 = "Add Reschedule";
+                    data = `Schedule_new : ${JSON.stringify(req.body, null, 2)} `;
                     break;
                 case routePath.startsWith("/api/v1/site/minder/del-transaction"):
                     type = "Management";
@@ -147,14 +171,6 @@ const logActivity = (action) => {
                     target = booking ? (`ID : ${booking.orderId} ,  Name : ${booking.name}`) : "-";
                     statement1 = "Reschedule in cancel";
                     data = `Data reschedule : ${booking}`;
-                    break;
-                case routePath.startsWith("/api/v1/reservation/create-schedule"):
-                    type = "Reservation";
-                    target = req.body.name || [];
-                    const oldSchedule = (_b = (_a = req.body) === null || _a === void 0 ? void 0 : _a.reschedule) === null || _b === void 0 ? void 0 : _b.schedule_old;
-                    statement1 = `Schedule_old : ${oldSchedule ? JSON.stringify(oldSchedule, null, 2) : 'No old schedule'}`;
-                    statement2 = "Add Reschedule";
-                    data = `Schedule_new : ${JSON.stringify(req.body, null, 2)} `;
                     break;
                 case routePath.startsWith("/api/v1/admin/report/add-report"):
                     type = "Report";

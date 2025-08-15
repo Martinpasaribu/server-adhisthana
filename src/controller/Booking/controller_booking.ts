@@ -20,6 +20,7 @@ import { RoomStatusModel } from '../../models/RoomStatus/models_RoomStatus';
 import { DateTime } from 'luxon';
 import { BookingModel } from '../../models/Booking/models_booking';
 import { TransactionModel } from '../../models/Transaction/models_transaksi';
+import { mapVillaToClass } from './service';
 
 export class BookingController {
 
@@ -240,111 +241,93 @@ export class BookingController {
             }
 
         }
-        
-        static async ChangeRoom(req: Request, res: Response) {
-                  
-          let id_transaction = req.params.id_transaction;
-          let dataUpdate = req.body.dataUpdate;
 
-          if (!dataUpdate || !Array.isArray(dataUpdate)) {
-            return res.status(400).json('dataUpdate not found or invalid');
-          }
+        static async ChangeRoom(req: Request, res: Response) {
+
+          const id_transaction = req.params.id_transaction;
+          const dataUpdate = req.body.dataUpdate;
+          if (!Array.isArray(dataUpdate) || !dataUpdate.length)
+            return res.status(400).json("dataUpdate not found or invalid");
 
           try {
             const findresult = await RoomStatusModel.find({
               isDeleted: false,
               id_Trx: id_transaction
-            }).select("code number name");
+            }).select("code number name nameVilla");
 
-            const codesInDB = findresult.map(item => item.code);
-            const codesInUpdate = dataUpdate.map(item => item.code);
+            const detectClass = (nv: string) => {
+              const n = (nv || "").replace(/\s+/g, "").toLowerCase();
+              if (n.includes("deluxegarden")) return "Deluxe";
+              if (n.includes("gardenpool")) return "Superior";
+              if (n.includes("residence")) return "Residence";
+              return "Unknown";
+            };
 
-            // Cek jika TIDAK ADA SATUPUN yang sama
-            const hasAnySame = codesInUpdate.some(code => codesInDB.includes(code));
+            const dbRooms = findresult.map(r => ({ ...r.toObject(), class: detectClass(r.nameVilla) }));
+            if (dbRooms.length !== dataUpdate.length)
+              return res.status(400).json(`Jumlah room tidak sama. DB: ${dbRooms.length}, FE: ${dataUpdate.length}`);
 
-            if (!hasAnySame) {
-              // 🔁 GANTI SEMUA DATA
-              for (let i = 0; i < findresult.length; i++) {
-                const oldData = findresult[i];
-                const newData = dataUpdate[i];
 
-                // await RoomStatusModel.findByIdAndUpdate(oldData._id, {
-                //   name: newData.name,
-                //   code: newData.code,
-                //   updatedAt: new Date()
-                // });
+              let numberList = [ 
+              { code: "RSW", number: 8 },
+              { code: "RSR", number: 7 },
+              { code: "RPW", number: 6 },
+              { code: "RMD", number: 5 },
+              { code: "RLB", number: 4 },
+              { code: "RKL", number: 3 },
+              { code: "RJW", number: 2 },
+              { code: "RJG", number: 1 },
+            ]
 
-                console.log('Data yang semuanya baru : ', hasAnySame);
+            const countByClass = (arr: any[]) =>
+              
+            arr.reduce((a, r) => ((a[r.class] = (a[r.class] || 0) + 1), a), {});
+
+            const dbCount = countByClass(dbRooms);
+            const feCount = countByClass(dataUpdate);
+            for (let cls of Object.keys(dbCount))
+              if (dbCount[cls] !== feCount[cls])
+                return res.status(400).json(`Jumlah room untuk class ${cls} tidak sesuai. DB: ${dbCount[cls]}, FE: ${feCount[cls]}`);
+
+              // 🚀 Update per kelas tanpa urutan/index
+              for (let cls of Object.keys(dbCount)) {
+                const dbClassRooms = dbRooms.filter(r => r.class === cls);
+                const feClassRooms = dataUpdate.filter(r => r.class === cls);
+
+                const toUpdate = dbClassRooms.filter(r => !feClassRooms.some(n => n.code === r.code));
+                const newCodes = feClassRooms.filter(r => !dbClassRooms.some(o => o.code === r.code));
+
+                for (let i = 0; i < toUpdate.length; i++) {
+                  const newRoom = newCodes[i];
+                  const matchedNumber = numberList.find(n => n.code === newRoom.code)?.number || null;
+
+                  await RoomStatusModel.findByIdAndUpdate(toUpdate[i]._id, {
+                    name: newRoom.name,
+                    code: newRoom.code,
+                    number: matchedNumber,
+                    updatedAt: new Date()
+                  });
+                }
               }
 
-
-              return res.status(200).json({
-                requestId: uuidv4(),
-                dataUpdate: dataUpdate,
-                findresult:findresult,
-                id_transaction:id_transaction,
-                hasAnySame: hasAnySame,
-                codesInDB:codesInDB,
-                codesInUpdate:codesInUpdate,
-                message: "All rooms replaced with new data",
-                success: true,
-              });
-            }
-
-            // 👇 HANDLE DATA YANG BERBEDA SAJA
-            const newItems = dataUpdate.filter(item => !codesInDB.includes(item.code));
-            const unusedDBItems = findresult.filter(item => !codesInUpdate.includes(item.code));
-
-            // Jika jumlah tidak cocok → error
-            if (newItems.length !== unusedDBItems.length) {
-              return res.status(400).json('Mismatch between new items and items to replace');
-            }
-
-            for (let i = 0; i < newItems.length; i++) {
-              const toUpdate = unusedDBItems[i];
-              const newData = newItems[i];
-
-              await RoomStatusModel.findByIdAndUpdate(toUpdate._id, {
-                name: newData.name,
-                code: newData.code,
-                updatedAt: new Date()
-              });
-
-              console.log('Ada Data yang baru : ', newItems);
-
-            }
-
-            return res.status(200).json({
-              requestId: uuidv4(),
-              dataUpdate: dataUpdate,
-              findresult:findresult,
-              newItems: newItems,
-              message: "Room(s) updated successfully.",
-              success: true,
-            });
-
-          } catch (error) {
-            console.error('Error:', error);
-            return res.status(500).json('Server error');
+            return res.status(200).json({ requestId: uuidv4(), message: "Rooms updated successfully", success: true });
+          } catch (err) {
+            console.error(err);
+            return res.status(500).json("Server error");
           }
         }
 
-
         static async GetDataRoomAvailable(req: Request, res: Response) {
-                  
-          const data = req.body.date
+          const data = req.body.date;
 
           const In = new Date(data.in);
           const Out = new Date(data.out);
 
           if (!data.in) {
-
             return res.status(400).json('data date not found or invalid');
-            
           }
 
           try {
-
             const RoomAvailability = await RoomStatusModel.find({
               isDeleted: false,
               checkIn: { $lt: Out.toISOString() },
@@ -352,38 +335,42 @@ export class BookingController {
             }).select('number name code');
 
             const allRooms = [
-              { number: 1, name: "Jago", code: "RJG" },
-              { number: 2, name: "Jawi", code: "RJW" },
-              { number: 3, name: "Kalasan", code: "RKL" },
-              { number: 4, name: "Lumbung", code: "RLB" },
-              { number: 5, name: "Mendut", code: "RMD" },
-              { number: 6, name: "Pawon", code: "RPW" },
-              { number: 7, name: "Sari", code: "RSR" },
-              { number: 8, name: "Sewu", code: "RSW" },
-            ]
+              // Deluxe
+              { number: 1, name: "Jago", code: "RJG", class: "Deluxe" },
+              { number: 2, name: "Jawi", code: "RJW", class: "Deluxe" },
+              { number: 3, name: "Kalasan", code: "RKL", class: "Deluxe" },
 
-            
-            if(!RoomAvailability){
-              return res.status(400).json('dataUpdate not found or invalid');
-            }
+              // Superior
+              { number: 4, name: "Lumbung", code: "RLB", class: "Superior" },
+              { number: 5, name: "Mendut", code: "RMD", class: "Superior" },
+              { number: 6, name: "Pawon", code: "RPW", class: "Superior" },
+              { number: 7, name: "Sari", code: "RSR", class: "Superior" },
 
-            const unavailableCodes = RoomAvailability.map(room => room.code);
+              // Family
+              { number: 8, name: "Sewu", code: "RSW", class: "Family" },
+            ];
 
-            const availableRooms = allRooms.filter(room => !unavailableCodes.includes(room.code));
+            const unavailableCodes = RoomAvailability.map(r => r.code);
+            const availableRooms = allRooms.filter(r => !unavailableCodes.includes(r.code));
+
+            // Group by class
+            const grouped = availableRooms.reduce((acc, room) => {
+              if (!acc[room.class]) acc[room.class] = [];
+              acc[room.class].push(room);
+              return acc;
+            }, {} as Record<string, any[]>);
 
             return res.status(200).json({
               requestId: uuidv4(),
-              data: availableRooms,
+              data: grouped,
               date: data,
-              message: "data.",
+              message: "Data grouped by class",
               success: true,
             });
 
           } catch (error) {
-
             console.error('Error:', error);
             return res.status(500).json('Server error');
-
           }
         }
 
@@ -447,7 +434,7 @@ export class BookingController {
             return res.status(500).json({ message: 'Server error' });
           }
         }
-
+      }
 
         // static async getOffers(req: Request, res: Response) {
         //     const { checkin, checkout } = req.query;
@@ -1042,4 +1029,92 @@ export class BookingController {
         // }
         
         
-}
+// }        static async ChangeRoom(req: Request, res: Response) {
+                  
+//           let id_transaction = req.params.id_transaction;
+//           let dataUpdate = req.body.dataUpdate;
+
+//           if (!dataUpdate || !Array.isArray(dataUpdate)) {
+//             return res.status(400).json('dataUpdate not found or invalid');
+//           }
+
+//           try {
+//             const findresult = await RoomStatusModel.find({
+//               isDeleted: false,
+//               id_Trx: id_transaction
+//             }).select("code number name");
+
+//             const codesInDB = findresult.map(item => item.code);
+//             const codesInUpdate = dataUpdate.map(item => item.code);
+
+//             // Cek jika TIDAK ADA SATUPUN yang sama
+//             const hasAnySame = codesInUpdate.some(code => codesInDB.includes(code));
+
+//             if (!hasAnySame) {
+
+//               // 🔁 GANTI SEMUA DATA
+//               for (let i = 0; i < findresult.length; i++) {
+                
+//                 const oldData = findresult[i];
+//                 const newData = dataUpdate[i];
+
+//                 // await RoomStatusModel.findByIdAndUpdate(oldData._id, {
+//                 //   name: newData.name,
+//                 //   code: newData.code,
+//                 //   updatedAt: new Date()
+//                 // });
+
+//                 console.log('Data yang semuanya baru : ', hasAnySame);
+//               }
+
+
+//               return res.status(200).json({
+//                 requestId: uuidv4(),
+//                 dataUpdate: dataUpdate,
+//                 findresult:findresult,
+//                 id_transaction:id_transaction,
+//                 hasAnySame: hasAnySame,
+//                 codesInDB:codesInDB,
+//                 codesInUpdate:codesInUpdate,
+//                 message: "All rooms replaced with new data",
+//                 success: true,
+//               });
+//             }
+
+//             // 👇 HANDLE DATA YANG BERBEDA SAJA
+//             const newItems = dataUpdate.filter(item => !codesInDB.includes(item.code));
+//             const unusedDBItems = findresult.filter(item => !codesInUpdate.includes(item.code));
+
+//             // Jika jumlah tidak cocok → error
+//             if (newItems.length !== unusedDBItems.length) {
+//               return res.status(400).json('Mismatch between new items and items to replace');
+//             }
+
+//             for (let i = 0; i < newItems.length; i++) {
+//               const toUpdate = unusedDBItems[i];
+//               const newData = newItems[i];
+
+//               await RoomStatusModel.findByIdAndUpdate(toUpdate._id, {
+//                 name: newData.name,
+//                 code: newData.code,
+//                 updatedAt: new Date()
+//               });
+
+//               console.log('Ada Data yang baru : ', newItems);
+
+//             }
+
+//             return res.status(200).json({
+//               requestId: uuidv4(),
+//               dataUpdate: dataUpdate,
+//               findresult:findresult,
+//               newItems: newItems,
+//               message: "Room(s) updated successfully.",
+//               success: true,
+//             });
+
+//           } catch (error) {
+//             console.error('Error:', error);
+//             return res.status(500).json('Server error');
+//           }
+//         }

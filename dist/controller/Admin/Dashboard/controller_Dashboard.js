@@ -243,8 +243,12 @@ class DashboardController {
                     reservation: true,
                     isDeleted: false
                 };
+                const filterQuery_booking = {
+                    isDeleted: false
+                };
                 // 2. HITUNG JUMLAH DOKUMEN TANPA MENGAMBIL DATA
                 const ReservationTotal = yield models_transaksi_1.TransactionModel.countDocuments(filterQuery);
+                const Amount_Booking = yield models_booking_1.BookingModel.countDocuments(filterQuery_booking);
                 // 3. HITUNG JUMLAH PROFIT Booking
                 const ProfitMonth = yield models_booking_1.BookingModel.find({
                     isDeleted: false,
@@ -316,6 +320,7 @@ class DashboardController {
                     requestId: (0, uuid_1.v4)(),
                     data: [],
                     BookingOneMOnth: BookingOneMOnth,
+                    Amount_Booking,
                     ReservationTotal: ReservationTotal,
                     ProfitBookingPerMonth: TotalPrice,
                     messageProfit: `Profit start date from : ${startOfMonthF}  to : ${endOfMonthF}`,

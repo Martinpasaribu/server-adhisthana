@@ -3,6 +3,7 @@ import { BookingController } from "../controller/Booking/controller_booking";
 import activityLogger from "../middleware/LogAPI";
 import { verifyID } from "../middleware/VerifyId";
 import { verifyToken } from "../middleware/VerifyToken";
+import { logActivity } from "../middleware/LogAdmin";
 
 const BookingRouter: express.Router = express.Router();
 
@@ -10,10 +11,9 @@ const BookingRouter: express.Router = express.Router();
 // semantic meaning
 
     BookingRouter.post("/addBooking",verifyID, verifyToken, BookingController.addBooking);
-    BookingRouter.post("/change-room/:id_transaction", BookingController.ChangeRoom);
+    BookingRouter.post("/change-room/:id_transaction",logActivity("Change Room"), BookingController.ChangeRoom);
     BookingRouter.post("/get-room-available", BookingController.GetDataRoomAvailable);
     BookingRouter.get("/get-info/:start/:end", BookingController.GetInfoBookingByDate);
-
 
 // BookingRouter.post("/notification", BookingController.TrxNotif);
 // BookingRouter.get("/getOffers", BookingController.getOffers);

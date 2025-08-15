@@ -7,10 +7,11 @@ const express_1 = __importDefault(require("express"));
 const controller_booking_1 = require("../controller/Booking/controller_booking");
 const VerifyId_1 = require("../middleware/VerifyId");
 const VerifyToken_1 = require("../middleware/VerifyToken");
+const LogAdmin_1 = require("../middleware/LogAdmin");
 const BookingRouter = express_1.default.Router();
 // semantic meaning
 BookingRouter.post("/addBooking", VerifyId_1.verifyID, VerifyToken_1.verifyToken, controller_booking_1.BookingController.addBooking);
-BookingRouter.post("/change-room/:id_transaction", controller_booking_1.BookingController.ChangeRoom);
+BookingRouter.post("/change-room/:id_transaction", (0, LogAdmin_1.logActivity)("Change Room"), controller_booking_1.BookingController.ChangeRoom);
 BookingRouter.post("/get-room-available", controller_booking_1.BookingController.GetDataRoomAvailable);
 BookingRouter.get("/get-info/:start/:end", controller_booking_1.BookingController.GetInfoBookingByDate);
 // BookingRouter.post("/notification", BookingController.TrxNotif);

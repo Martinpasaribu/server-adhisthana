@@ -144,8 +144,7 @@ export class DashboardController {
     static async TotalUser(req: any, res: any) {
 
       try {
-        
-        
+          
         const user = await UserModel.find({ isDeleted : false});
 
         // Kirim hasil response
@@ -232,7 +231,6 @@ export class DashboardController {
       }
     }
 
-
     // Information Dashboard One ( Total booking(1month), Profit(1month), reservation)
     static async InfoDashboardOne(req: any, res: any) {
 
@@ -271,9 +269,13 @@ export class DashboardController {
               reservation: true,
               isDeleted: false
             };
+            const filterQuery_booking = {
+              isDeleted: false
+            };
             
             // 2. HITUNG JUMLAH DOKUMEN TANPA MENGAMBIL DATA
             const ReservationTotal = await TransactionModel.countDocuments(filterQuery);
+            const Amount_Booking = await BookingModel.countDocuments(filterQuery_booking);
             
 
             // 3. HITUNG JUMLAH PROFIT Booking
@@ -369,6 +371,7 @@ export class DashboardController {
               requestId: uuidv4(),
               data: [],
               BookingOneMOnth: BookingOneMOnth,
+              Amount_Booking,
               ReservationTotal: ReservationTotal,
               ProfitBookingPerMonth : TotalPrice,
               messageProfit:`Profit start date from : ${startOfMonthF}  to : ${endOfMonthF}`,
@@ -382,7 +385,6 @@ export class DashboardController {
             });
           }
     }
-
 
     static async ModalRoomAvailable(req: any, res: any) {
       try {
@@ -488,7 +490,6 @@ export class DashboardController {
       }
     }
 
-
     static async SaveRoomCondition(req: any, res: any) {
       try {
         const { data } = req.body
@@ -521,7 +522,6 @@ export class DashboardController {
         })
       }
     }
-
 
     static async GetRoomConditions(req: any, res: any) {
       try {
