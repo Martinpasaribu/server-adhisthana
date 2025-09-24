@@ -1008,7 +1008,17 @@ export class SetMinderController {
                 // Hapus property reschedule dari main booking
                 await BookingModel.updateOne(
                   { _id: key },
-                  { $unset: { reschedule: "" } }
+                  { 
+                    $unset: { reschedule: "" },
+                    isDeleted: true
+                   }
+                );
+                await TransactionModel.updateOne(
+                  { _id: key },
+                  { 
+                    $unset: { reschedule: "" },
+                    isDeleted: true
+                   }
                 );
 
 

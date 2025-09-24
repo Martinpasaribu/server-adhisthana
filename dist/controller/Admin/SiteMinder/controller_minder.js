@@ -765,7 +765,14 @@ class SetMinderController {
                 // Hapus data reschedule
                 yield (0, RefReschedule_1.DeletedDataALLByIDTransaction)(IdBooking);
                 // Hapus property reschedule dari main booking
-                yield models_booking_1.BookingModel.updateOne({ _id: key }, { $unset: { reschedule: "" } });
+                yield models_booking_1.BookingModel.updateOne({ _id: key }, {
+                    $unset: { reschedule: "" },
+                    isDeleted: true
+                });
+                yield models_transaksi_1.TransactionModel.updateOne({ _id: key }, {
+                    $unset: { reschedule: "" },
+                    isDeleted: true
+                });
                 res.status(200).json({
                     requestId: (0, uuid_1.v4)(),
                     data: BookingReschedule, // Kembalikan data terbaru
