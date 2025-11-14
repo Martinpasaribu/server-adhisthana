@@ -31,6 +31,8 @@ import ReportRouter from "./router/Admin/router_report";
 import AdminDishRouter from "./router/Admin/router_admin_dish";
 import AdminInvoiceRouter from "./router/Admin/router_admin_invoice";
 import AdminRoomPending from "./router/Admin/router_admin_pending_room";
+import CampaignPromo from "./campaign/Promo";
+import CampaignEvent from "./campaign/Event";
 
 
 const app: express.Application = express();
@@ -193,7 +195,8 @@ app.use("/api/v1/short", ShortAvailableRouter)
 app.use("/api/v1/transaction", TransactionRouter)
 app.use("/api/v1/session", SessionRouter)
 
-
+app.use("/api/v1/campaign/promo", CampaignPromo)
+app.use("/api/v1/campaign/event", CampaignEvent)
 
 
 const startServer = async () => {

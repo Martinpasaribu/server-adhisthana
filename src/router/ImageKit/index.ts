@@ -54,3 +54,11 @@ export const upload = multer({
     { name: "imageShort", maxCount: 5 },
 ]);
 
+
+
+export const uploadTipe2 = multer({
+  storage: storage,
+  limits: { fileSize: 25 * 1024 * 1024 }, // maksimal 25MB
+}).single("image"); // 👉 hanya untuk 1 file
+
+
