@@ -43,6 +43,8 @@ const router_report_1 = __importDefault(require("./router/Admin/router_report"))
 const router_admin_dish_1 = __importDefault(require("./router/Admin/router_admin_dish"));
 const router_admin_invoice_1 = __importDefault(require("./router/Admin/router_admin_invoice"));
 const router_admin_pending_room_1 = __importDefault(require("./router/Admin/router_admin_pending_room"));
+const Promo_1 = __importDefault(require("./campaign/Promo"));
+const Event_1 = __importDefault(require("./campaign/Event"));
 const app = (0, express_1.default)();
 dotenv_1.default.config();
 app.use((0, cors_1.default)({
@@ -135,6 +137,8 @@ app.use("/api/v1/user", router_user_1.default);
 app.use("/api/v1/short", router_shortAvailable_1.default);
 app.use("/api/v1/transaction", router_transaction_1.default);
 app.use("/api/v1/session", router_session_1.default);
+app.use("/api/v1/campaign/promo", Promo_1.default);
+app.use("/api/v1/campaign/event", Event_1.default);
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // await connectToDatabase();

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.upload = exports.uploadImage = void 0;
+exports.uploadTipe2 = exports.upload = exports.uploadImage = void 0;
 const imagekit_1 = __importDefault(require("imagekit"));
 const multer_1 = __importDefault(require("multer"));
 const dotenv_1 = __importDefault(require("dotenv"));
@@ -47,3 +47,7 @@ exports.upload = (0, multer_1.default)({
     { name: "imagePoster", maxCount: 5 },
     { name: "imageShort", maxCount: 5 },
 ]);
+exports.uploadTipe2 = (0, multer_1.default)({
+    storage: storage,
+    limits: { fileSize: 25 * 1024 * 1024 }, // maksimal 25MB
+}).single("image"); // 👉 hanya untuk 1 file
