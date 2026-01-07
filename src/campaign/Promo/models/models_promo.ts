@@ -30,6 +30,10 @@ export interface IPromo extends Document {
   // 🎯 Validasi waktu & batas
   startDate: Date;
   endDate: Date;
+
+  startDateVoucher: Date;
+  endDateVoucher: Date;
+
   usageLimit?: number; // Maksimal total penggunaan promo
   perUserLimit?: number; // Maksimal 1 user bisa pakai berapa kali
   usedCount: number; // Jumlah pemakaian sejauh ini
@@ -73,6 +77,8 @@ const PromoSchema = new Schema<IPromo>(
 
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
+    startDateVoucher: { type: Date, required: true },
+    endDateVoucher: { type: Date, required: true },
     usageLimit: { type: Number, default: 0 },
     perUserLimit: { type: Number, default: 1 },
     usedCount: { type: Number, default: 0 },

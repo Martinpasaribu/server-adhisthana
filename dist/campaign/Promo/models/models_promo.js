@@ -57,6 +57,8 @@ const PromoSchema = new mongoose_1.Schema({
     minTransaction: { type: Number, default: 0 },
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
+    startDateVoucher: { type: Date, required: true },
+    endDateVoucher: { type: Date, required: true },
     usageLimit: { type: Number, default: 0 },
     perUserLimit: { type: Number, default: 1 },
     usedCount: { type: Number, default: 0 },
