@@ -228,7 +228,7 @@ class DashboardController {
                             "ota.code": {
                                 $in: ["TVK", "BKC", "WIG"]
                             },
-                            createdAt: {
+                            checkIn: {
                                 $gte: startMonth,
                                 $lt: endMonth
                             }
@@ -248,7 +248,6 @@ class DashboardController {
                     TVK: 0,
                     BKC: 0,
                     WIG: 0,
-                    WEB: 0,
                 };
                 result.forEach((item) => {
                     data[item._id] = item.total;
