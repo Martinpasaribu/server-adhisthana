@@ -278,7 +278,8 @@ export class DashboardController {
         return res.status(200).json({
           requestId: uuidv4(),
           success: true,
-          data
+          data,
+          message:`OTA data fetched successfully for the current month ${startMonth.toISOString()} to ${endMonth.toISOString()}`
         });
 
       } catch (error) {
