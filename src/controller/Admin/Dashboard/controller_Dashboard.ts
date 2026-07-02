@@ -304,12 +304,9 @@ export class DashboardController {
       const month = dayjs().month(); // 0-based (Juli = 6)
 
       // Buat waktu UTC dari waktu lokal Asia/Jakarta TANPA pergeseran mundur
-      const startOfMonth = dayjs.utc(new Date(Date.UTC(year, month, 1, 0, 0, 0)));
-      const endOfMonth = dayjs.utc(new Date(Date.UTC(year, month + 1, 0, 23, 59, 59, 999)));
-
-      // Output ke string ISO
-      const startOfMonthF = startOfMonth.toISOString();
-      const endOfMonthF = endOfMonth.toISOString();
+          const localStartOfMonth = dayjs().tz(zone).startOf('month');  // Jakarta time
+          const startOfMonthF = localStartOfMonth.utc().toISOString();
+          const endOfMonthF = dayjs().tz(zone).endOf('month').utc().toISOString();
 
           try {
 

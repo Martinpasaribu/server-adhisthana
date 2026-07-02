@@ -278,11 +278,9 @@ class DashboardController {
             const year = (0, dayjs_1.default)().year();
             const month = (0, dayjs_1.default)().month(); // 0-based (Juli = 6)
             // Buat waktu UTC dari waktu lokal Asia/Jakarta TANPA pergeseran mundur
-            const startOfMonth = dayjs_1.default.utc(new Date(Date.UTC(year, month, 1, 0, 0, 0)));
-            const endOfMonth = dayjs_1.default.utc(new Date(Date.UTC(year, month + 1, 0, 23, 59, 59, 999)));
-            // Output ke string ISO
-            const startOfMonthF = startOfMonth.toISOString();
-            const endOfMonthF = endOfMonth.toISOString();
+            const localStartOfMonth = (0, dayjs_1.default)().tz(zone).startOf('month'); // Jakarta time
+            const startOfMonthF = localStartOfMonth.utc().toISOString();
+            const endOfMonthF = (0, dayjs_1.default)().tz(zone).endOf('month').utc().toISOString();
             try {
                 // 1. Hitung jumlah booking langsung di database
                 const BookingOneMOnth = yield models_booking_1.BookingModel.countDocuments({
