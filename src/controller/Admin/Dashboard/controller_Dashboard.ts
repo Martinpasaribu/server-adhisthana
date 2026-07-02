@@ -268,7 +268,8 @@ export class DashboardController {
         const data = {
           TVK: 0,
           BKC: 0,
-          WIG: 0
+          WIG: 0,
+          WEB: 0,
         };
 
         result.forEach((item) => {
@@ -278,8 +279,8 @@ export class DashboardController {
         return res.status(200).json({
           requestId: uuidv4(),
           success: true,
-          data,
-          message:`OTA data fetched successfully for the current month ${startMonth.toISOString()} to ${endMonth.toISOString()}`
+          message:`OTA data fetched successfully for the current month ${startMonth.toISOString()} to ${endMonth.toISOString()}`,
+          data
         });
 
       } catch (error) {
