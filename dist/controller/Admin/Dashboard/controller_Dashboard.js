@@ -219,14 +219,13 @@ class DashboardController {
             try {
                 const now = new Date();
                 // Awal bulan
-                const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-                // Awal bulan berikutnya
-                const endMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+                const startMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+                const endMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString();
                 const result = yield models_booking_1.BookingModel.aggregate([
                     {
                         $match: {
                             "ota.code": {
-                                $in: ["TVK", "BKC", "WIG"]
+                                $in: ["TVK", "BKC", "WIG", "WEB"]
                             },
                             checkIn: {
                                 $gte: startMonth,
@@ -255,7 +254,7 @@ class DashboardController {
                 return res.status(200).json({
                     requestId: (0, uuid_1.v4)(),
                     success: true,
-                    message: `OTA data fetched successfully for the current month ${startMonth.toISOString()} to ${endMonth.toISOString()}`,
+                    message: `OTA data fetched successfully for the current month ${startMonth} to ${endMonth}`,
                     data
                 });
             }

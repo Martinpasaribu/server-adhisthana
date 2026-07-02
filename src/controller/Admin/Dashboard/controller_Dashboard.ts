@@ -237,16 +237,14 @@ export class DashboardController {
         const now = new Date();
 
         // Awal bulan
-        const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-        // Awal bulan berikutnya
-        const endMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+        const startMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+        const endMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString();
 
         const result = await BookingModel.aggregate([
           {
             $match: {
               "ota.code": {
-                $in: ["TVK", "BKC", "WIG"]
+                $in: ["TVK", "BKC", "WIG", "WEB"]
               },
               checkIn: {
                 $gte: startMonth,
@@ -263,7 +261,6 @@ export class DashboardController {
             }
           }
         ]);
-
         // Default value
         const data = {
           TVK: 0,
@@ -278,7 +275,7 @@ export class DashboardController {
         return res.status(200).json({
           requestId: uuidv4(),
           success: true,
-          message:`OTA data fetched successfully for the current month ${startMonth.toISOString()} to ${endMonth.toISOString()}`,
+          message:`OTA data fetched successfully for the current month ${startMonth} to ${endMonth}`,
           data
         });
 
