@@ -1,0 +1,14 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const controller_scrap_1 = require("../controllers/controller_scrap");
+const controller_smart_scrap_1 = require("../controllers/controller_smart_scrap");
+const RateLimit_1 = require("../../../../../middleware/Server-Security/RateLimit");
+const RouterScraping = (0, express_1.Router)();
+const scraperController = new controller_scrap_1.ScraperController();
+const smartScraperController = new controller_smart_scrap_1.SmartScraperController();
+RouterScraping.post('/one', RateLimit_1.loginLimiter, scraperController.scrapeWebsite.bind(scraperController));
+RouterScraping.post('/multiple', RateLimit_1.loginLimiter, scraperController.scrapeMultipleWebsites.bind(scraperController));
+RouterScraping.post('/smart', smartScraperController.smartScrape.bind(smartScraperController));
+RouterScraping.get('/status', scraperController.getScrapingStatus.bind(scraperController));
+exports.default = RouterScraping;

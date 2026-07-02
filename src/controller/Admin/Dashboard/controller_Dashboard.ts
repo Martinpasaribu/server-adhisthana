@@ -231,6 +231,65 @@ export class DashboardController {
       }
     }
 
+
+    static async MostOTAPurchased(req: any, res: any) {
+      try {
+        const now = new Date();
+
+        // Awal bulan
+        const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        // Awal bulan berikutnya
+        const endMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+        const result = await BookingModel.aggregate([
+          {
+            $match: {
+              "ota.code": {
+                $in: ["TVK", "BKC", "WIG"]
+              },
+              createdAt: {
+                $gte: startMonth,
+                $lt: endMonth
+              }
+            }
+          },
+          {
+            $group: {
+              _id: "$ota.code",
+              total: {
+                $sum: 1
+              }
+            }
+          }
+        ]);
+
+        // Default value
+        const data = {
+          TVK: 0,
+          BKC: 0,
+          WIG: 0
+        };
+
+        result.forEach((item) => {
+          data[item._id as keyof typeof data] = item.total;
+        });
+
+        return res.status(200).json({
+          requestId: uuidv4(),
+          success: true,
+          data
+        });
+
+      } catch (error) {
+        return res.status(500).json({
+          requestId: uuidv4(),
+          success: false,
+          message: `Failed to fetch OTA data: ${error}`
+        });
+      }
+    }
+    
     // Information Dashboard One ( Total booking(1month), Profit(1month), reservation)
     static async InfoDashboardOne(req: any, res: any) {
 

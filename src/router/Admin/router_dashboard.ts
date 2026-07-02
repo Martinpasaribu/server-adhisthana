@@ -15,6 +15,7 @@ DashboardRouter.get("/get-total-user", verifyAdmin , DashboardController.TotalUs
 DashboardRouter.get("/get-total-user-admin", verifyAdmin , DashboardController.TotalUserAdmin);
 DashboardRouter.get("/get-cart-transaction", verifyAdmin, DashboardController.ChartTransaction); 
 DashboardRouter.get("/get-most-purchased", DashboardController.MostPurchased); 
+DashboardRouter.get("/get-ota-purchased", DashboardController.MostOTAPurchased); 
 DashboardRouter.get("/get-modal-room-available", DashboardController.ModalRoomAvailable); 
 DashboardRouter.post("/room-condition", DashboardController.SaveRoomCondition); 
 DashboardRouter.get("/room-condition", DashboardController.GetRoomConditions); 
